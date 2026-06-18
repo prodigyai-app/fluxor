@@ -3042,10 +3042,882 @@ ocr_alevel: {
 
 </script>
 <script>
+/* ============================================================
+   FLUXOR CONTENT — GCSE Biology (AQA 8461 / combined 8464)
+   Full triple-science course. Same conventions as Physics:
+   - flashcards cover definitions/key terms
+   - no recall-the-equation items; calculations are wordy and
+     quote the relationship they use; mix of rearrangement/units
+   - diagrams attached where they help (reuse window.DIAGRAMS)
+   Card format:  [question, answer, frontDiagram?, backDiagram?]
+   Quiz format:  [question,[A,B,C,D],correctIndex,explanation,qDiagram?]
+   ============================================================ */
+(function(){
+  if(!window.COURSES){ console.error("COURSES not loaded before biology.js"); return; }
+
+  window.COURSES.aqa_biology = {
+    name: "GCSE Biology (AQA)",
+    topics: {
+
+      cell_biology: {
+        name: "1 · Cell biology",
+        cards: [
+          ["Define a eukaryotic cell.", "A cell with a <b>nucleus</b> enclosing its DNA, plus membrane-bound organelles (animal and plant cells)."],
+          ["Define a prokaryotic cell.", "A cell with <b>no nucleus</b>; its DNA floats free in the cytoplasm, sometimes with plasmids (e.g. bacteria)."],
+          ["State the function of the cell membrane.", "Controls <b>what enters and leaves</b> the cell (partially permeable)."],
+          ["State the function of mitochondria.", "Site of <b>aerobic respiration</b>, releasing energy for the cell."],
+          ["State the function of ribosomes.", "Site of <b>protein synthesis</b>."],
+          ["State the function of chloroplasts.", "Site of <b>photosynthesis</b>; contain chlorophyll that absorbs light."],
+          ["State the function of the cell wall in plant cells.", "Made of cellulose, it <b>strengthens and supports</b> the cell."],
+          ["State the function of a permanent vacuole.", "Contains cell sap and helps keep the plant cell <b>turgid (firm)</b>."],
+          ["Define a tissue.", "A group of <b>similar cells working together</b> to perform a function."],
+          ["Define an organ.", "A group of <b>different tissues working together</b> to perform a function."],
+          ["Define magnification.", "How many times larger an image is than the real object: <b>magnification = image size ÷ real size</b>."],
+          ["Define differentiation.", "The process by which a cell becomes <b>specialised for its job</b>."],
+          ["Define a stem cell.", "An <b>undifferentiated cell</b> that can divide to produce many cell types."],
+          ["State why electron microscopes show more detail than light microscopes.", "They have <b>much higher magnification and resolution</b>, revealing sub-cellular structures."],
+          ["Define diffusion.", "The <b>net movement of particles from high to low concentration</b>, down a concentration gradient."],
+          ["Define osmosis.", "The movement of <b>water</b> across a partially permeable membrane from a dilute to a more concentrated solution."],
+          ["Define active transport.", "Movement of substances <b>against a concentration gradient</b>, requiring energy from respiration."],
+          ["Describe the stages of mitosis (overview).", "The cell grows and copies its DNA, then chromosomes are <b>pulled apart and the cell divides</b> into two identical cells."],
+        ],
+        quiz: [
+          ["A cell is described as having no nucleus, with its genetic material free in the cytoplasm and small rings of DNA called plasmids. The cell is:", ["Prokaryotic","Eukaryotic","A plant cell","A red blood cell"], 0, "No nucleus + plasmids = a <b>prokaryotic</b> cell (e.g. bacteria)."],
+          ["A microscope image of a cell is 50 mm wide and the real cell is 0.05 mm wide. Using magnification = image ÷ real size, the magnification is:", ["×1000","×100","×2.5","×0.001"], 0, "50 ÷ 0.05 = <b>×1000</b>."],
+          ["A cell is placed in pure water and swells. Water has moved into the cell by:", ["Osmosis","Active transport","Diffusion of glucose","Respiration"], 0, "Water moving across the membrane to a more concentrated solution is <b>osmosis</b>."],
+          ["Root hair cells absorb mineral ions from soil even when the soil is more dilute than the cell. This requires:", ["Active transport","Osmosis","Diffusion","Mitosis"], 0, "Moving ions against the gradient needs energy — <b>active transport</b>."],
+          ["A specialised cell that carries oxygen, has no nucleus and is packed with haemoglobin is a:", ["Red blood cell","Nerve cell","Root hair cell","Sperm cell"], 0, "These adaptations describe a <b>red blood cell</b>."],
+          ["An object 0.1 mm long appears 20 mm long under a microscope. The magnification (image ÷ real) is:", ["×200","×2","×0.005","×20"], 0, "20 ÷ 0.1 = <b>×200</b>."],
+          ["Mitosis produces:", ["Two genetically identical cells","Four different cells","Gametes","Stem cells only"], 0, "Mitosis gives <b>two genetically identical</b> daughter cells."],
+          ["Oxygen moves from the alveoli (high concentration) into the blood (low concentration). This is:", ["Diffusion","Active transport","Osmosis","Mitosis"], 0, "Net movement down a concentration gradient is <b>diffusion</b>."],
+        ],
+      },
+
+      organisation: {
+        name: "2 · Organisation",
+        cards: [
+          ["Define an enzyme.", "A <b>biological catalyst</b> (a protein) that speeds up reactions without being used up."],
+          ["Describe the 'lock and key' model.", "An enzyme's <b>active site has a specific shape</b> that fits only its complementary substrate."],
+          ["What happens when an enzyme denatures?", "Its active site <b>changes shape</b> (e.g. from high temperature or wrong pH) so the substrate no longer fits."],
+          ["State what amylase does.", "Breaks down <b>starch into sugars</b>."],
+          ["State what protease does.", "Breaks down <b>proteins into amino acids</b>."],
+          ["State what lipase does.", "Breaks down <b>lipids into fatty acids and glycerol</b>."],
+          ["State the role of bile.", "<b>Neutralises stomach acid and emulsifies fats</b> (increases surface area for lipase)."],
+          ["Name the components of blood.", "Red blood cells, white blood cells, platelets and <b>plasma</b>."],
+          ["State the function of red blood cells.", "Carry <b>oxygen</b> using haemoglobin."],
+          ["State the function of plasma.", "Carries <b>dissolved substances</b> (e.g. CO₂, glucose, urea, hormones) and blood cells."],
+          ["Name the three types of blood vessel.", "Arteries, veins and <b>capillaries</b>."],
+          ["State how arteries are adapted.", "<b>Thick, elastic, muscular walls</b> to withstand high pressure from the heart."],
+          ["Describe the double circulatory system.", "Blood passes through the heart <b>twice</b> per circuit — once to the lungs, once to the body."],
+          ["Define a coronary heart disease risk.", "Build-up in the <b>coronary arteries</b> reduces blood flow to the heart muscle."],
+          ["Define a non-communicable disease.", "A disease that is <b>not passed between people</b> (e.g. cancer, heart disease)."],
+          ["Name the plant transport tissues.", "<b>Xylem</b> (carries water/minerals up) and <b>phloem</b> (carries sugars, both ways)."],
+          ["Define transpiration.", "The <b>loss of water vapour</b> from plant leaves, mostly through the stomata."],
+          ["State the function of guard cells.", "<b>Open and close the stomata</b> to control water loss and gas exchange."],
+        ],
+        quiz: [
+          ["An enzyme stops working after being heated to 70 °C and does not recover when cooled. This is because the enzyme has:", ["Denatured","Been used up","Reached its optimum","Become a substrate"], 0, "High temperature permanently changes the active site shape — it has <b>denatured</b>."],
+          ["Starch is broken down into sugars by the enzyme:", ["Amylase","Protease","Lipase","Bile"], 0, "<b>Amylase</b> breaks down starch."],
+          ["Bile is released into the small intestine. One of its roles is to:", ["Emulsify fats","Break down starch","Carry oxygen","Produce insulin"], 0, "Bile <b>emulsifies fats</b> and neutralises acid."],
+          ["A blood vessel with thick muscular elastic walls carrying blood at high pressure away from the heart is a(n):", ["Artery","Vein","Capillary","Alveolus"], 0, "High pressure, away from the heart = <b>artery</b>."],
+          ["In a healthy person at rest the heart pumps about 70 cm³ per beat at 70 beats per minute. The volume pumped per minute is:", ["4900 cm³","140 cm³","1000 cm³","490 cm³"], 0, "70 × 70 = <b>4900 cm³</b> per minute (cardiac output)."],
+          ["Water and mineral ions are transported up a plant through the:", ["Xylem","Phloem","Stomata","Root hairs"], 0, "<b>Xylem</b> carries water and minerals upward."],
+          ["Transpiration would increase most on a day that is:", ["Hot, dry and windy","Cold and still","Humid and dark","Cool and damp"], 0, "Heat, low humidity and wind all speed up <b>transpiration</b>."],
+          ["The enzyme that breaks proteins into amino acids is:", ["Protease","Amylase","Lipase","Catalase"], 0, "<b>Protease</b> digests proteins."],
+        ],
+      },
+
+      infection: {
+        name: "3 · Infection & response",
+        cards: [
+          ["Define a pathogen.", "A <b>microorganism that causes disease</b> (bacteria, viruses, fungi or protists)."],
+          ["How do bacteria make us feel ill?", "They reproduce rapidly and may produce <b>toxins</b> that damage tissues."],
+          ["How do viruses make us feel ill?", "They reproduce <b>inside cells</b>, damaging them when new viruses are released."],
+          ["Name a viral disease.", "Measles, HIV or <b>tobacco mosaic virus</b> (in plants)."],
+          ["State three ways the body defends against pathogens.", "Skin barrier, stomach acid, and the <b>immune system (white blood cells)</b>."],
+          ["State three things white blood cells do.", "<b>Phagocytosis</b> (engulf pathogens), produce <b>antibodies</b>, and produce <b>antitoxins</b>."],
+          ["Define an antibody.", "A protein made by white blood cells that <b>locks onto a specific antigen</b> on a pathogen."],
+          ["Explain how vaccination works.", "A <b>dead/inactive form of a pathogen</b> triggers white blood cells to make antibodies, giving immunity."],
+          ["Define herd immunity.", "When enough people are immune that a disease <b>cannot spread easily</b> in a population."],
+          ["State what antibiotics do (and don't).", "Kill <b>bacteria</b> inside the body; they do <b>not</b> kill viruses."],
+          ["Why is antibiotic resistance a concern?", "Bacteria can <b>evolve resistance</b>, so infections become harder to treat."],
+          ["State the stages of testing a new drug.", "Preclinical (cells/tissues then animals), then <b>clinical trials</b> on healthy volunteers and patients."],
+          ["Define a placebo.", "A 'dummy' treatment with <b>no active drug</b>, used as a comparison in trials."],
+        ],
+        quiz: [
+          ["A disease is caused by a microorganism that reproduces inside the body's cells and bursts them open. The pathogen is most likely a:", ["Virus","Bacterium","Fungus","Protist"], 0, "Reproducing inside and bursting cells is characteristic of a <b>virus</b>."],
+          ["A patient with a bacterial chest infection is prescribed antibiotics. Antibiotics work by:", ["Killing the bacteria","Killing the virus","Producing antibodies","Emulsifying fats"], 0, "Antibiotics <b>kill bacteria</b> (not viruses)."],
+          ["After vaccination, the body is protected because white blood cells have:", ["Made memory cells and antibodies","Made toxins","Become pathogens","Stopped dividing"], 0, "Vaccination triggers <b>antibody production and memory cells</b>."],
+          ["A white blood cell engulfs and digests a pathogen. This process is called:", ["Phagocytosis","Photosynthesis","Transpiration","Diffusion"], 0, "Engulfing pathogens is <b>phagocytosis</b>."],
+          ["Antibodies are described as 'specific'. This means each antibody:", ["Fits one type of antigen","Kills all pathogens","Is an antibiotic","Is a toxin"], 0, "Each antibody is <b>specific to one antigen</b>."],
+          ["Giving antibiotics only when truly needed helps to slow:", ["Antibiotic resistance","Vaccination","Digestion","Transpiration"], 0, "Reducing unnecessary use slows the spread of <b>antibiotic resistance</b>."],
+        ],
+      },
+
+      bioenergetics: {
+        name: "4 · Bioenergetics",
+        cards: [
+          ["Define photosynthesis.", "The process where plants use <b>light energy to make glucose</b> from carbon dioxide and water, releasing oxygen."],
+          ["Is photosynthesis endothermic or exothermic?", "<b>Endothermic</b> — it takes in energy (from light)."],
+          ["Name the products of photosynthesis.", "<b>Glucose and oxygen</b>."],
+          ["Name three uses of glucose in a plant.", "Respiration, making cellulose/starch, and making <b>amino acids</b> (with nitrate)."],
+          ["State the three limiting factors of photosynthesis.", "<b>Light intensity, carbon dioxide concentration and temperature</b>."],
+          ["Define aerobic respiration.", "Respiration using <b>oxygen</b> to release energy from glucose (releasing CO₂ and water)."],
+          ["Is respiration endothermic or exothermic?", "<b>Exothermic</b> — it releases energy."],
+          ["Define anaerobic respiration in muscles.", "Respiration <b>without oxygen</b>, producing lactic acid and less energy."],
+          ["Define anaerobic respiration in yeast (fermentation).", "Glucose → <b>ethanol + carbon dioxide</b>, used in brewing and baking."],
+          ["Define metabolism.", "The <b>sum of all chemical reactions</b> in a cell or body."],
+          ["Define oxygen debt.", "The <b>extra oxygen needed after exercise</b> to break down the lactic acid built up."],
+        ],
+        quiz: [
+          ["A plant is kept in bright light but in a sealed jar where CO₂ runs low. Its photosynthesis rate plateaus because the limiting factor is now:", ["Carbon dioxide","Light intensity","Temperature","Water"], 0, "With plenty of light, low <b>CO₂</b> limits the rate."],
+          ["During hard exercise muscles respire without enough oxygen, producing:", ["Lactic acid","Ethanol","Glucose","Oxygen"], 0, "Anaerobic respiration in muscle produces <b>lactic acid</b>."],
+          ["Photosynthesis is described as endothermic. This means it:", ["Takes in energy","Releases energy","Needs no light","Produces lactic acid"], 0, "Endothermic = <b>takes in energy</b> (light)."],
+          ["Yeast respiring anaerobically in brewing produces ethanol and:", ["Carbon dioxide","Oxygen","Lactic acid","Water"], 0, "Fermentation gives ethanol + <b>carbon dioxide</b>."],
+          ["A pondweed in light produces 30 bubbles of oxygen per minute. When the lamp is moved twice as far away (¼ the light intensity by the inverse-square idea), the rate would be expected to:", ["Fall","Rise","Stay the same","Double"], 0, "Less light intensity → the rate <b>falls</b> (light becomes limiting)."],
+          ["The products of aerobic respiration are:", ["Carbon dioxide and water","Glucose and oxygen","Ethanol and CO₂","Lactic acid"], 0, "Aerobic respiration releases <b>carbon dioxide and water</b>."],
+        ],
+      },
+
+      homeostasis: {
+        name: "5 · Homeostasis & response",
+        cards: [
+          ["Define homeostasis.", "Keeping the body's <b>internal conditions constant</b> (e.g. temperature, water, blood glucose)."],
+          ["Name the parts of a control system.", "<b>Receptor → coordination centre → effector</b>."],
+          ["Define a stimulus.", "A <b>change in the environment</b> that is detected by a receptor."],
+          ["Describe the path of a reflex arc.", "Stimulus → receptor → sensory neurone → <b>relay neurone</b> → motor neurone → effector."],
+          ["Why are reflexes important?", "They are <b>fast and automatic</b>, protecting the body from harm."],
+          ["State the role of insulin.", "Lowers blood glucose by making cells <b>take up glucose / store it as glycogen</b>."],
+          ["Describe Type 1 diabetes.", "The pancreas <b>cannot produce enough insulin</b>; treated with insulin injections."],
+          ["Describe Type 2 diabetes.", "Body cells <b>stop responding to insulin</b>; linked to obesity, managed by diet."],
+          ["Name the hormone from the pancreas that raises blood glucose.", "<b>Glucagon</b> (causes glycogen → glucose)."],
+          ["Define a hormone.", "A <b>chemical messenger</b> made by glands and carried in the blood."],
+          ["Compare nervous and hormonal responses.", "Nervous: <b>fast, short-lived, precise</b>. Hormonal: slower, longer-lasting, more widespread."],
+          ["Name the hormone that prepares the body for action.", "<b>Adrenaline</b> ('fight or flight')."],
+        ],
+        quiz: [
+          ["After a sugary meal, blood glucose rises. The pancreas responds by releasing a hormone that lowers it, namely:", ["Insulin","Glucagon","Adrenaline","Testosterone"], 0, "<b>Insulin</b> lowers blood glucose."],
+          ["A person touches a hot pan and pulls their hand away before feeling pain. This is a:", ["Reflex action","Conscious decision","Hormonal response","Voluntary action"], 0, "Fast and automatic = a <b>reflex action</b>."],
+          ["In a reflex arc, the neurone between the sensory and motor neurones is the:", ["Relay neurone","Effector","Receptor","Gland"], 0, "The <b>relay neurone</b> connects sensory to motor in the spinal cord."],
+          ["Type 1 diabetes is caused by the pancreas not producing enough:", ["Insulin","Glucagon","Bile","Adrenaline"], 0, "Type 1 diabetes = too little <b>insulin</b>."],
+          ["Compared with nervous responses, hormonal responses are generally:", ["Slower and longer-lasting","Faster and briefer","More precise","Electrical"], 0, "Hormones act more <b>slowly and last longer</b> than nerve impulses."],
+          ["The effector in a control system is the part that:", ["Brings about the response","Detects the stimulus","Coordinates the response","Carries blood"], 0, "An <b>effector</b> (muscle or gland) carries out the response."],
+        ],
+      },
+
+      inheritance: {
+        name: "6 · Inheritance, variation & evolution",
+        cards: [
+          ["Define a gene.", "A <b>section of DNA</b> that codes for a particular protein/characteristic."],
+          ["Define a chromosome.", "A <b>long molecule of DNA</b> carrying many genes."],
+          ["Define an allele.", "A <b>different version of a gene</b>."],
+          ["Define dominant and recessive alleles.", "Dominant: shows if <b>one copy</b> is present. Recessive: shows only if <b>both copies</b> are present."],
+          ["Define genotype and phenotype.", "Genotype: the <b>alleles present</b>. Phenotype: the <b>characteristics shown</b>."],
+          ["Define homozygous and heterozygous.", "Homozygous: <b>two identical alleles</b>. Heterozygous: <b>two different alleles</b>."],
+          ["Describe meiosis.", "Cell division producing <b>four genetically different gametes</b>, each with half the chromosomes."],
+          ["State the human sex chromosomes.", "<b>XX</b> = female, <b>XY</b> = male."],
+          ["Define a mutation.", "A <b>random change in the DNA</b>, which can create new alleles."],
+          ["State the theory of evolution by natural selection.", "Organisms with <b>advantageous variations survive, reproduce</b> and pass on those alleles."],
+          ["Define selective breeding.", "Humans <b>choosing which organisms breed</b> to develop desired characteristics."],
+          ["Define genetic engineering.", "<b>Transferring a gene</b> from one organism to another to give a desired feature."],
+          ["What does a fossil provide evidence of?", "<b>Evolution</b> — how organisms have changed over millions of years."],
+        ],
+        quiz: [
+          ["Two heterozygous brown-eyed parents (Bb × Bb) have children. Using a Punnett square, the ratio of brown to blue eyes is:", ["3 : 1","1 : 1","1 : 3","4 : 0"], 0, "Bb × Bb gives BB, Bb, Bb, bb → 3 brown : 1 blue, i.e. <b>3 : 1</b>."],
+          ["A characteristic appears only when two copies of the allele are present. The allele is:", ["Recessive","Dominant","A mutation","A chromosome"], 0, "Needing two copies means the allele is <b>recessive</b>."],
+          ["Gametes are produced by a type of cell division called:", ["Meiosis","Mitosis","Diffusion","Respiration"], 0, "Gametes form by <b>meiosis</b> (four different cells, half the chromosomes)."],
+          ["A cross between a male (XY) and female (XX) gives offspring in the ratio:", ["1 male : 1 female","All male","All female","3 : 1"], 0, "XY × XX gives XX and XY in equal numbers → <b>1 : 1</b>."],
+          ["Dark-coloured moths survive better in a sooty habitat and pass on their alleles. This is an example of:", ["Natural selection","Selective breeding","Genetic engineering","Cloning"], 0, "Survival of the better-adapted variant is <b>natural selection</b>."],
+          ["An organism's genotype is Bb. This means it is:", ["Heterozygous","Homozygous dominant","Homozygous recessive","Haploid"], 0, "Two different alleles = <b>heterozygous</b>."],
+        ],
+      },
+
+      ecology: {
+        name: "7 · Ecology",
+        cards: [
+          ["Define a community.", "All the <b>populations of different species</b> living in a habitat."],
+          ["Define an ecosystem.", "The <b>community plus the non-living (abiotic) environment</b>, interacting together."],
+          ["Define interdependence.", "Species <b>relying on each other</b> for food, shelter, pollination, etc."],
+          ["Define a producer.", "An organism (usually a plant) that <b>makes its own food by photosynthesis</b>."],
+          ["Name some abiotic factors.", "Light, temperature, water, <b>soil pH</b> and mineral content."],
+          ["Name some biotic factors.", "Food availability, predators, disease and <b>competition</b>."],
+          ["Define biodiversity.", "The <b>variety of different species</b> in an ecosystem."],
+          ["State why high biodiversity is good.", "It makes ecosystems <b>more stable and resilient</b>."],
+          ["Describe the carbon cycle (overview).", "Carbon moves via <b>photosynthesis, respiration, decomposition and combustion</b>."],
+          ["State two effects of global warming.", "Loss of habitat/biodiversity and <b>changing distribution of species</b> (also rising sea levels)."],
+          ["Define a trophic level.", "A <b>feeding level</b> in a food chain (producer, primary consumer, etc.)."],
+          ["Why does biomass decrease up a food chain?", "Energy is <b>lost at each level</b> (movement, heat, waste), so less is passed on."],
+        ],
+        quiz: [
+          ["A food chain is: grass → rabbit → fox. The rabbit is the:", ["Primary consumer","Producer","Secondary consumer","Decomposer"], 0, "The rabbit eats the producer, so it is the <b>primary consumer</b>."],
+          ["All the living organisms plus the non-living surroundings in an area together form a(n):", ["Ecosystem","Community","Population","Trophic level"], 0, "Living + non-living interacting = an <b>ecosystem</b>."],
+          ["Only about 10% of biomass passes to the next trophic level. From 10000 kJ in producers, the primary consumers receive roughly:", ["1000 kJ","100 kJ","10000 kJ","100000 kJ"], 0, "10% of 10000 = <b>1000 kJ</b>; energy is lost at each level."],
+          ["Two plant species growing in the same patch compete most directly for:", ["Light and water","Predators","Oxygen only","Mates"], 0, "Plants compete for <b>light, water</b>, space and minerals."],
+          ["Carbon is returned to the atmosphere as CO₂ by respiration and by:", ["Combustion","Photosynthesis","Osmosis","Filtration"], 0, "Burning fuels (<b>combustion</b>) and respiration release CO₂."],
+          ["A measure of the variety of species in an ecosystem is its:", ["Biodiversity","Biomass","Population","Habitat"], 0, "Variety of species = <b>biodiversity</b>."],
+        ],
+      },
+
+    },
+  };
+
+  console.log("[biology.js] GCSE Biology added:", Object.keys(window.COURSES.aqa_biology.topics).length, "topics");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR CONTENT — GCSE Chemistry (AQA 8462 / combined 8464)
+   Full triple-science course. Same conventions as Physics.
+   ============================================================ */
+(function(){
+  if(!window.COURSES){ console.error("COURSES not loaded before chemistry.js"); return; }
+
+  window.COURSES.aqa_chemistry = {
+    name: "GCSE Chemistry (AQA)",
+    topics: {
+
+      atomic_structure: {
+        name: "1 · Atomic structure & periodic table",
+        cards: [
+          ["Define an element.", "A substance made of <b>only one type of atom</b>."],
+          ["Define a compound.", "A substance of <b>two or more elements chemically bonded</b> in fixed proportions."],
+          ["Define a mixture.", "Two or more substances <b>not chemically bonded</b>, easily separated."],
+          ["State the relative charges of protons, neutrons and electrons.", "Proton +1, neutron 0, electron <b>−1</b>."],
+          ["Where is most of an atom's mass?", "In the <b>nucleus</b> (protons and neutrons)."],
+          ["Define the atomic (proton) number.", "The <b>number of protons</b> in an atom."],
+          ["Define the mass number.", "The total number of <b>protons plus neutrons</b>."],
+          ["Define an isotope.", "Atoms of the same element with <b>different numbers of neutrons</b>."],
+          ["How are elements arranged in the periodic table?", "In order of <b>increasing atomic number</b>, in groups and periods."],
+          ["What does the group number tell you?", "The number of <b>electrons in the outer shell</b>."],
+          ["Describe Group 1 (alkali metals) reactivity.", "Reactivity <b>increases down the group</b>."],
+          ["Describe Group 7 (halogens) reactivity.", "Reactivity <b>decreases down the group</b>."],
+          ["Describe Group 0 (noble gases).", "<b>Unreactive</b> because they have full outer shells."],
+          ["Define separation by filtration.", "Separating an <b>insoluble solid from a liquid</b>."],
+          ["Define separation by distillation.", "Separating a liquid from a solution (or a mixture of liquids) by <b>evaporating then condensing</b>."],
+        ],
+        quiz: [
+          ["An atom has 11 protons, 12 neutrons and 11 electrons. Its mass number (protons + neutrons) is:", ["23","11","12","34"], 0, "11 + 12 = <b>23</b>."],
+          ["Two atoms of the same element have different numbers of neutrons. They are:", ["Isotopes","Ions","Compounds","Molecules"], 0, "Same element, different neutrons = <b>isotopes</b>."],
+          ["An element in Group 1 of the periodic table has how many electrons in its outer shell?", ["1","7","8","0"], 0, "Group number = outer electrons, so Group 1 has <b>1</b>."],
+          ["Reactivity of the alkali metals (Group 1) as you go down the group:", ["Increases","Decreases","Stays the same","Becomes zero"], 0, "Group 1 reactivity <b>increases down</b> the group."],
+          ["To separate sand from salty water you would first use:", ["Filtration","Distillation","Crystallisation","Chromatography"], 0, "Insoluble sand is removed by <b>filtration</b> first."],
+          ["An atom has atomic number 17. The number of protons it has is:", ["17","17 neutrons","34","8.5"], 0, "Atomic number = number of protons = <b>17</b>."],
+          ["The noble gases (Group 0) are unreactive because they have:", ["Full outer shells","One outer electron","No protons","Many isotopes"], 0, "<b>Full outer shells</b> make them stable/unreactive."],
+        ],
+      },
+
+      bonding: {
+        name: "2 · Bonding, structure & properties",
+        cards: [
+          ["Define ionic bonding.", "The <b>transfer of electrons</b> from a metal to a non-metal, forming oppositely charged ions that attract."],
+          ["Define covalent bonding.", "A <b>shared pair of electrons</b> between non-metal atoms."],
+          ["Define metallic bonding.", "Positive metal ions in a <b>sea of delocalised electrons</b>."],
+          ["Why do ionic compounds have high melting points?", "Strong electrostatic forces in the giant lattice need <b>lots of energy</b> to break."],
+          ["When do ionic compounds conduct electricity?", "When <b>molten or dissolved</b>, so ions are free to move."],
+          ["Why can metals conduct electricity?", "<b>Delocalised electrons</b> are free to move and carry charge."],
+          ["Why are metals malleable?", "Layers of ions can <b>slide over each other</b>."],
+          ["Describe the structure of diamond.", "Each carbon bonded to <b>four others</b> in a giant covalent lattice — very hard."],
+          ["Describe the structure of graphite.", "Carbon in <b>layers</b> with delocalised electrons — conducts and is slippery."],
+          ["Describe a simple molecular substance.", "Small molecules with <b>weak forces between them</b>, so low melting points."],
+          ["What are nanoparticles?", "Particles 1–100 nm across with a <b>very large surface area to volume ratio</b>."],
+          ["Why does graphite conduct electricity but diamond does not?", "Graphite has <b>delocalised electrons</b> between layers; diamond's are all in bonds."],
+        ],
+        quiz: [
+          ["Sodium (a metal) reacts with chlorine (a non-metal). The bonding in sodium chloride is:", ["Ionic","Covalent","Metallic","None"], 0, "Metal + non-metal, electrons transferred = <b>ionic</b>."],
+          ["Solid sodium chloride does not conduct electricity, but it conducts when molten because:", ["The ions become free to move","Electrons are released","It melts into a metal","It becomes covalent"], 0, "When molten, the <b>ions can move</b> and carry charge."],
+          ["A substance is very hard, has a very high melting point and does not conduct. It is most likely:", ["Diamond","Graphite","A simple molecule","A metal"], 0, "Hard, high melting, non-conducting giant covalent = <b>diamond</b>."],
+          ["Metals conduct electricity because they contain:", ["Delocalised electrons","Free ions","Shared neutrons","Covalent bonds"], 0, "<b>Delocalised electrons</b> carry charge through a metal."],
+          ["A nanoparticle cube has side 10 nm; a larger cube has side 100 nm. Compared with the large cube, the nanoparticle has a much larger:", ["Surface area to volume ratio","Volume","Mass","Melting point"], 0, "Smaller particles have a much larger <b>surface area to volume ratio</b>."],
+          ["Substances made of small molecules tend to have low melting points because:", ["The forces between molecules are weak","The covalent bonds are weak","They are ionic","They have free electrons"], 0, "The <b>intermolecular forces are weak</b> and easily overcome."],
+        ],
+      },
+
+      quantitative: {
+        name: "3 · Quantitative chemistry",
+        cards: [
+          ["State the law of conservation of mass.", "<b>No atoms are lost or made</b> in a reaction, so total mass of reactants = total mass of products."],
+          ["Define relative formula mass (Mr).", "The <b>sum of the relative atomic masses</b> of all atoms in a formula."],
+          ["Define a mole.", "An amount of substance containing <b>6.02×10²³ particles</b> (the Avogadro constant)."],
+          ["State how moles, mass and Mr are linked.", "<b>moles = mass ÷ Mr</b>."],
+          ["Define concentration of a solution.", "The <b>mass (or moles) of solute per unit volume</b> (e.g. g/dm³ or mol/dm³)."],
+          ["Why might mass appear to decrease in a reaction?", "A <b>gas escapes</b> from the open container."],
+          ["Why might mass appear to increase in a reaction?", "A <b>gas from the air is added</b> (e.g. oxygen in combustion)."],
+          ["Define a limiting reactant.", "The reactant that is <b>used up first</b>, stopping the reaction."],
+          ["Define percentage yield.", "<b>(actual yield ÷ theoretical yield) × 100</b>."],
+        ],
+        quiz: [
+          ["The relative formula mass (Mr) of water, H₂O (H=1, O=16), is:", ["18","17","16","2"], 0, "2(1) + 16 = <b>18</b>."],
+          ["How many moles are in 36 g of water (Mr = 18)? Using moles = mass ÷ Mr:", ["2 mol","0.5 mol","18 mol","648 mol"], 0, "36 ÷ 18 = <b>2 mol</b>."],
+          ["50 g of calcium carbonate is heated and gives off CO₂ gas in an open dish. The mass of solid remaining will:", ["Decrease","Increase","Stay the same","Double"], 0, "CO₂ gas escapes, so the solid mass <b>decreases</b>."],
+          ["A solution contains 20 g of salt dissolved in 0.5 dm³ of water. Using concentration = mass ÷ volume, the concentration is:", ["40 g/dm³","10 g/dm³","0.025 g/dm³","100 g/dm³"], 0, "20 ÷ 0.5 = <b>40 g/dm³</b>."],
+          ["A reaction has a theoretical yield of 8.0 g but only 6.0 g is collected. The percentage yield is:", ["75%","48%","133%","2%"], 0, "(6.0 ÷ 8.0) × 100 = <b>75%</b>."],
+          ["The Mr of carbon dioxide, CO₂ (C=12, O=16), is:", ["44","28","16","32"], 0, "12 + 2(16) = <b>44</b>."],
+        ],
+      },
+
+      chemical_changes: {
+        name: "4 · Chemical changes",
+        cards: [
+          ["Define oxidation and reduction.", "Oxidation is <b>loss of electrons</b> (or gain of oxygen); reduction is <b>gain of electrons</b> (or loss of oxygen)."],
+          ["State the reactivity series trend.", "More reactive metals <b>lose electrons / form ions more easily</b> (e.g. K > Na > Ca > Mg > … > Cu > Au)."],
+          ["What does a metal + acid produce?", "A <b>salt + hydrogen</b>."],
+          ["What does a metal oxide + acid produce?", "A <b>salt + water</b>."],
+          ["What does a metal carbonate + acid produce?", "A <b>salt + water + carbon dioxide</b>."],
+          ["Define the pH scale.", "A scale from <b>0 to 14</b> measuring acidity (低<7 acid, 7 neutral, >7 alkaline)."],
+          ["Define neutralisation.", "An acid reacting with a base to form a <b>salt and water</b> (H⁺ + OH⁻ → H₂O)."],
+          ["Define a strong acid.", "An acid that <b>fully ionises</b> in water (e.g. hydrochloric acid)."],
+          ["Define electrolysis.", "Using <b>electricity to break down</b> an ionic compound (molten or in solution)."],
+          ["At which electrode are metals/hydrogen produced in electrolysis?", "The <b>cathode</b> (negative electrode)."],
+        ],
+        quiz: [
+          ["Magnesium reacts with hydrochloric acid. The products are magnesium chloride and:", ["Hydrogen","Oxygen","Water","Carbon dioxide"], 0, "Metal + acid → salt + <b>hydrogen</b>."],
+          ["A solution has a pH of 2. It is:", ["A strong acid","Neutral","A weak alkali","A strong alkali"], 0, "pH 2 is strongly <b>acidic</b>."],
+          ["Copper carbonate reacts with sulfuric acid to give copper sulfate, water and:", ["Carbon dioxide","Hydrogen","Oxygen","Chlorine"], 0, "Carbonate + acid → salt + water + <b>CO₂</b>."],
+          ["During electrolysis of molten lead bromide, lead forms at the negative electrode (cathode) because lead ions are:", ["Positive and attracted to the cathode","Negative","Neutral","Gases"], 0, "Positive metal ions move to the <b>negative cathode</b>."],
+          ["In terms of electrons, oxidation is:", ["Loss of electrons","Gain of electrons","Gain of protons","Loss of neutrons"], 0, "OIL RIG: Oxidation Is <b>Loss</b> of electrons."],
+          ["Neutralising hydrochloric acid with sodium hydroxide produces water and:", ["A salt","Hydrogen","Carbon dioxide","Oxygen"], 0, "Acid + alkali → <b>salt</b> + water."],
+        ],
+      },
+
+      energy_changes: {
+        name: "5 · Energy changes",
+        cards: [
+          ["Define an exothermic reaction.", "A reaction that <b>transfers energy to the surroundings</b>, so temperature rises (e.g. combustion)."],
+          ["Define an endothermic reaction.", "A reaction that <b>takes in energy</b> from the surroundings, so temperature falls."],
+          ["Give an everyday use of an exothermic reaction.", "<b>Hand warmers</b> and self-heating cans."],
+          ["Give an everyday use of an endothermic reaction.", "<b>Instant cold packs</b> for sports injuries."],
+          ["What is activation energy?", "The <b>minimum energy needed</b> for a reaction to start."],
+          ["On a reaction profile, where are the products for an exothermic reaction?", "<b>Lower</b> than the reactants (energy released)."],
+          ["What does bond breaking require, and bond making release?", "Breaking bonds is <b>endothermic</b> (takes in energy); making bonds is <b>exothermic</b> (releases energy)."],
+          ["How do you find the overall energy change from bond energies?", "<b>Energy in (bonds broken) − energy out (bonds formed)</b>."],
+        ],
+        quiz: [
+          ["When a reaction is carried out, the temperature of the mixture rises by 8 °C. The reaction is:", ["Exothermic","Endothermic","Neutral","Reversible only"], 0, "A temperature rise means energy is released — <b>exothermic</b>."],
+          ["An instant cold pack goes cold when activated. The reaction inside is:", ["Endothermic","Exothermic","Neutral","Combustion"], 0, "Taking in heat (getting cold) is <b>endothermic</b>."],
+          ["In a reaction, 1500 kJ is needed to break bonds and 1800 kJ is released making bonds. The overall energy change (broken − formed) is:", ["−300 kJ (exothermic)","+300 kJ (endothermic)","+3300 kJ","−1800 kJ"], 0, "1500 − 1800 = <b>−300 kJ</b>; negative means exothermic."],
+          ["Breaking chemical bonds is a process that:", ["Takes in energy","Releases energy","Needs no energy","Is always exothermic"], 0, "Bond breaking is <b>endothermic</b> (takes in energy)."],
+          ["On an exothermic reaction profile, the products are drawn:", ["Lower than the reactants","Higher than the reactants","At the same level","Off the scale"], 0, "Energy is released, so products sit <b>lower</b>."],
+        ],
+      },
+
+      rates: {
+        name: "6 · Rate & extent of reaction",
+        cards: [
+          ["State four factors affecting rate of reaction.", "<b>Temperature, concentration (or pressure), surface area, and a catalyst</b>."],
+          ["Define a catalyst.", "A substance that <b>speeds up a reaction without being used up</b>, by lowering the activation energy."],
+          ["Explain why higher temperature increases rate (collision theory).", "Particles move faster and collide <b>more often and more energetically</b>."],
+          ["Explain why higher concentration increases rate.", "More particles in the same volume means <b>more frequent collisions</b>."],
+          ["Explain why smaller pieces (larger surface area) increase rate.", "More particles are <b>exposed</b>, so more collisions per second."],
+          ["How do you measure rate of reaction?", "Measure how fast a <b>product forms or a reactant is used up</b> over time."],
+          ["Define a reversible reaction.", "A reaction that can go <b>both forwards and backwards</b> (⇌)."],
+          ["Define dynamic equilibrium.", "When forward and backward reactions occur at the <b>same rate</b> in a closed system."],
+        ],
+        quiz: [
+          ["Marble chips react faster with acid when ground into powder. This is because the powder has a larger:", ["Surface area","Volume","Mass","Density"], 0, "Powder exposes more particles — larger <b>surface area</b>, faster rate."],
+          ["A catalyst speeds up a reaction by:", ["Lowering the activation energy","Raising the temperature","Adding more reactant","Being used up"], 0, "Catalysts <b>lower the activation energy</b> and are not used up."],
+          ["A reaction produces 48 cm³ of gas in 12 s at a steady rate. The mean rate of reaction is:", ["4 cm³/s","0.25 cm³/s","576 cm³/s","36 cm³/s"], 0, "48 ÷ 12 = <b>4 cm³/s</b>."],
+          ["Increasing the concentration of a reactant increases the rate because there are:", ["More frequent collisions","Fewer particles","Larger particles","Lower energy collisions"], 0, "More particles per volume → <b>more frequent collisions</b>."],
+          ["In a closed system, when the forward and backward reactions occur at the same rate, the system is at:", ["Dynamic equilibrium","Completion","Zero rate","Maximum temperature"], 0, "Equal opposing rates = <b>dynamic equilibrium</b>."],
+        ],
+      },
+
+      organic: {
+        name: "7 · Organic chemistry",
+        cards: [
+          ["What is crude oil?", "A <b>mixture of hydrocarbons</b> formed from ancient organisms."],
+          ["Define a hydrocarbon.", "A compound of <b>only hydrogen and carbon</b>."],
+          ["Name the first four alkanes.", "Methane, ethane, propane, <b>butane</b>."],
+          ["Define fractional distillation.", "Separating crude oil into fractions by <b>boiling point</b> in a fractionating column."],
+          ["How do hydrocarbon properties change with chain length?", "Longer chains are <b>more viscous, less flammable, higher boiling point</b>."],
+          ["What is cracking?", "Breaking <b>long hydrocarbons into shorter, more useful ones</b> (including alkenes)."],
+          ["What is the test for an alkene?", "It <b>decolourises bromine water</b> (orange → colourless)."],
+          ["Define a complete combustion product.", "Burning a hydrocarbon fully gives <b>carbon dioxide and water</b>."],
+          ["Define a polymer.", "A <b>long chain molecule</b> made from many small monomers joined together."],
+        ],
+        quiz: [
+          ["Crude oil is separated into useful fractions in industry by:", ["Fractional distillation","Filtration","Cracking","Electrolysis"], 0, "Fractions are separated by boiling point in <b>fractional distillation</b>."],
+          ["A hydrocarbon decolourises bromine water from orange to colourless. It is an:", ["Alkene","Alkane","Alcohol","Acid"], 0, "Decolourising bromine water is the test for an <b>alkene</b>."],
+          ["Complete combustion of methane (CH₄) produces water and:", ["Carbon dioxide","Carbon monoxide","Hydrogen","Soot"], 0, "Complete combustion gives <b>CO₂</b> and water."],
+          ["Compared with short-chain hydrocarbons, long-chain ones are:", ["More viscous","More flammable","Lower boiling point","Gases"], 0, "Longer chains are <b>more viscous</b>, less flammable, higher boiling."],
+          ["Breaking long-chain hydrocarbons into shorter, more useful molecules is called:", ["Cracking","Distillation","Polymerisation","Neutralisation"], 0, "This process is <b>cracking</b>."],
+        ],
+      },
+
+      chemical_analysis: {
+        name: "8 · Chemical analysis",
+        cards: [
+          ["Define a pure substance (chemistry).", "A single element or compound, <b>not mixed</b> with anything else."],
+          ["How can purity be checked using melting point?", "A pure substance melts at a <b>specific sharp temperature</b>; impurities lower and spread it."],
+          ["Define a formulation.", "A <b>mixture made to an exact recipe</b> for a purpose (e.g. paint, medicine)."],
+          ["What does chromatography separate?", "Mixtures of <b>soluble substances</b> by how far they travel with a solvent."],
+          ["Define the Rf value.", "<b>Distance moved by substance ÷ distance moved by solvent</b>."],
+          ["State the test for hydrogen gas.", "A lit splint gives a <b>squeaky pop</b>."],
+          ["State the test for oxygen gas.", "Relights a <b>glowing splint</b>."],
+          ["State the test for carbon dioxide.", "Turns <b>limewater cloudy/milky</b>."],
+          ["State the test for chlorine gas.", "<b>Bleaches damp litmus paper</b> (turns it white)."],
+        ],
+        quiz: [
+          ["In chromatography a spot travels 4 cm while the solvent travels 8 cm. Using Rf = distance moved by substance ÷ distance moved by solvent, the Rf is:", ["0.5","2.0","32","4"], 0, "4 ÷ 8 = <b>0.5</b>."],
+          ["A gas relights a glowing splint. The gas is:", ["Oxygen","Hydrogen","Carbon dioxide","Chlorine"], 0, "Relighting a glowing splint tests for <b>oxygen</b>."],
+          ["A gas turns limewater milky. The gas is:", ["Carbon dioxide","Oxygen","Hydrogen","Chlorine"], 0, "Limewater turning milky tests for <b>carbon dioxide</b>."],
+          ["A pure compound is heated and melts sharply at one fixed temperature. An impure sample would instead melt:", ["Over a range of lower temperatures","At a higher fixed point","Not at all","Only when dissolved"], 0, "Impurities make it melt <b>over a range</b> and at a lower temperature."],
+          ["A lit splint held at a tube gives a squeaky pop. The gas is:", ["Hydrogen","Oxygen","Carbon dioxide","Chlorine"], 0, "Squeaky pop is the test for <b>hydrogen</b>."],
+        ],
+      },
+
+      atmosphere_resources: {
+        name: "9 · Atmosphere & using resources",
+        cards: [
+          ["Name the main gases in today's atmosphere.", "About <b>78% nitrogen, 21% oxygen</b>, with small amounts of CO₂, water vapour and noble gases."],
+          ["Name two greenhouse gases.", "<b>Carbon dioxide and methane</b> (also water vapour)."],
+          ["Define the greenhouse effect.", "Greenhouse gases <b>absorb and re-radiate heat</b>, keeping the Earth warm."],
+          ["State a consequence of increasing greenhouse gases.", "<b>Global warming / climate change</b>."],
+          ["Define a finite resource.", "One that is <b>not replaced as fast as it is used</b> (e.g. fossil fuels)."],
+          ["Define potable water.", "Water that is <b>safe to drink</b> (low in microbes and dissolved salts)."],
+          ["Define a life cycle assessment (LCA).", "An assessment of the <b>environmental impact of a product</b> across its whole life."],
+          ["Why is recycling metals beneficial?", "It <b>saves limited ores and energy</b> compared with extracting new metal."],
+          ["Define a pollutant from incomplete combustion.", "<b>Carbon monoxide</b> (toxic) and soot (particulates)."],
+        ],
+        quiz: [
+          ["The most abundant gas in the Earth's atmosphere is:", ["Nitrogen","Oxygen","Carbon dioxide","Argon"], 0, "About 78% of the air is <b>nitrogen</b>."],
+          ["Carbon dioxide and methane contribute to climate change because they are:", ["Greenhouse gases","Noble gases","Pollutant metals","Potable"], 0, "They are <b>greenhouse gases</b> that trap heat."],
+          ["Treating fresh water to make it safe to drink produces:", ["Potable water","Pure water","Distilled water","Sea water"], 0, "Safe-to-drink water is <b>potable water</b> (not chemically pure)."],
+          ["A toxic gas produced by incomplete combustion of fuels is:", ["Carbon monoxide","Oxygen","Nitrogen","Carbon dioxide"], 0, "Incomplete combustion can produce toxic <b>carbon monoxide</b>."],
+          ["Recycling aluminium rather than extracting it from ore mainly saves:", ["Energy and limited ore","Water only","Oxygen","Greenhouse gases only"], 0, "Recycling saves <b>energy and finite ore</b>."],
+        ],
+      },
+
+    },
+  };
+
+  console.log("[chemistry.js] GCSE Chemistry added:", Object.keys(window.COURSES.aqa_chemistry.topics).length, "topics");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — BIOLOGY & CHEMISTRY DEPTH PACK
+   Adds breadth (more definition/method cards) and depth
+   (multi-step, applied, required-practical, exam-style questions)
+   to every Biology and Chemistry topic, to match Physics density.
+   Loaded AFTER biology.js & chemistry.js (BEFORE combined.js so the
+   Combined subsets inherit the richer content).
+   ============================================================ */
+(function(){
+  const C=window.COURSES;
+  if(!C||!C.aqa_biology||!C.aqa_chemistry){ console.error("science courses not loaded before sci_depth.js"); return; }
+  function add(course,topic,pack){ const t=C[course]&&C[course].topics[topic]; if(!t){console.warn("missing",course,topic);return;}
+    if(pack.cards) t.cards.push(...pack.cards); if(pack.quiz) t.quiz.push(...pack.quiz); }
+
+  /* ===================== BIOLOGY ===================== */
+
+  add("aqa_biology","cell_biology",{
+    cards:[
+      ["State the function of the nucleus.", "Controls the cell's activities and contains the <b>genetic material (DNA)</b>."],
+      ["State the function of cytoplasm.", "A jelly-like fluid where most <b>chemical reactions</b> happen."],
+      ["Define resolution (microscopy).", "The <b>smallest distance between two points</b> that can still be told apart."],
+      ["Give the order of magnitude conversion: 1 mm to micrometres.", "1 mm = <b>1000 µm</b> (×1000)."],
+      ["Name two examples of specialised plant cells.", "<b>Root hair cells</b> (absorb water/minerals) and <b>xylem cells</b> (transport water)."],
+      ["State why cells divide by mitosis.", "For <b>growth, repair and replacement</b> of cells."],
+      ["Define a culture medium for growing bacteria.", "A nutrient jelly (agar) providing <b>carbohydrate, minerals and water</b> for growth."],
+      ["State why aseptic technique is used.", "To <b>prevent contamination</b> by unwanted microorganisms."],
+    ],
+    quiz:[
+      ["A bacterial population doubles every 20 minutes. Starting from 100 cells, after 1 hour (3 divisions) the number is:", ["800","300","600","2000"], 0, "3 doublings: 100→200→400→800, so <b>800</b>. (×2 three times.)"],
+      ["A cell measures 0.02 mm across. Converting to micrometres (×1000), this is:", ["20 µm","2 µm","200 µm","0.02 µm"], 0, "0.02 × 1000 = <b>20 µm</b>."],
+      ["A microscope image is 60 mm wide at ×400 magnification. Using real size = image ÷ magnification, the real width is:", ["0.15 mm","24000 mm","6.7 mm","0.4 mm"], 0, "60 ÷ 400 = <b>0.15 mm</b>. Rearranging the magnification formula."],
+      ["A potato cylinder placed in concentrated sugar solution loses mass. This is because water left the cells by:", ["Osmosis","Active transport","Diffusion of sugar","Respiration"], 0, "Water moved out to the more concentrated solution by <b>osmosis</b>."],
+      ["In a required practical, 5 potato cylinders are left in solutions of different concentration. The independent variable is the:", ["Sugar concentration","Mass change","Temperature","Cylinder length"], 0, "The variable deliberately changed is the <b>sugar concentration</b>."],
+      ["A bacterial colony on agar started as 1 cell and after 7 hours numbered about 2 million. This rapid rise shows bacteria reproduce by:", ["Binary fission","Mitosis only in twos","Meiosis","Osmosis"], 0, "Bacteria divide rapidly by <b>binary fission</b>."],
+      ["A sperm cell has many mitochondria. This adaptation provides energy for:", ["Swimming to the egg","Carrying oxygen","Photosynthesis","Absorbing minerals"], 0, "Mitochondria release energy for the tail to <b>swim</b>."],
+    ],
+  });
+
+  add("aqa_biology","organisation",{
+    cards:[
+      ["Describe the lock-and-key effect of pH on enzymes.", "A pH away from the optimum <b>changes the active site shape</b>, slowing or stopping activity."],
+      ["State the optimum conditions for human enzymes.", "Around <b>37 °C</b> and a pH specific to each enzyme (e.g. pepsin works in acid)."],
+      ["Name the parts of the digestive system in order.", "Mouth → oesophagus → stomach → small intestine → <b>large intestine</b>."],
+      ["State where bile is made and stored.", "Made in the <b>liver</b>, stored in the <b>gall bladder</b>."],
+      ["Describe how the small intestine is adapted for absorption.", "Long, with <b>villi</b> giving a huge surface area, thin walls and a good blood supply."],
+      ["State the function of the alveoli.", "Site of <b>gas exchange</b> in the lungs (large surface area, thin walls, moist)."],
+      ["Define a risk factor for disease.", "Something that <b>increases the chance</b> of developing a disease (e.g. smoking, poor diet)."],
+      ["Name the structure that stops blood flowing backwards in veins.", "<b>Valves</b>."],
+    ],
+    quiz:[
+      ["An enzyme works fastest at pH 7. At pH 2 its rate is almost zero because the enzyme has:", ["Denatured","Sped up","Been used up","Become a substrate"], 0, "Wrong pH changes the active site — the enzyme <b>denatures</b>."],
+      ["In a food test, adding Benedict's solution and heating turns a sample brick-red. This shows the presence of:", ["Reducing sugar","Starch","Protein","Lipid"], 0, "Benedict's turning brick-red indicates <b>reducing sugar</b>."],
+      ["Adding iodine to a sample turns it blue-black. This is a positive test for:", ["Starch","Sugar","Protein","Fat"], 0, "Iodine turning blue-black tests for <b>starch</b>."],
+      ["A heart pumps 70 cm³ per beat. At 80 beats/min during exercise, the output per minute is:", ["5600 cm³","150 cm³","1120 cm³","5.6 cm³"], 0, "70 × 80 = <b>5600 cm³</b> per minute."],
+      ["Villi increase the rate of absorption mainly by increasing the:", ["Surface area","Temperature","Blood pressure","Enzyme amount"], 0, "Villi greatly increase the <b>surface area</b> for absorption."],
+      ["The Biuret test turns purple/violet. This indicates the presence of:", ["Protein","Starch","Sugar","Lipid"], 0, "Biuret turning purple tests for <b>protein</b>."],
+      ["Coronary heart disease is caused by fatty deposits narrowing the:", ["Coronary arteries","Veins","Capillaries","Alveoli"], 0, "Narrowed <b>coronary arteries</b> reduce blood to the heart muscle."],
+    ],
+  });
+
+  add("aqa_biology","infection",{
+    cards:[
+      ["Name a fungal plant disease.", "<b>Rose black spot</b> (a fungus that damages leaves)."],
+      ["Name a disease caused by a protist.", "<b>Malaria</b> (spread by mosquitoes)."],
+      ["State how malaria is spread.", "By the bite of an infected <b>mosquito (a vector)</b>."],
+      ["State how the spread of disease can be reduced.", "Hygiene, isolating the infected, destroying vectors and <b>vaccination</b>."],
+      ["Describe how white blood cells produce antitoxins.", "They make chemicals that <b>neutralise toxins</b> released by bacteria."],
+      ["Define an antigen.", "A <b>marker molecule on a pathogen's surface</b> recognised by the immune system."],
+      ["State why antibiotics have improved healthcare.", "They <b>treat bacterial diseases</b> that were once often fatal."],
+      ["Name the scientist linked to digitalis/painkillers from plants.", "Many drugs originate from plants (e.g. <b>aspirin from willow</b>, digitalis from foxgloves)."],
+    ],
+    quiz:[
+      ["A vaccine is given to 90% of a population, and the disease can no longer spread easily. This effect is called:", ["Herd immunity","Antibiotic resistance","Phagocytosis","Mutation"], 0, "Protecting the unvaccinated by high coverage is <b>herd immunity</b>."],
+      ["In a drug trial, one group is given the real drug and another a pill with no active ingredient. The second group receives a:", ["Placebo","Vaccine","Toxin","Antibiotic"], 0, "An inactive comparison treatment is a <b>placebo</b>."],
+      ["A double-blind trial means that:", ["Neither patient nor doctor knows who gets the drug","Only the patient knows","The drug is tested twice","Two drugs are compared"], 0, "In a <b>double-blind</b> trial neither party knows who has the real drug."],
+      ["A bacterium mutates so an antibiotic no longer kills it. The resistant bacteria then survive and multiply. This is an example of:", ["Natural selection","Vaccination","Herd immunity","Phagocytosis"], 0, "Survival of resistant bacteria is <b>natural selection</b> in action."],
+      ["Malaria is best controlled in a region by:", ["Reducing the mosquito vector","Giving antibiotics","Boiling drinking water","Isolating plants"], 0, "Controlling the <b>mosquito vector</b> reduces malaria spread."],
+      ["White blood cells that engulf and digest pathogens are carrying out:", ["Phagocytosis","Antibody production","Antitoxin release","Respiration"], 0, "Engulfing pathogens is <b>phagocytosis</b>."],
+    ],
+  });
+
+  add("aqa_biology","bioenergetics",{
+    cards:[
+      ["State the use of starch in plants.", "An <b>insoluble energy store</b> (does not affect osmosis)."],
+      ["Explain how root hair cells aid photosynthesis indirectly.", "They absorb <b>water and minerals (e.g. nitrate)</b> needed to make glucose and proteins."],
+      ["Describe how to investigate the rate of photosynthesis.", "Count <b>oxygen bubbles from pondweed</b> while changing one factor (e.g. light distance)."],
+      ["State the inverse-square link for light and a lamp.", "Light intensity is proportional to <b>1 ÷ distance²</b> from the lamp."],
+      ["Compare aerobic and anaerobic respiration energy yield.", "Aerobic releases <b>much more energy</b> per glucose than anaerobic."],
+      ["Define the word equation for aerobic respiration.", "Glucose + oxygen → <b>carbon dioxide + water</b> (+ energy)."],
+      ["State why athletes breathe deeply after a sprint.", "To repay the <b>oxygen debt</b> and break down lactic acid."],
+    ],
+    quiz:[
+      ["Pondweed gives 40 bubbles/min with a lamp 10 cm away. Using the inverse-square idea, moving the lamp to 20 cm (¼ the intensity) gives roughly:", ["10 bubbles/min","20 bubbles/min","80 bubbles/min","40 bubbles/min"], 0, "Double the distance → ¼ intensity → about <b>10 bubbles/min</b>."],
+      ["A greenhouse grower adds a paraffin heater that releases CO₂ and warmth. This boosts photosynthesis by improving two limiting factors:", ["CO₂ and temperature","Light and water","Water and minerals","Oxygen and light"], 0, "More <b>CO₂ and higher temperature</b> both raise the rate."],
+      ["During a 100 m sprint, leg muscles respire anaerobically. The product that causes muscle fatigue is:", ["Lactic acid","Ethanol","Carbon dioxide","Oxygen"], 0, "Anaerobic respiration in muscle produces <b>lactic acid</b>."],
+      ["A plant in the dark still respires. Over one night it will release:", ["Carbon dioxide","Oxygen","Glucose","Starch"], 0, "Respiration releases <b>carbon dioxide</b> (no photosynthesis in the dark)."],
+      ["At very high light intensity, increasing light further has no effect on photosynthesis rate. The limiting factor is now most likely:", ["Temperature or CO₂","Light","Water","Oxygen"], 0, "With plenty of light, <b>temperature or CO₂</b> becomes limiting."],
+      ["Aerobic respiration transfers more energy than anaerobic because glucose is:", ["Fully broken down","Partly broken down","Not used","Turned to ethanol"], 0, "Aerobic respiration <b>fully oxidises</b> glucose, releasing more energy."],
+    ],
+  });
+
+  add("aqa_biology","homeostasis",{
+    cards:[
+      ["Name the structures that detect light in the eye.", "<b>Receptors in the retina</b>."],
+      ["State the role of the brain in coordination.", "It is the <b>coordination centre</b> that processes information and triggers responses."],
+      ["Describe negative feedback (overview).", "If a level rises too high or falls too low, the body <b>acts to bring it back</b> to normal."],
+      ["State how the body cools down when too hot.", "<b>Sweating</b> and vasodilation (more blood near the skin) increase heat loss."],
+      ["State how the body warms up when too cold.", "<b>Shivering</b> and vasoconstriction reduce heat loss."],
+      ["Name the hormone that controls water balance.", "<b>ADH</b> (acts on the kidneys)."],
+      ["State what the kidneys remove from the blood.", "<b>Urea</b>, excess water and excess ions."],
+      ["Name the female reproductive hormone from the ovaries.", "<b>Oestrogen</b>."],
+    ],
+    quiz:[
+      ["After a meal blood glucose rises to a high level, then insulin returns it to normal. This restoring mechanism is an example of:", ["Negative feedback","Positive feedback","A reflex arc","Diffusion"], 0, "Returning a level to normal is <b>negative feedback</b>."],
+      ["On a hot day the skin's blood vessels widen (vasodilation). This helps the body to:", ["Lose heat","Gain heat","Shiver","Sweat less"], 0, "More blood near the surface means more <b>heat loss</b>."],
+      ["A person drinks a large amount of water. To restore balance, the kidneys will produce:", ["More dilute urine","Less urine","No urine","Concentrated urine"], 0, "Excess water is removed as <b>more dilute urine</b>."],
+      ["In a reflex, the correct order is:", ["Receptor → sensory → relay → motor → effector","Effector → motor → relay","Brain → receptor → motor","Stimulus → effector → receptor"], 0, "The reflex arc runs <b>receptor → sensory → relay → motor → effector</b>."],
+      ["A diabetic injects insulin after a high-carbohydrate meal. The insulin will cause blood glucose to:", ["Fall","Rise","Stay the same","Double"], 0, "Insulin makes cells take up glucose, so it <b>falls</b>."],
+      ["Adrenaline is released when a person is frightened. It prepares the body by:", ["Increasing heart rate","Lowering blood glucose","Slowing breathing","Causing sleep"], 0, "Adrenaline raises heart rate for <b>'fight or flight'</b>."],
+    ],
+  });
+
+  add("aqa_biology","inheritance",{
+    cards:[
+      ["Define the genome.", "The <b>entire genetic material</b> of an organism."],
+      ["State the structure of DNA.", "A <b>double helix</b> of two strands; a polymer made of nucleotides."],
+      ["Define a gamete.", "A <b>sex cell</b> (sperm or egg) with half the normal chromosome number."],
+      ["State how many chromosomes a human body cell has.", "<b>46</b> (23 pairs); gametes have 23."],
+      ["Define sexual reproduction.", "Involves <b>two parents and gametes</b>, giving genetic variation."],
+      ["Define asexual reproduction.", "<b>One parent</b>, no gametes, producing genetically identical clones."],
+      ["State a cause of variation.", "Genetic (alleles), environmental, or a <b>combination of both</b>."],
+      ["State what extinction means.", "When <b>no individuals of a species remain</b>."],
+    ],
+    quiz:[
+      ["A pea plant cross Tt × tt is carried out. Using a Punnett square, the ratio of tall (T) to short (t) offspring is:", ["1 : 1","3 : 1","1 : 3","4 : 0"], 0, "Tt × tt → Tt, Tt, tt, tt = 2 tall : 2 short = <b>1 : 1</b>."],
+      ["A man with genotype XY and woman XX have a child. The chance the child is a boy is:", ["50%","25%","75%","100%"], 0, "XX × XY gives equal XX and XY, so <b>50%</b>."],
+      ["A cystic fibrosis allele is recessive (f). Two carriers (Ff × Ff) have a child. The chance it has cystic fibrosis (ff) is:", ["1 in 4","1 in 2","3 in 4","0"], 0, "Ff × Ff → FF, Ff, Ff, ff → ff is <b>1 in 4</b>."],
+      ["Strawberry plants produced from runners are genetically identical to the parent. This is:", ["Asexual reproduction","Sexual reproduction","Meiosis","A mutation"], 0, "One parent, identical offspring = <b>asexual reproduction</b>."],
+      ["Antibiotic-resistant bacteria becoming more common over time is direct evidence for:", ["Evolution","Asexual reproduction","Homeostasis","Photosynthesis"], 0, "A change in a population's characteristics over time is <b>evolution</b>."],
+      ["In a cross, offspring show a 3 : 1 ratio of one characteristic. The parents were most likely both:", ["Heterozygous","Homozygous dominant","Homozygous recessive","Different species"], 0, "A 3 : 1 ratio comes from two <b>heterozygous</b> parents (Bb × Bb)."],
+    ],
+  });
+
+  add("aqa_biology","ecology",{
+    cards:[
+      ["Define a population.", "All the organisms of <b>one species</b> in a habitat."],
+      ["Define a habitat.", "The <b>place where an organism lives</b>."],
+      ["Name a method to estimate population size.", "Using a <b>quadrat</b> (for slow/non-moving organisms) or capture–recapture."],
+      ["State the role of decomposers.", "They <b>break down dead material</b>, returning nutrients to the soil."],
+      ["Define a predator and prey relationship.", "The predator hunts the prey; their <b>population sizes rise and fall</b> in cycles."],
+      ["State two human activities reducing biodiversity.", "Deforestation and pollution (also <b>habitat destruction</b> from building/farming)."],
+      ["Define the water cycle (overview).", "Water <b>evaporates, condenses, precipitates</b> and returns to seas/rivers."],
+      ["State why decomposition is faster when warm and moist.", "Microorganisms are <b>more active</b> in warm, moist, oxygen-rich conditions."],
+    ],
+    quiz:[
+      ["A student counts an average of 6 daisies per 0.25 m² quadrat. For a field of 200 m², the estimated population is:", ["4800","1200","50","30000"], 0, "6 per 0.25 m² = 24 per m²; 24 × 200 = <b>4800</b>. Scale up from quadrat density."],
+      ["In a food chain producers fix 50000 kJ. At about 10% transfer per level, a secondary consumer (third level) receives roughly:", ["500 kJ","5000 kJ","50000 kJ","50 kJ"], 0, "50000 → 5000 → <b>500 kJ</b> (10% twice)."],
+      ["Quadrats are suitable for estimating the population of:", ["Daisies","Rabbits","Foxes","Birds"], 0, "Quadrats suit <b>non-moving organisms</b> like daisies."],
+      ["If the number of predators falls sharply, the prey population will at first:", ["Increase","Decrease","Stay constant","Go extinct"], 0, "Fewer predators means the prey first <b>increase</b>."],
+      ["Microorganisms break down a compost heap fastest when it is:", ["Warm and moist","Cold and dry","Frozen","Acidic and dry"], 0, "Decomposers are most active when <b>warm and moist</b>."],
+      ["Cutting down large areas of forest reduces biodiversity mainly by:", ["Destroying habitats","Adding CO₂ only","Increasing predators","Improving soil"], 0, "Deforestation <b>destroys habitats</b>, lowering biodiversity."],
+    ],
+  });
+
+  /* ===================== CHEMISTRY ===================== */
+
+  add("aqa_chemistry","atomic_structure",{
+    cards:[
+      ["State the approximate radius of an atom.", "About <b>1×10⁻¹⁰ m</b> (0.1 nm)."],
+      ["Describe the plum pudding model.", "An atom as a <b>ball of positive charge with electrons embedded</b> in it (now outdated)."],
+      ["What did the alpha scattering experiment show?", "Mass and positive charge are concentrated in a <b>tiny central nucleus</b>."],
+      ["State the maximum electrons in the first three shells.", "2, then 8, then <b>8</b>."],
+      ["Define an ion.", "An atom (or group) that has <b>gained or lost electrons</b>, giving it a charge."],
+      ["State why elements in the same group react similarly.", "They have the <b>same number of outer electrons</b>."],
+      ["Describe how Mendeleev arranged his table.", "By properties, <b>leaving gaps</b> for undiscovered elements."],
+      ["Define chromatography's mobile and stationary phases.", "Mobile: the <b>solvent that moves</b>; stationary: the <b>paper</b> it moves through."],
+    ],
+    quiz:[
+      ["An atom of magnesium has 12 electrons. Its electronic structure (2,8,8 rule) is:", ["2,8,2","2,10","8,4","2,8,8,2"], 0, "Fill shells 2 then 8, leaving 2: <b>2,8,2</b>."],
+      ["An ion has 11 protons and 10 electrons. Its charge is:", ["+1","−1","+11","0"], 0, "11 positive − 10 negative = <b>+1</b>."],
+      ["Chlorine has isotopes of mass 35 (75%) and 37 (25%). The relative atomic mass = Σ(mass×abundance)/100 is:", ["35.5","36","37","35"], 0, "(35×75 + 37×25)/100 = (2625+925)/100 = <b>35.5</b>. A weighted-mean calculation."],
+      ["The alpha particle scattering experiment provided evidence for a:", ["Small dense nucleus","Plum pudding atom","Solid sphere","Cubic atom"], 0, "Deflected particles showed a <b>small dense nucleus</b>."],
+      ["An atom has electronic structure 2,8,7. The group it is in is:", ["Group 7","Group 2","Group 8","Group 0"], 0, "7 outer electrons → <b>Group 7</b> (halogens)."],
+      ["A chloride ion Cl⁻ has gained an electron. Compared with a chlorine atom it has:", ["One more electron than protons","One fewer electron","The same charge","More protons"], 0, "Gaining an electron gives <b>one more electron than protons</b> (−1)."],
+    ],
+  });
+
+  add("aqa_chemistry","bonding",{
+    cards:[
+      ["Define an ion's formation in ionic bonding (metal).", "A metal atom <b>loses electrons</b> to form a positive ion."],
+      ["Define an ion's formation in ionic bonding (non-metal).", "A non-metal atom <b>gains electrons</b> to form a negative ion."],
+      ["State the three states of matter and particle arrangement.", "Solid (fixed, packed), liquid (close, moving), gas (far apart, fast)."],
+      ["Define the term 'giant covalent'.", "A huge lattice of atoms held by <b>covalent bonds</b> (e.g. diamond, silicon dioxide)."],
+      ["State a property of polymers.", "Large molecules with <b>strong covalent bonds</b> in the chain but weaker forces between chains."],
+      ["Why can graphene conduct and be strong?", "One layer of graphite — <b>delocalised electrons</b> conduct, strong bonds give strength."],
+      ["State a use of fullerenes/nanotubes.", "Drug delivery, lubricants and <b>strong lightweight materials</b>."],
+      ["Explain why ionic compounds are brittle.", "Shifting layers bring <b>like charges together</b>, repelling and splitting the crystal."],
+    ],
+    quiz:[
+      ["Magnesium (2,8,2) forms an ion by losing its outer electrons. The ion formed is:", ["Mg²⁺","Mg²⁻","Mg⁺","Mg⁻"], 0, "Losing 2 electrons gives <b>Mg²⁺</b>."],
+      ["Oxygen (2,6) forms an ion by gaining electrons to fill its outer shell. The ion is:", ["O²⁻","O²⁺","O⁻","O⁺"], 0, "Gaining 2 electrons gives <b>O²⁻</b>."],
+      ["A substance conducts electricity as a solid and is malleable. It is most likely a:", ["Metal","Ionic solid","Simple molecule","Giant covalent"], 0, "Conducting when solid + malleable = a <b>metal</b>."],
+      ["Diamond and graphite are both forms of carbon, yet graphite conducts. This is because graphite has:", ["Delocalised electrons","Ionic bonds","Weak covalent bonds","No bonds"], 0, "Graphite's layers have <b>delocalised electrons</b> free to move."],
+      ["The formula of the ionic compound formed from Mg²⁺ and Cl⁻ is:", ["MgCl₂","MgCl","Mg₂Cl","MgCl₃"], 0, "Balancing charges (+2 with two −1) gives <b>MgCl₂</b>."],
+      ["Water (H₂O) has a low boiling point compared with sodium chloride because water has:", ["Weak forces between molecules","Ionic bonds","A giant lattice","Delocalised electrons"], 0, "Simple molecules have <b>weak intermolecular forces</b>."],
+    ],
+  });
+
+  add("aqa_chemistry","quantitative",{
+    cards:[
+      ["State Avogadro's constant.", "<b>6.02×10²³</b> particles per mole."],
+      ["How do you find moles from concentration and volume?", "<b>moles = concentration (mol/dm³) × volume (dm³)</b>."],
+      ["Define the empirical formula.", "The <b>simplest whole-number ratio</b> of atoms in a compound."],
+      ["How do you convert cm³ to dm³?", "<b>÷ 1000</b> (1000 cm³ = 1 dm³)."],
+      ["State how to calculate percentage by mass of an element.", "<b>(mass of element ÷ Mr of compound) × 100</b>."],
+      ["Define a balanced symbol equation.", "One with the <b>same number of each atom</b> on both sides."],
+      ["What is the volume of one mole of gas at room conditions?", "<b>24 dm³</b> (at room temperature and pressure)."],
+    ],
+    quiz:[
+      ["How many particles are in 2 moles of carbon (Avogadro = 6.02×10²³)?", ["1.2×10²⁴","6.02×10²³","3.01×10²³","1.2×10²³"], 0, "2 × 6.02×10²³ = <b>1.2×10²⁴</b>."],
+      ["A solution has concentration 0.5 mol/dm³ and volume 0.2 dm³. Using moles = conc × volume, the moles present are:", ["0.1 mol","2.5 mol","0.7 mol","1.0 mol"], 0, "0.5 × 0.2 = <b>0.1 mol</b>."],
+      ["The percentage by mass of oxygen in water H₂O (Mr 18, O 16) is:", ["89%","11%","16%","50%"], 0, "(16 ÷ 18) × 100 = <b>89%</b>."],
+      ["25 cm³ of acid is converted to dm³ for a moles calculation. 25 cm³ equals:", ["0.025 dm³","250 dm³","2.5 dm³","0.25 dm³"], 0, "25 ÷ 1000 = <b>0.025 dm³</b>."],
+      ["A compound contains 0.6 mol carbon and 1.2 mol hydrogen. Its empirical formula (simplest ratio) is:", ["CH₂","C₂H","CH","C₂H₄"], 0, "Ratio 0.6 : 1.2 = 1 : 2 → <b>CH₂</b>."],
+      ["48 g of magnesium (Ar 24) reacts. The number of moles (mass ÷ Ar) is:", ["2 mol","0.5 mol","24 mol","72 mol"], 0, "48 ÷ 24 = <b>2 mol</b>."],
+    ],
+  });
+
+  add("aqa_chemistry","chemical_changes",{
+    cards:[
+      ["State the products of a metal reacting with water.", "A <b>metal hydroxide + hydrogen</b>."],
+      ["Define a displacement reaction.", "A <b>more reactive metal displaces a less reactive one</b> from its compound."],
+      ["State how metals less reactive than carbon are extracted.", "By <b>reduction with carbon</b> (e.g. iron from iron oxide)."],
+      ["State how very reactive metals are extracted.", "By <b>electrolysis</b> (e.g. aluminium)."],
+      ["Define a base and an alkali.", "A base neutralises acid; an <b>alkali is a soluble base</b>."],
+      ["Define the products of electrolysis of brine.", "<b>Hydrogen, chlorine and sodium hydroxide</b>."],
+      ["State the ionic equation for neutralisation.", "<b>H⁺ + OH⁻ → H₂O</b>."],
+      ["Define a half equation at an electrode.", "Shows the <b>electrons gained or lost</b> by ions at an electrode."],
+    ],
+    quiz:[
+      ["Zinc is added to copper sulfate solution and the blue colour fades as copper forms. This happens because zinc is:", ["More reactive than copper","Less reactive than copper","A non-metal","Unreactive"], 0, "A more reactive metal <b>displaces</b> the less reactive copper."],
+      ["Iron oxide is heated with carbon to extract iron. The iron oxide is:", ["Reduced","Oxidised","Neutralised","Electrolysed"], 0, "Losing oxygen means the iron oxide is <b>reduced</b>."],
+      ["In a titration, 25.0 cm³ of alkali is neutralised by 20.0 cm³ of acid. Repeating gives concordant results within:", ["0.10 cm³","5 cm³","2 cm³","1 cm³"], 0, "Concordant titres agree to within <b>0.10 cm³</b>."],
+      ["Aluminium is extracted by electrolysis rather than with carbon because aluminium is:", ["More reactive than carbon","Less reactive than carbon","A non-metal","Unreactive"], 0, "Metals <b>more reactive than carbon</b> need electrolysis."],
+      ["During electrolysis of copper chloride solution, copper forms at the cathode. The cathode is the electrode that is:", ["Negative","Positive","Neutral","Made of carbon only"], 0, "Positive copper ions move to the <b>negative cathode</b>."],
+      ["Hydrochloric acid is neutralised by sodium hydroxide. The ionic equation is H⁺ + OH⁻ →", ["H₂O","H₂","NaCl","O₂"], 0, "H⁺ and OH⁻ combine to form <b>water</b>."],
+    ],
+  });
+
+  add("aqa_chemistry","energy_changes",{
+    cards:[
+      ["Define a reaction profile diagram.", "A graph showing the <b>energy of reactants and products</b> and the activation energy."],
+      ["State how a catalyst appears on a reaction profile.", "It provides a <b>lower activation energy</b> route (a smaller hump)."],
+      ["Name a type of cell that runs on hydrogen.", "A <b>hydrogen fuel cell</b> (produces only water)."],
+      ["State an advantage of a hydrogen fuel cell.", "It produces <b>only water</b>, with no carbon dioxide at point of use."],
+      ["Why is bond breaking endothermic?", "Energy must be <b>supplied to pull bonded atoms apart</b>."],
+      ["Why is bond making exothermic?", "Energy is <b>released when new bonds form</b>."],
+    ],
+    quiz:[
+      ["A reaction releases 200 kJ to the surroundings. On a reaction profile, the products are drawn 200 kJ:", ["Below the reactants","Above the reactants","At the same level","Off the axis"], 0, "Energy released (exothermic) means products sit <b>below</b>."],
+      ["Breaking bonds needs 800 kJ; forming bonds releases 950 kJ. The overall change (broken − formed) is:", ["−150 kJ (exothermic)","+150 kJ (endothermic)","+1750 kJ","−950 kJ"], 0, "800 − 950 = <b>−150 kJ</b>; negative = exothermic."],
+      ["A reaction needs 1200 kJ to break bonds and releases 1000 kJ forming bonds. Overall it is:", ["Endothermic (+200 kJ)","Exothermic (−200 kJ)","Neutral","−2200 kJ"], 0, "1200 − 1000 = <b>+200 kJ</b>; positive = endothermic."],
+      ["Adding a catalyst to a reaction changes the reaction profile by:", ["Lowering the activation energy","Lowering the products","Raising the products","Removing the reactants"], 0, "Catalysts give a route with <b>lower activation energy</b>."],
+      ["A hydrogen fuel cell is attractive for vehicles because its only product is:", ["Water","Carbon dioxide","Carbon monoxide","Hydrogen peroxide"], 0, "Hydrogen + oxygen → <b>water</b> only."],
+    ],
+  });
+
+  add("aqa_chemistry","rates",{
+    cards:[
+      ["State how to follow a reaction that produces a gas.", "Measure the <b>volume of gas</b> with a syringe, or <b>loss of mass</b>, over time."],
+      ["Define the rate from a graph's gradient.", "The <b>steeper the gradient, the faster the rate</b>; it levels off when finished."],
+      ["State how pressure affects gas reactions.", "Higher pressure means molecules are <b>closer, colliding more often</b> — faster rate."],
+      ["Define the activation energy on collision theory.", "The <b>minimum energy a collision needs</b> to react."],
+      ["State Le Chatelier's principle (overview).", "If you change conditions, equilibrium <b>shifts to oppose the change</b>."],
+      ["State the effect of increasing temperature on an equilibrium.", "It shifts in the <b>endothermic direction</b>."],
+    ],
+    quiz:[
+      ["A reaction produces 60 cm³ of gas in 30 s, then stops. The mean rate over this time is:", ["2 cm³/s","0.5 cm³/s","1800 cm³/s","30 cm³/s"], 0, "60 ÷ 30 = <b>2 cm³/s</b>."],
+      ["On a graph of gas volume against time, the rate is fastest:", ["At the start","At the end","When flat","Halfway only"], 0, "The gradient (rate) is steepest at the <b>start</b>."],
+      ["Doubling the concentration of a reactant roughly doubles the collision frequency. The rate therefore:", ["Increases","Decreases","Stays the same","Falls to zero"], 0, "More frequent collisions → the rate <b>increases</b>."],
+      ["A reaction loses 0.8 g of mass in 40 s as CO₂ escapes. The mean rate of mass loss is:", ["0.02 g/s","0.8 g/s","32 g/s","50 g/s"], 0, "0.8 ÷ 40 = <b>0.02 g/s</b>."],
+      ["In an exothermic equilibrium, raising the temperature shifts the position to make:", ["Less product","More product","No change","Only gas"], 0, "Heating shifts it the <b>endothermic way</b> — here, less product."],
+    ],
+  });
+
+  add("aqa_chemistry","organic",{
+    cards:[
+      ["State the general formula of the alkanes.", "<b>CₙH₂ₙ₊₂</b>."],
+      ["State the general formula of the alkenes.", "<b>CₙH₂ₙ</b>."],
+      ["Define a saturated hydrocarbon.", "One with <b>only single C–C bonds</b> (alkanes)."],
+      ["Define an unsaturated hydrocarbon.", "One with at least one <b>C=C double bond</b> (alkenes)."],
+      ["Name the products of incomplete combustion.", "<b>Carbon monoxide and soot (carbon)</b>, plus water."],
+      ["Define addition polymerisation.", "Many <b>alkene monomers join</b> with no other product (e.g. poly(ethene))."],
+      ["Name two fractions from crude oil and a use.", "Petrol (fuel for cars), bitumen (roads), kerosene (aircraft fuel), etc."],
+      ["State why cracking is economically important.", "It turns <b>less useful long chains into petrol and alkenes</b> that are in demand."],
+    ],
+    quiz:[
+      ["An alkane has 3 carbon atoms. Using CₙH₂ₙ₊₂, its formula is:", ["C₃H₈","C₃H₆","C₃H₄","C₃H₆O"], 0, "2(3)+2 = 8 hydrogens → <b>C₃H₈</b> (propane)."],
+      ["An alkene has 4 carbons. Using CₙH₂ₙ, its formula is:", ["C₄H₈","C₄H₁₀","C₄H₆","C₄H₄"], 0, "2(4) = 8 hydrogens → <b>C₄H₈</b>."],
+      ["A car engine produces a poisonous gas by incomplete combustion of fuel. The gas is:", ["Carbon monoxide","Carbon dioxide","Oxygen","Hydrogen"], 0, "Incomplete combustion gives toxic <b>carbon monoxide</b>."],
+      ["Many ethene molecules join to form poly(ethene). This is:", ["Addition polymerisation","Cracking","Combustion","Distillation"], 0, "Alkene monomers joining with no by-product is <b>addition polymerisation</b>."],
+      ["The shortest-chain fraction from crude oil is collected at the top of the column because it has the:", ["Lowest boiling point","Highest boiling point","Most viscosity","Darkest colour"], 0, "Short chains have the <b>lowest boiling points</b> and rise highest."],
+    ],
+  });
+
+  add("aqa_chemistry","chemical_analysis",{
+    cards:[
+      ["Name the flame colour for sodium.", "<b>Yellow</b>."],
+      ["Name the flame colour for potassium.", "<b>Lilac</b>."],
+      ["Name the flame colour for copper.", "<b>Green</b>."],
+      ["State the test for carbonate ions.", "Add acid — it <b>fizzes, releasing CO₂</b> (turns limewater milky)."],
+      ["State the test for sulfate ions.", "Add barium chloride — a <b>white precipitate</b> forms."],
+      ["State the test for chloride ions.", "Add silver nitrate — a <b>white precipitate</b> forms."],
+      ["Define an instrumental method advantage.", "<b>Fast, accurate and sensitive</b> (works on tiny samples), e.g. flame emission spectroscopy."],
+    ],
+    quiz:[
+      ["A compound gives a lilac flame test. The metal ion present is:", ["Potassium","Sodium","Copper","Calcium"], 0, "A lilac flame indicates <b>potassium</b>."],
+      ["Adding dilute acid to a white solid produces fizzing and turns limewater milky. The solid contains:", ["Carbonate ions","Sulfate ions","Chloride ions","Sodium ions"], 0, "Fizzing + milky limewater shows <b>carbonate ions</b>."],
+      ["Adding silver nitrate solution gives a white precipitate. The ion present is:", ["Chloride","Sulfate","Carbonate","Nitrate"], 0, "Silver nitrate + chloride → white precipitate, so <b>chloride</b>."],
+      ["A chromatogram shows a dye that splits into 3 spots. This proves the dye is:", ["A mixture","A pure substance","An element","A gas"], 0, "More than one spot means it is a <b>mixture</b>."],
+      ["Instrumental methods are preferred for tiny samples mainly because they are:", ["Sensitive and fast","Cheap and slow","Always colour-based","Less accurate"], 0, "They are <b>sensitive, fast and accurate</b>."],
+    ],
+  });
+
+  add("aqa_chemistry","atmosphere_resources",{
+    cards:[
+      ["Describe the early atmosphere's origin.", "Volcanoes released gases — mostly <b>carbon dioxide</b>, with water vapour that condensed into oceans."],
+      ["State how oxygen entered the atmosphere.", "Early <b>photosynthesising organisms (algae)</b> released it over billions of years."],
+      ["Name two human activities increasing CO₂.", "<b>Burning fossil fuels</b> and deforestation."],
+      ["Define a carbon footprint.", "The <b>total greenhouse gases</b> released over the life of something."],
+      ["State a way to reduce a carbon footprint.", "Use <b>renewable energy</b>, improve efficiency, or capture carbon."],
+      ["Name the stages of making potable water (UK).", "Choose a source, <b>filter</b>, then <b>sterilise</b> (e.g. chlorine)."],
+      ["Define desalination.", "Removing salt from sea water by <b>distillation or reverse osmosis</b>."],
+      ["State why phytomining is useful.", "Plants absorb metal compounds, then are burned to <b>extract metal from low-grade ore</b>."],
+    ],
+    quiz:[
+      ["The Earth's early atmosphere was mostly carbon dioxide. The gas that later built up due to photosynthesis was:", ["Oxygen","Nitrogen","Methane","Hydrogen"], 0, "Photosynthesising organisms released <b>oxygen</b>."],
+      ["Sea water is turned into drinking water by removing the salt. This process is:", ["Desalination","Filtration","Chlorination","Cracking"], 0, "Removing salt from sea water is <b>desalination</b>."],
+      ["A way to lower the carbon footprint of electricity is to:", ["Use renewable energy","Burn more coal","Cut down forests","Use more petrol"], 0, "<b>Renewable energy</b> reduces greenhouse gas emissions."],
+      ["Treating fresh water to make it safe to drink uses filtering then:", ["Sterilising","Cracking","Electrolysis","Distillation"], 0, "Fresh water is filtered then <b>sterilised</b> (e.g. chlorine)."],
+      ["Plants are grown to absorb copper compounds from low-grade ore, then burned to recover the metal. This is:", ["Phytomining","Electrolysis","Cracking","Desalination"], 0, "Using plants to extract metal is <b>phytomining</b>."],
+    ],
+  });
+
+  console.log("[sci_depth.js] Biology & Chemistry depth merged");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — COMBINED SCIENCE (AQA Trilogy 8464)
+   Builds three Combined Science courses by pulling the
+   spec-appropriate SUBSET of sub-topics from the full triple
+   courses (Biology 8461, Chemistry 8462, Physics 8463).
+   Each Combined course is an independent deep copy (so editing
+   one never affects the triple course). No content duplicated
+   in source — it references the full courses.
+   Finally, re-orders window.COURSES into the requested order:
+     Combined Science: Biology / Chemistry / Physics
+     Biology / Chemistry / Physics
+     (then A-Level Physics and the Maths courses)
+   ============================================================ */
+(function(){
+  const C = window.COURSES;
+  if(!C || !C.aqa_biology || !C.aqa_chemistry || !C.aqa_gcse){
+    console.error("Full science courses must load before combined.js"); return;
+  }
+
+  // deep-copy chosen sub-topics from a source course into a fresh topics object
+  function subsetOf(srcCourse, keys){
+    const topics={};
+    keys.forEach(k=>{
+      const t = srcCourse.topics[k];
+      if(!t){ console.warn("combined: missing topic", k); return; }
+      topics[k] = { name:t.name, cards:t.cards.map(c=>c.slice()), quiz:t.quiz.map(q=>q.slice()) };
+    });
+    return topics;
+  }
+
+  // --- Combined Science subsets (AQA Trilogy keeps all the broad
+  //     topic areas but with reduced content; here we include the
+  //     core sub-topics appropriate to the combined specification) ---
+
+  // Biology: Trilogy covers cells, organisation, infection, bioenergetics,
+  // homeostasis, inheritance, ecology (it omits some triple-only detail).
+  const COMBINED_BIO = ["cell_biology","organisation","infection","bioenergetics","homeostasis","inheritance","ecology"];
+
+  // Chemistry: Trilogy omits some triple-only topics (e.g. parts of
+  // chemical analysis / transition metals); keep the core areas.
+  const COMBINED_CHEM = ["atomic_structure","bonding","quantitative","chemical_changes","energy_changes","rates","organic","atmosphere_resources"];
+
+  // Physics: Trilogy omits Space physics (topic 8) entirely and trims others.
+  const COMBINED_PHYS = ["energy","electricity","particle","atomic","forces","waves","magnetism"];
+
+  C.combined_biology   = { name:"Combined Science: Biology",   topics: subsetOf(C.aqa_biology,   COMBINED_BIO) };
+  C.combined_chemistry = { name:"Combined Science: Chemistry", topics: subsetOf(C.aqa_chemistry, COMBINED_CHEM) };
+  C.combined_physics   = { name:"Combined Science: Physics",   topics: subsetOf(C.aqa_gcse,      COMBINED_PHYS) };
+
+  // ---- re-order the whole COURSES object into the requested order ----
+  const ORDER = [
+    "combined_biology","combined_chemistry","combined_physics",
+    "aqa_biology","aqa_chemistry","aqa_gcse",
+    "ocr_alevel",
+    "edexcel_foundation","edexcel_higher"
+  ];
+  const reordered = {};
+  ORDER.forEach(k=>{ if(C[k]) reordered[k]=C[k]; });
+  // include any other courses not listed (safety) at the end
+  Object.keys(C).forEach(k=>{ if(!reordered[k]) reordered[k]=C[k]; });
+  // replace contents of window.COURSES in place (keep same reference)
+  Object.keys(C).forEach(k=>{ delete C[k]; });
+  Object.keys(reordered).forEach(k=>{ C[k]=reordered[k]; });
+
+  console.log("[combined.js] Combined courses added. Order:", Object.keys(C).join(", "));
+})();
+
+</script>
+<script>
 const COURSES = window.COURSES;
 const APP_VERSION=2;
 let state=blankState(), unsaved=false, allowClose=false;
-let curCourse="aqa_gcse", curTopic=null, curMode="cards";
+let curCourse=Object.keys(COURSES)[0], curTopic=null, curMode="cards";
 let cardOrder=[], cardPos=0, cardFlipped=false, cardFilter="all";
 
 function blankState(){ return { version:APP_VERSION, name:"guest", created:Date.now(), progress:{} }; }
@@ -3250,86 +4122,239 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
 </script>
 <script>
 /* ============================================================
-   FLUXOR AVATAR ENGINE
+   FLUXOR AVATAR ENGINE  (v2 — richer, clearer, differentiated art)
    Builds a layered SVG avatar from a config object:
-   { bg, bgColor, face, skin, hair, hairColor, clothes, clothesColor, acc }
-   Parts are simple, theme-friendly shapes. window.renderAvatar(cfg,size)
-   returns an SVG string. window.AVATAR_PARTS lists the catalogue.
+   { bg,bgColor, skin, hair,hairColor, clothes,clothesColor, acc,accColor }
+   window.renderAvatar(cfg,size) -> SVG string.
+   window.AVATAR_PARTS lists the catalogue (id, label, default colour).
+   Every instance uses a unique id-prefix so many avatars can share a page.
    ============================================================ */
 (function(){
-  const PANEL="#141c27", INK="#dde7f0", LINE="#26384b";
+  const LINE="#26384b";
+  let UID=0;
 
-  // ---- catalogues (id -> draw fn / metadata) ----
-  // Backgrounds: full-bleed behind everything
+  // small helpers ------------------------------------------------------
+  function shade(hex, f){ // lighten(+)/darken(-) a #rrggbb by factor f (-1..1)
+    hex=(hex||"#888888").replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+    let r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+    const m=f<0?0:255, a=Math.abs(f);
+    r=Math.round(r+(m-r)*a); g=Math.round(g+(m-g)*a); b=Math.round(b+(m-b)*a);
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  // BACKGROUNDS (full-bleed) -------------------------------------------
   const BG = {
-    plain:   c=>`<rect x="0" y="0" width="200" height="200" fill="${c||'#1b2533'}"/>`,
-    rings:   c=>`<rect width="200" height="200" fill="#101824"/>`+
-                `<circle cx="100" cy="100" r="86" fill="none" stroke="${c||'#39e0c4'}" stroke-width="3" opacity="0.5"/>`+
-                `<circle cx="100" cy="100" r="64" fill="none" stroke="${c||'#39e0c4'}" stroke-width="2" opacity="0.35"/>`,
-    grid:    c=>{ let g=`<rect width="200" height="200" fill="#0f1620"/>`; for(let i=20;i<200;i+=24){ g+=`<line x1="${i}" y1="0" x2="${i}" y2="200" stroke="${c||'#26384b'}" stroke-width="1" opacity="0.5"/><line x1="0" y1="${i}" x2="200" y2="${i}" stroke="${c||'#26384b'}" stroke-width="1" opacity="0.5"/>`; } return g; },
-    sky:     c=>`<defs><linearGradient id="avSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c||'#39e0c4'}"/><stop offset="1" stop-color="#101824"/></linearGradient></defs><rect width="200" height="200" fill="url(#avSky)"/>`,
-    stars:   c=>{ let g=`<rect width="200" height="200" fill="#0c1118"/>`; const pts=[[30,40],[60,25],[90,55],[130,30],[160,60],[45,90],[170,110],[25,140],[120,150],[150,170],[80,120],[100,90]]; pts.forEach((p,i)=>{ g+=`<circle cx="${p[0]}" cy="${p[1]}" r="${1.5+(i%3)}" fill="${c||'#f4b740'}"/>`; }); return g; },
-    confetti:c=>{ let g=`<rect width="200" height="200" fill="#12101a"/>`; const cl=['#39e0c4','#f4b740','#46e08a','#ff5d6c','#9a7bd0']; for(let i=0;i<24;i++){ const x=(i*53)%190+5,y=(i*71)%190+5; g+=`<rect x="${x}" y="${y}" width="6" height="6" fill="${cl[i%cl.length]}" transform="rotate(${i*40} ${x} ${y})"/>`; } return g; },
+    plain: (c,id)=>{ const a=c||'#27384d', b=shade(a,-0.45);
+      return `<defs><radialGradient id="${id}bg" cx="50%" cy="38%" r="80%"><stop offset="0" stop-color="${shade(a,0.18)}"/><stop offset="1" stop-color="${b}"/></radialGradient></defs><rect width="200" height="200" fill="url(#${id}bg)"/>`; },
+    rings: (c,id)=>{ const a=c||'#39e0c4';
+      let g=`<rect width="200" height="200" fill="#0e1622"/>`;
+      [92,72,52,32].forEach((r,i)=>{ g+=`<circle cx="100" cy="94" r="${r}" fill="none" stroke="${a}" stroke-width="${3-i*0.4}" opacity="${0.5-i*0.08}"/>`; });
+      return g; },
+    grid: (c,id)=>{ const a=c||'#2f4f6b'; let g=`<rect width="200" height="200" fill="#0c141e"/>`;
+      g+=`<defs><linearGradient id="${id}gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a,0.2)}" stop-opacity="0.8"/><stop offset="1" stop-color="${a}" stop-opacity="0.25"/></linearGradient></defs>`;
+      for(let i=16;i<200;i+=22){ g+=`<line x1="${i}" y1="0" x2="${i}" y2="200" stroke="url(#${id}gg)" stroke-width="1"/><line x1="0" y1="${i}" x2="200" y2="${i}" stroke="url(#${id}gg)" stroke-width="1"/>`; }
+      return g; },
+    sky: (c,id)=>{ const a=c||'#39e0c4';
+      return `<defs><linearGradient id="${id}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a,0.35)}"/><stop offset="0.55" stop-color="${a}"/><stop offset="1" stop-color="#0e1622"/></linearGradient></defs><rect width="200" height="200" fill="url(#${id}sky)"/>`
+        + `<circle cx="150" cy="46" r="20" fill="#fff" opacity="0.85"/><circle cx="150" cy="46" r="20" fill="${shade(a,0.5)}" opacity="0.25"/>`; },
+    stars: (c,id)=>{ const a=c||'#f4b740';
+      let g=`<defs><radialGradient id="${id}st" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#1a2740"/><stop offset="1" stop-color="#070b12"/></radialGradient></defs><rect width="200" height="200" fill="url(#${id}st)"/>`;
+      const pts=[[28,38,2],[58,24,1.4],[92,52,1.8],[132,30,2.4],[164,58,1.6],[44,92,1.4],[176,108,2],[24,140,1.6],[120,150,1.4],[152,168,2.2],[80,120,1.2],[104,86,1.8],[180,40,1.4],[40,170,1.6]];
+      pts.forEach(p=>{ g+=`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" fill="${a}"/>`; });
+      // a little shooting-star streak
+      g+=`<path d="M30 60 L70 40" stroke="${a}" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>`;
+      return g; },
+    confetti: (c,id)=>{ let g=`<rect width="200" height="200" fill="#141121"/>`;
+      const cl=['#39e0c4','#f4b740','#46e08a','#ff5d6c','#9a7bd0','#5aa9e6'];
+      for(let i=0;i<30;i++){ const x=(i*47)%188+6, y=(i*83)%188+6, s=4+(i%3)*2, col=cl[i%cl.length];
+        if(i%3===0) g+=`<circle cx="${x}" cy="${y}" r="${s/1.6}" fill="${col}" opacity="0.9"/>`;
+        else g+=`<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="1.5" fill="${col}" opacity="0.9" transform="rotate(${i*37} ${x} ${y})"/>`; }
+      return g; },
+    aurora: (c,id)=>{ const a=c||'#46e08a';
+      return `<defs><linearGradient id="${id}au" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1f2a"/><stop offset="1" stop-color="#0a1326"/></linearGradient></defs>`
+        +`<rect width="200" height="200" fill="url(#${id}au)"/>`
+        +`<path d="M0 120 Q60 70 120 110 T200 90 V200 H0 Z" fill="${a}" opacity="0.25"/>`
+        +`<path d="M0 150 Q70 100 130 140 T200 120 V200 H0 Z" fill="${shade(a,0.3)}" opacity="0.3"/>`
+        +`<circle cx="46" cy="40" r="1.6" fill="#fff"/><circle cx="120" cy="30" r="1.4" fill="#fff"/><circle cx="172" cy="54" r="1.5" fill="#fff"/>`; },
   };
 
-  // Background (behind head). Body/face drawn centred.
-  function face(skin){
-    const s=skin||"#e8b98a";
-    return `<ellipse cx="100" cy="96" rx="46" ry="50" fill="${s}"/>`
-      + `<circle cx="84" cy="92" r="5.5" fill="#26323d"/><circle cx="116" cy="92" r="5.5" fill="#26323d"/>`
-      + `<circle cx="85.5" cy="90.5" r="1.6" fill="#fff"/><circle cx="117.5" cy="90.5" r="1.6" fill="#fff"/>`
-      + `<path d="M86 116 Q100 128 114 116" fill="none" stroke="#26323d" stroke-width="3" stroke-linecap="round"/>`;
+  // HEAD + FACE (with neck + soft shading) -----------------------------
+  function head(skin, id){
+    const s=skin||"#e8b98a", dk=shade(s,-0.22), lt=shade(s,0.16);
+    return `<defs><radialGradient id="${id}sk" cx="42%" cy="38%" r="75%"><stop offset="0" stop-color="${lt}"/><stop offset="1" stop-color="${s}"/></radialGradient></defs>`
+      // neck
+      + `<path d="M86 132 Q86 150 80 156 L120 156 Q114 150 114 132 Z" fill="${dk}"/>`
+      + `<path d="M88 132 Q88 146 84 152 L116 152 Q112 146 112 132 Z" fill="${s}"/>`
+      // ears
+      + `<ellipse cx="55" cy="98" rx="7" ry="10" fill="${s}"/><ellipse cx="145" cy="98" rx="7" ry="10" fill="${s}"/>`
+      // face
+      + `<ellipse cx="100" cy="94" rx="44" ry="49" fill="url(#${id}sk)"/>`
+      // cheeks blush
+      + `<ellipse cx="76" cy="108" rx="9" ry="6" fill="${shade(s,-0.12)}" opacity="0.35"/><ellipse cx="124" cy="108" rx="9" ry="6" fill="${shade(s,-0.12)}" opacity="0.35"/>`
+      // brows
+      + `<path d="M70 78 Q82 73 92 78" fill="none" stroke="${shade(s,-0.5)}" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/>`
+      + `<path d="M108 78 Q118 73 130 78" fill="none" stroke="${shade(s,-0.5)}" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/>`
+      // eyes (white, iris, highlight)
+      + `<ellipse cx="83" cy="92" rx="7" ry="8" fill="#fff"/><ellipse cx="117" cy="92" rx="7" ry="8" fill="#fff"/>`
+      + `<circle cx="84" cy="93" r="4" fill="#3a2a20"/><circle cx="118" cy="93" r="4" fill="#3a2a20"/>`
+      + `<circle cx="85.4" cy="91.4" r="1.5" fill="#fff"/><circle cx="119.4" cy="91.4" r="1.5" fill="#fff"/>`
+      // nose
+      + `<path d="M100 96 Q104 106 99 110" fill="none" stroke="${dk}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>`
+      // smile
+      + `<path d="M84 118 Q100 130 116 118" fill="none" stroke="${shade(s,-0.55)}" stroke-width="3" stroke-linecap="round"/>`;
   }
-  // Hair styles (drawn over the top of the head)
+
+  // HAIR (distinct silhouettes, with highlight) ------------------------
+  function hairShade(c){ return shade(c||"#3a2a1a", 0.22); }
   const HAIR = {
     none:  ()=>``,
-    short: c=>`<path d="M54 92 Q52 44 100 44 Q148 44 146 92 Q140 64 100 62 Q60 64 54 92 Z" fill="${c||'#3a2a1a'}"/>`,
-    spiky: c=>`<path d="M56 86 L60 54 L72 74 L82 46 L94 72 L100 44 L106 72 L118 46 L128 74 L140 54 L144 86 Q120 60 100 60 Q80 60 56 86 Z" fill="${c||'#222'}"/>`,
-    long:  c=>`<path d="M52 92 Q50 44 100 44 Q150 44 148 92 L150 150 Q140 140 138 150 L138 96 Q130 66 100 64 Q70 66 62 96 L62 150 Q60 140 50 150 Z" fill="${c||'#5a3a1a'}"/>`,
-    bun:   c=>`<circle cx="100" cy="44" r="14" fill="${c||'#3a2a1a'}"/><path d="M56 92 Q54 52 100 52 Q146 52 144 92 Q138 66 100 64 Q62 66 56 92 Z" fill="${c||'#3a2a1a'}"/>`,
-    curly: c=>{ let g=''; const pts=[[60,58],[74,48],[90,44],[110,44],[126,48],[140,58],[56,76],[144,76]]; pts.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="13" fill="${c||'#2a1a10'}"/>`); g+=`<path d="M58 92 Q56 60 100 60 Q144 60 142 92 Q136 70 100 68 Q64 70 58 92 Z" fill="${c||'#2a1a10'}"/>`; return g; },
-    cap:   c=>`<path d="M52 86 Q52 50 100 50 Q148 50 148 86 L150 86 Q150 78 100 76 Q50 78 50 86 Z" fill="${c||'#39e0c4'}"/><rect x="92" y="40" width="16" height="14" rx="3" fill="${c||'#39e0c4'}"/>`,
-  };
-  // Clothes (drawn at the bottom, shoulders/torso)
-  const CLOTHES = {
-    tee:    c=>`<path d="M58 200 L58 168 Q58 150 80 144 L120 144 Q142 150 142 168 L142 200 Z" fill="${c||'#39e0c4'}"/>`,
-    hoodie: c=>`<path d="M54 200 L54 166 Q54 148 80 142 L120 142 Q146 148 146 166 L146 200 Z" fill="${c||'#5a6b7d'}"/><path d="M82 142 Q100 160 118 142 L112 144 Q100 152 88 144 Z" fill="#101824"/>`,
-    shirt:  c=>`<path d="M58 200 L58 168 Q58 150 80 144 L120 144 Q142 150 142 168 L142 200 Z" fill="${c||'#dde7f0'}"/><path d="M88 144 L100 158 L112 144 Z" fill="#101824"/>`,
-    blazer: c=>`<path d="M58 200 L58 168 Q58 150 80 144 L120 144 Q142 150 142 168 L142 200 Z" fill="${c||'#2c3a4a'}"/><path d="M92 144 L100 200 L108 144 Z" fill="#dde7f0"/><path d="M80 146 L92 144 L100 158 Z" fill="#1b2533"/><path d="M120 146 L108 144 L100 158 Z" fill="#1b2533"/>`,
-    hero:   c=>`<path d="M58 200 L58 168 Q58 150 80 144 L120 144 Q142 150 142 168 L142 200 Z" fill="${c||'#ff5d6c'}"/><path d="M100 146 L86 160 L100 176 L114 160 Z" fill="#f4b740"/>`,
-  };
-  // Accessories (over face)
-  const ACC = {
-    none:    ()=>``,
-    glasses: c=>`<circle cx="84" cy="92" r="11" fill="none" stroke="${c||'#26323d'}" stroke-width="2.5"/><circle cx="116" cy="92" r="11" fill="none" stroke="${c||'#26323d'}" stroke-width="2.5"/><line x1="95" y1="92" x2="105" y2="92" stroke="${c||'#26323d'}" stroke-width="2.5"/>`,
-    shades:  c=>`<path d="M73 88 h22 a3 3 0 0 1 3 3 v6 a6 6 0 0 1 -28 0 v-6 a3 3 0 0 1 3 -3 Z" fill="${c||'#101824'}"/><path d="M105 88 h22 a3 3 0 0 1 3 3 v6 a6 6 0 0 1 -28 0 v-6 a3 3 0 0 1 3 -3 Z" fill="${c||'#101824'}"/><line x1="95" y1="90" x2="105" y2="90" stroke="${c||'#101824'}" stroke-width="3"/>`,
-    earrings:c=>`<circle cx="56" cy="108" r="4" fill="${c||'#f4b740'}"/><circle cx="144" cy="108" r="4" fill="${c||'#f4b740'}"/>`,
-    crown:   c=>`<path d="M74 50 L80 32 L90 46 L100 28 L110 46 L120 32 L126 50 Z" fill="${c||'#f4b740'}" stroke="#b5851f" stroke-width="1.5"/><circle cx="100" cy="40" r="3" fill="#ff5d6c"/>`,
-    star:    c=>`<path d="M138 56 l3 7 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1 Z" fill="${c||'#f4b740'}"/>`,
+    short: (c)=>{ const h=c||'#3a2a1a';
+      return `<path d="M53 96 Q48 46 100 42 Q152 46 147 96 Q150 70 132 60 Q120 54 100 54 Q80 54 68 60 Q50 70 53 96 Z" fill="${h}"/>`
+        +`<path d="M70 60 Q100 48 130 60 Q116 56 100 56 Q84 56 70 60 Z" fill="${hairShade(h)}"/>`; },
+    quiff: (c)=>{ const h=c||'#2a2018';
+      return `<path d="M55 92 Q52 50 100 46 Q150 50 146 92 Q150 64 128 58 Q140 40 104 40 Q96 56 80 58 Q58 62 55 92 Z" fill="${h}"/>`
+        +`<path d="M104 40 Q120 44 128 58 Q116 50 104 52 Z" fill="${hairShade(h)}"/>`; },
+    spiky: (c)=>{ const h=c||'#222222';
+      return `<path d="M55 90 L58 56 L72 76 L80 48 L92 74 L100 44 L108 74 L120 48 L128 76 L142 56 L145 90 Q140 62 100 60 Q60 62 55 90 Z" fill="${h}"/>`
+        +`<path d="M80 48 L92 74 L100 60 Z" fill="${hairShade(h)}"/>`; },
+    long:  (c)=>{ const h=c||'#5a3a1a';
+      return `<path d="M50 96 Q46 46 100 42 Q154 46 150 96 L152 158 Q142 150 138 158 Q138 110 134 92 Q128 60 100 58 Q72 60 66 92 Q62 110 62 158 Q58 150 48 158 Z" fill="${h}"/>`
+        +`<path d="M70 64 Q100 50 130 64 Q116 58 100 58 Q84 58 70 64 Z" fill="${hairShade(h)}"/>`; },
+    bun:   (c)=>{ const h=c||'#3a2a1a';
+      return `<circle cx="100" cy="40" r="15" fill="${h}"/><circle cx="100" cy="40" r="15" fill="${hairShade(h)}" opacity="0.4"/>`
+        +`<path d="M55 92 Q52 54 100 50 Q148 54 145 92 Q148 66 124 60 Q112 56 100 56 Q88 56 76 60 Q52 66 55 92 Z" fill="${h}"/>`; },
+    curly: (c)=>{ const h=c||'#2a1a10';
+      let g=''; const pts=[[60,56],[74,46],[90,42],[110,42],[126,46],[140,56],[54,74],[146,74],[64,40],[136,40]];
+      pts.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="14" fill="${h}"/>`);
+      pts.filter((_,i)=>i%2===0).forEach(p=>g+=`<circle cx="${p[0]-3}" cy="${p[1]-3}" r="5" fill="${hairShade(h)}" opacity="0.5"/>`);
+      g+=`<path d="M57 94 Q54 64 100 62 Q146 64 143 94 Q138 72 100 70 Q62 72 57 94 Z" fill="${h}"/>`;
+      return g; },
+    afro:  (c)=>{ const h=c||'#1f1712';
+      let g=`<circle cx="100" cy="58" r="44" fill="${h}"/>`;
+      const b=[[66,36],[100,30],[134,36],[52,62],[148,62],[64,86],[136,86]];
+      b.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="19" fill="${h}"/>`);
+      g+=`<circle cx="86" cy="46" r="9" fill="${hairShade(h)}" opacity="0.4"/>`;
+      // hairline arc that frames (not covers) the face
+      g+=`<path d="M60 92 Q58 66 100 64 Q142 66 140 92 Q132 76 100 74 Q68 76 60 92 Z" fill="${h}"/>`;
+      return g; },
+    ponytail:(c)=>{ const h=c||'#4a3320';
+      return `<path d="M150 96 Q176 110 168 150 Q160 168 150 160 Q160 140 150 110 Z" fill="${h}"/>`
+        +`<path d="M54 94 Q50 48 100 44 Q150 48 146 94 Q150 66 124 60 Q112 56 100 56 Q88 56 76 60 Q50 66 54 94 Z" fill="${h}"/>`
+        +`<path d="M150 96 Q166 112 162 140 Q156 120 148 108 Z" fill="${hairShade(h)}" opacity="0.5"/>`; },
+    cap:   (c)=>{ const h=c||'#39e0c4'; const d=shade(h,-0.3);
+      return `<path d="M50 84 Q50 46 100 46 Q150 46 150 84 Q150 74 100 72 Q50 74 50 84 Z" fill="${h}"/>`
+        +`<path d="M50 84 Q100 78 150 84 L156 88 Q150 92 100 90 Q60 90 50 86 Z" fill="${d}"/>`
+        +`<rect x="92" y="40" width="16" height="12" rx="3" fill="${d}"/>`
+        +`<path d="M100 46 Q120 48 138 56 L150 84 Q150 64 100 62 Z" fill="${hairShade(h)}" opacity="0.4"/>`; },
+    beanie:(c)=>{ const h=c||'#ff5d6c'; const d=shade(h,-0.28);
+      return `<path d="M52 84 Q52 44 100 42 Q148 44 148 84 Z" fill="${h}"/>`
+        +`<rect x="50" y="80" width="100" height="14" rx="7" fill="${d}"/>`
+        +`<path d="M70 56 Q100 48 130 56" fill="none" stroke="${shade(h,0.2)}" stroke-width="2" opacity="0.5"/>`; },
   };
 
-  // expose catalogue with display names + default colours
+  // CLOTHES (collars, zips, details) -----------------------------------
+  function torso(d){ return `M52 200 L52 172 Q52 150 78 142 L122 142 Q148 150 148 172 L148 200 Z`; }
+  const CLOTHES = {
+    tee: (c)=>{ const a=c||'#39e0c4';
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M78 142 Q100 158 122 142 L116 144 Q100 152 84 144 Z" fill="${shade(a,-0.25)}"/>`
+        +`<path d="M52 172 Q52 150 78 142" fill="none" stroke="${shade(a,-0.2)}" stroke-width="2" opacity="0.5"/>`; },
+    hoodie: (c)=>{ const a=c||'#5a6b7d'; const d=shade(a,-0.25);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M70 144 Q100 168 130 144 L126 150 Q100 160 74 150 Z" fill="${shade(a,-0.4)}"/>`  // hood opening
+        +`<rect x="98" y="150" width="4" height="46" fill="${d}"/>`                                 // zip
+        +`<path d="M62 176 q-8 4 -8 18" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/>` // pocket hint
+        +`<path d="M138 176 q8 4 8 18" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/>`
+        +`<circle cx="92" cy="156" r="2" fill="#fff" opacity="0.7"/><circle cx="108" cy="156" r="2" fill="#fff" opacity="0.7"/>`; },
+    shirt: (c)=>{ const a=c||'#dde7f0'; const d=shade(a,-0.18);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M88 142 L100 160 L112 142 L106 142 L100 150 L94 142 Z" fill="${d}"/>`   // collar V
+        +`<rect x="98.5" y="150" width="3" height="46" fill="${d}"/>`                       // button placket
+        +`<circle cx="100" cy="166" r="1.6" fill="${d}"/><circle cx="100" cy="180" r="1.6" fill="${d}"/>`; },
+    blazer: (c)=>{ const a=c||'#2c3a4a'; const d=shade(a,-0.3); const sh=shade(a,0.12);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M92 144 L100 200 L108 144 Z" fill="#eef3f7"/>`                            // shirt front
+        +`<path d="M78 144 L94 146 L100 162 L86 156 Z" fill="${d}"/>`                        // left lapel
+        +`<path d="M122 144 L106 146 L100 162 L114 156 Z" fill="${d}"/>`                     // right lapel
+        +`<path d="M97 150 L100 158 L103 150 L101 168 L99 168 Z" fill="#ff5d6c"/>`           // tie
+        +`<rect x="99" y="150" width="2" height="20" fill="#c8434f"/>`; },
+    hero: (c)=>{ const a=c||'#ff5d6c'; const d=shade(a,-0.3);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M52 172 Q52 150 78 142 L74 146 Q56 154 56 174 Z" fill="${d}"/>`
+        +`<path d="M148 172 Q148 150 122 142 L126 146 Q144 154 144 174 Z" fill="${d}"/>`
+        +`<path d="M100 150 L88 166 L100 184 L112 166 Z" fill="#f4b740"/>`                    // chest emblem diamond
+        +`<path d="M100 158 L94 166 L100 176 L106 166 Z" fill="${a}"/>`; },
+    jumper: (c)=>{ const a=c||'#9a7bd0'; const d=shade(a,-0.22);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M82 144 Q100 156 118 144 L114 150 Q100 160 86 150 Z" fill="${d}"/>`        // round neck
+        +`<path d="M60 150 L60 196" stroke="${d}" stroke-width="2" opacity="0.4"/><path d="M140 150 L140 196" stroke="${d}" stroke-width="2" opacity="0.4"/>`; // knit seams
+    },
+    labcoat: (c)=>{ const a=c||'#f2f5f8'; const d=shade(a,-0.16);
+      return `<path d="${torso()}" fill="${a}"/>`
+        +`<path d="M100 142 L100 200" stroke="${d}" stroke-width="2"/>`                       // centre opening
+        +`<path d="M88 142 L100 158 L100 144 Z" fill="${d}"/><path d="M112 142 L100 158 L100 144 Z" fill="${shade(a,-0.08)}"/>` // collar
+        +`<rect x="64" y="176" width="16" height="14" rx="1.5" fill="none" stroke="${d}" stroke-width="1.5"/>` // pocket
+        +`<rect x="120" y="176" width="16" height="14" rx="1.5" fill="none" stroke="${d}" stroke-width="1.5"/>`
+        +`<rect x="70" y="172" width="3" height="8" fill="#39e0c4"/>`; },                     // pen
+  };
+
+  // ACCESSORIES (over face) --------------------------------------------
+  const ACC = {
+    none:    ()=>``,
+    glasses: (c)=>{ const a=c||'#26323d';
+      return `<rect x="70" y="84" width="26" height="18" rx="6" fill="none" stroke="${a}" stroke-width="3"/>`
+        +`<rect x="104" y="84" width="26" height="18" rx="6" fill="none" stroke="${a}" stroke-width="3"/>`
+        +`<line x1="96" y1="92" x2="104" y2="92" stroke="${a}" stroke-width="3"/>`
+        +`<line x1="70" y1="90" x2="56" y2="92" stroke="${a}" stroke-width="3"/><line x1="130" y1="90" x2="144" y2="92" stroke="${a}" stroke-width="3"/>`; },
+    shades:  (c)=>{ const a=c||'#14202c';
+      return `<path d="M68 84 h28 a4 4 0 0 1 4 4 v4 a10 10 0 0 1 -36 2 v-6 a4 4 0 0 1 4 -4 Z" fill="${a}"/>`
+        +`<path d="M104 84 h28 a4 4 0 0 1 4 4 v6 a10 10 0 0 1 -36 -2 v-4 a4 4 0 0 1 4 -4 Z" fill="${a}"/>`
+        +`<line x1="96" y1="88" x2="104" y2="88" stroke="${a}" stroke-width="4"/>`
+        +`<path d="M72 88 l8 0" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>`; },
+    earrings:(c)=>{ const a=c||'#f4b740';
+      return `<circle cx="55" cy="112" r="4.5" fill="${a}"/><circle cx="145" cy="112" r="4.5" fill="${a}"/>`
+        +`<circle cx="55" cy="112" r="2" fill="#fff" opacity="0.6"/><circle cx="145" cy="112" r="2" fill="#fff" opacity="0.6"/>`; },
+    crown:   (c)=>{ const a=c||'#f4b740'; const d=shade(a,-0.3);
+      return `<path d="M70 56 L78 36 L90 50 L100 30 L110 50 L122 36 L130 56 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/>`
+        +`<path d="M70 56 L130 56 L128 62 L72 62 Z" fill="${d}"/>`
+        +`<circle cx="100" cy="44" r="3.5" fill="#ff5d6c"/><circle cx="82" cy="50" r="2.5" fill="#5aa9e6"/><circle cx="118" cy="50" r="2.5" fill="#46e08a"/>`; },
+    headphones:(c)=>{ const a=c||'#39e0c4'; const d=shade(a,-0.25);
+      return `<path d="M52 96 Q52 44 100 44 Q148 44 148 96" fill="none" stroke="${d}" stroke-width="6"/>`
+        +`<rect x="44" y="92" width="16" height="26" rx="6" fill="${a}"/><rect x="140" y="92" width="16" height="26" rx="6" fill="${a}"/>`
+        +`<rect x="47" y="96" width="10" height="18" rx="4" fill="${d}"/><rect x="143" y="96" width="10" height="18" rx="4" fill="${d}"/>`; },
+    goggles: (c)=>{ const a=c||'#5aa9e6'; const d=shade(a,-0.3);
+      return `<rect x="66" y="80" width="68" height="22" rx="11" fill="none" stroke="${d}" stroke-width="3"/>`
+        +`<circle cx="84" cy="91" r="11" fill="${a}" opacity="0.55" stroke="${d}" stroke-width="2.5"/>`
+        +`<circle cx="116" cy="91" r="11" fill="${a}" opacity="0.55" stroke="${d}" stroke-width="2.5"/>`
+        +`<path d="M66 88 l-10 -2 M134 88 l10 -2" stroke="${d}" stroke-width="3" stroke-linecap="round"/>`
+        +`<path d="M80 87 a5 5 0 0 1 5 -3" stroke="#fff" stroke-width="2" fill="none" opacity="0.6"/>`; },
+    star:    (c)=>{ const a=c||'#f4b740';
+      return `<path d="M146 58 l3.5 8 8.5 1 -6 6 1.5 8.5 -7.5 -4 -7.5 4 1.5 -8.5 -6 -6 8.5 -1 Z" fill="${a}"/>`
+        +`<path d="M146 64 l1.8 4 -1.8 -1 -1.8 1 Z" fill="#fff" opacity="0.6"/>`; },
+  };
+
+  // catalogue ----------------------------------------------------------
   window.AVATAR_PARTS = {
-    bg:      [["plain","Plain","#1b2533"],["rings","Rings","#39e0c4"],["grid","Grid","#26384b"],["sky","Sky","#39e0c4"],["stars","Starfield","#f4b740"],["confetti","Confetti","#39e0c4"]],
-    hair:    [["none","Bald","#3a2a1a"],["short","Short","#3a2a1a"],["spiky","Spiky","#222222"],["long","Long","#5a3a1a"],["bun","Bun","#3a2a1a"],["curly","Curly","#2a1a10"],["cap","Cap","#39e0c4"]],
-    clothes: [["tee","T-shirt","#39e0c4"],["hoodie","Hoodie","#5a6b7d"],["shirt","Shirt","#dde7f0"],["blazer","Blazer","#2c3a4a"],["hero","Hero suit","#ff5d6c"]],
-    acc:     [["none","None","#f4b740"],["glasses","Glasses","#26323d"],["shades","Shades","#101824"],["earrings","Earrings","#f4b740"],["crown","Crown","#f4b740"],["star","Star","#f4b740"]],
-    skin:    [["#f1c9a5","Skin 1"],["#e8b98a","Skin 2"],["#c68642","Skin 3"],["#8d5524","Skin 4"],["#5c3a21","Skin 5"]],
+    bg:      [["plain","Studio","#27384d"],["rings","Sonar","#39e0c4"],["grid","Blueprint","#2f4f6b"],["sky","Daybreak","#39e0c4"],["stars","Cosmos","#f4b740"],["aurora","Aurora","#46e08a"],["confetti","Party","#39e0c4"]],
+    hair:    [["none","Bald","#3a2a1a"],["short","Short","#3a2a1a"],["quiff","Quiff","#2a2018"],["spiky","Spiky","#222222"],["long","Long","#5a3a1a"],["bun","Top bun","#3a2a1a"],["ponytail","Ponytail","#4a3320"],["curly","Curly","#2a1a10"],["afro","Afro","#1f1712"],["cap","Cap","#39e0c4"],["beanie","Beanie","#ff5d6c"]],
+    clothes: [["tee","T-shirt","#39e0c4"],["hoodie","Hoodie","#5a6b7d"],["shirt","Shirt","#dde7f0"],["jumper","Jumper","#9a7bd0"],["blazer","Blazer & tie","#2c3a4a"],["labcoat","Lab coat","#f2f5f8"],["hero","Hero suit","#ff5d6c"]],
+    acc:     [["none","None","#f4b740"],["glasses","Glasses","#26323d"],["shades","Shades","#14202c"],["goggles","Lab goggles","#5aa9e6"],["headphones","Headphones","#39e0c4"],["earrings","Earrings","#f4b740"],["crown","Crown","#f4b740"],["star","Star","#f4b740"]],
+    skin:    [["#f1c9a5","Light"],["#e8b98a","Fair"],["#c68642","Tan"],["#8d5524","Brown"],["#5c3a21","Deep"]],
   };
 
   window.renderAvatar = function(cfg, size){
     cfg = cfg || {};
     const sz = size || 200;
-    const bg = (BG[cfg.bg]||BG.plain)(cfg.bgColor);
-    const cl = (CLOTHES[cfg.clothes]||CLOTHES.tee)(cfg.clothesColor);
-    const fc = face(cfg.skin);
-    const hr = (HAIR[cfg.hair!=null?cfg.hair:"short"]||HAIR.short)(cfg.hairColor);
-    const ac = (ACC[cfg.acc]||ACC.none)(cfg.accColor);
-    // clip the whole thing to a rounded square
+    const id = "a"+(UID++)+"_";
+    const bg = (BG[cfg.bg]||BG.plain)(cfg.bgColor, id);
+    const cl = (CLOTHES[cfg.clothes]||CLOTHES.tee)(cfg.clothesColor, id);
+    const hd = head(cfg.skin, id);
+    const hr = (HAIR[cfg.hair!=null?cfg.hair:"short"]||HAIR.short)(cfg.hairColor, id);
+    const ac = (ACC[cfg.acc]||ACC.none)(cfg.accColor, id);
     return `<svg class="fx-avatar" viewBox="0 0 200 200" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="avatar">`
-      + `<defs><clipPath id="avClip"><rect x="0" y="0" width="200" height="200" rx="18"/></clipPath></defs>`
-      + `<g clip-path="url(#avClip)">${bg}${cl}${fc}${hr}${ac}</g>`
-      + `<rect x="1" y="1" width="198" height="198" rx="18" fill="none" stroke="${LINE}" stroke-width="2"/></svg>`;
+      + `<defs><clipPath id="${id}clip"><rect x="0" y="0" width="200" height="200" rx="20"/></clipPath></defs>`
+      + `<g clip-path="url(#${id}clip)">${bg}${cl}${hd}${hr}${ac}</g>`
+      + `<rect x="1.5" y="1.5" width="197" height="197" rx="20" fill="none" stroke="${LINE}" stroke-width="2"/></svg>`;
   };
 })();
 
