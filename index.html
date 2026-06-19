@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fluxor — Physics Revision Console</title>
+<title>Fluxor — Revision Console</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2346e7c8'/><stop offset='1' stop-color='%232bb89e'/></linearGradient></defs><rect x='2' y='2' width='44' height='44' rx='13' fill='url(%23g)'/><path d='M17 12 H33 V17.5 H22.5 V22 H30 V27.5 H22.5 V36 H17 Z' fill='%230c1118'/><path d='M31 27 h6 l-8 11 2.6 -7 -4.2 0 z' fill='%230c1118'/></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -28,10 +29,9 @@
     position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:20px;padding:14px 24px;
     background:rgba(12,17,24,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
   }
-  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px;letter-spacing:-.02em}
-  .brand .dot{width:14px;height:14px;border-radius:50%;background:var(--phosphor);
-    box-shadow:0 0 12px var(--phosphor),0 0 4px #fff inset;animation:pulse 2.4s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:20px;letter-spacing:-.02em}
+  .brand .logo{flex:none;filter:drop-shadow(0 2px 8px rgba(57,224,196,.28))}
+  .brand .brand-name{background:linear-gradient(92deg,#dde7f0,#9fe9da);-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand small{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase}
   .status{margin-left:auto;display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:12px}
   .status .who{color:var(--phosphor)} .status .unsaved{color:var(--amber)} .status .saved{color:var(--ink-dim)}
@@ -177,6 +177,8 @@
   .modal input{width:100%;font-family:var(--mono);font-size:15px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:var(--radius);color:var(--ink);padding:11px 14px;margin-bottom:18px}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+  .modal input.shake{border-color:var(--amber);animation:fxshake .35s}
+  @keyframes fxshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel-2);
     border:1px solid var(--phosphor-dim);color:var(--ink);padding:13px 22px;border-radius:10px;font-size:14px;z-index:120;
@@ -200,7 +202,15 @@
 </head>
 <body>
 <header>
-  <div class="brand"><span class="dot"></span>Fluxor<small>Physics Console</small></div>
+  <div class="brand">
+    <svg class="logo" width="34" height="34" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="fxLogo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46e7c8"/><stop offset="1" stop-color="#2bb89e"/></linearGradient></defs>
+      <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#fxLogo)"/>
+      <path d="M17 12 H33 V17.5 H22.5 V22 H30 V27.5 H22.5 V36 H17 Z" fill="#0c1118"/>
+      <path d="M31 27 h6 l-8 11 2.6 -7 -4.2 0 z" fill="#0c1118"/>
+    </svg>
+    <span class="brand-name">Fluxor</span><small>Revision Console</small>
+  </div>
   <div class="status"><span class="who" id="whoLabel">guest</span><span id="saveState" class="saved">all saved</span></div>
 </header>
 
@@ -299,16 +309,16 @@
 <footer>Fluxor · free to use · your progress lives in the file you download, not on any server</footer>
 
 <div class="modal-bg" id="nameModal"><div class="modal">
-  <h3>What should we call you?</h3>
-  <p>This name is stored in your progress file so you recognise it later. No account, no email.</p>
+  <h3 id="nameModalTitle">Welcome to Fluxor</h3>
+  <p id="nameModalText">Enter a name to get started. It's stored only in the progress file you download, so you recognise it later — no account, no email.</p>
   <input type="text" id="nameInput" placeholder="e.g. Sam" maxlength="24">
-  <div class="modal-actions"><button class="btn-ghost btn" id="nameCancel">Cancel</button><button class="btn-primary btn" id="nameSave">Save name</button></div>
+  <div class="modal-actions"><button class="btn-ghost btn" id="nameCancel">Cancel</button><button class="btn-primary btn" id="nameSave">Start revising</button></div>
 </div></div>
 
 <div class="modal-bg" id="closeModal"><div class="modal">
-  <h3>You have unsaved progress</h3>
-  <p>Download your progress file before leaving, or it'll be lost — there's no database backing this up.</p>
-  <div class="modal-actions"><button class="btn-ghost btn" id="leaveAnyway">Leave anyway</button><button class="btn-primary btn" id="downloadThenLeave">Download &amp; stay</button></div>
+  <h3 id="closeModalTitle">You have unsaved progress</h3>
+  <p id="closeModalText">Download your progress file before leaving, or it'll be lost — there's no database backing this up.</p>
+  <div class="modal-actions"><button class="btn-ghost btn" id="dismissReminder">Not now</button><button class="btn-primary btn" id="downloadThenLeave">Download progress</button></div>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -4836,19 +4846,67 @@ $("fileInput").addEventListener("change",e=>{
   reader.readAsText(file);
 });
 
-$("nameBtn").addEventListener("click",()=>{ $("nameInput").value=state.name==="guest"?"":state.name; $("nameModal").classList.add("show"); $("nameInput").focus(); });
-$("nameCancel").addEventListener("click",()=>$("nameModal").classList.remove("show"));
-$("nameSave").addEventListener("click",()=>{ const v=$("nameInput").value.trim(); if(v){ state.name=v; markUnsaved(); } $("nameModal").classList.remove("show"); });
+function openName(force){
+  const modal=$("nameModal");
+  $("nameInput").value = (state.name && state.name!=="guest") ? state.name : "";
+  // in forced mode (first visit) the dialog can't be dismissed without a name
+  $("nameCancel").style.display = force ? "none" : "";
+  $("nameModalTitle").textContent = force ? "Welcome to Fluxor" : "Change your name";
+  $("nameModalText").textContent = force
+    ? "Enter a name to get started. It's stored only in the progress file you download, so you recognise it later — no account, no email."
+    : "This name is stored in your progress file so you recognise it later. No account, no email.";
+  $("nameSave").textContent = force ? "Start revising" : "Save name";
+  modal.dataset.force = force ? "1" : "";
+  modal.classList.add("show"); setTimeout(()=>$("nameInput").focus(),50);
+}
+$("nameBtn").addEventListener("click",()=>openName(false));
+$("nameCancel").addEventListener("click",()=>{ if($("nameModal").dataset.force!=="1") $("nameModal").classList.remove("show"); });
+$("nameSave").addEventListener("click",()=>{
+  const v=$("nameInput").value.trim();
+  const force=$("nameModal").dataset.force==="1";
+  if(!v){ if(force){ $("nameInput").focus(); $("nameInput").classList.add("shake"); setTimeout(()=>$("nameInput").classList.remove("shake"),400); return; } $("nameModal").classList.remove("show"); return; }
+  state.name=v; markUnsaved(); $("nameModal").classList.remove("show");
+});
 $("nameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") $("nameSave").click(); });
 
 window.addEventListener("beforeunload",e=>{ if(unsaved&&!allowClose){ e.preventDefault(); e.returnValue=""; return ""; } });
+
+// ---- end-of-session download reminders ----
+// 1) If the user switches tab/minimises with unsaved progress, nudge them when they return.
+let remindedThisVisit=false;
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden" && unsaved && countDone()>0 && !remindedThisVisit){
+    remindedThisVisit=true;
+    // shown when they come back
+    setTimeout(()=>{ if(document.visibilityState==="visible") openCloseReminder(); }, 0);
+  }
+});
+// 2) Inactivity: after 8 minutes idle with unsaved work, gently remind.
+let idleTimer=null;
+function resetIdle(){
+  clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{ if(unsaved && countDone()>0) toast("Reminder: download your progress so you don't lose it 💾"); }, 8*60*1000);
+}
+["click","keydown","change","mousemove","touchstart"].forEach(ev=>document.addEventListener(ev,resetIdle,{passive:true}));
+resetIdle();
+
+// Reuse the existing modal as a "save before you go" reminder
+function openCloseReminder(){
+  if(!unsaved || countDone()===0) return;
+  $("closeModalTitle") && ($("closeModalTitle").textContent="Don't lose your progress");
+  $("closeModalText") && ($("closeModalText").textContent="You've made progress that isn't saved yet. Download your progress file to keep it — there's no server backing this up.");
+  $("closeModal").classList.add("show");
+}
+
 $("downloadThenLeave").addEventListener("click",()=>{ downloadProgress(); $("closeModal").classList.remove("show"); });
-$("leaveAnyway").addEventListener("click",()=>{ allowClose=true; $("closeModal").classList.remove("show"); toast("Close guard disabled for this session"); });
+$("dismissReminder").addEventListener("click",()=>{ $("closeModal").classList.remove("show"); });
 
 let toastTimer=null;
 function toast(msg){ const el=$("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),2400); }
 
 populateLevels(); populateSubjects(); populateTopics(); syncNav(); resetCardView(); render();
+// First run: require a name before using the app (skipped if a progress file is loaded later)
+if(!state.name || state.name==="guest") openName(true);
 
 // expose internals for the rewards/avatar module (loaded after this script)
 window.$ = $;
