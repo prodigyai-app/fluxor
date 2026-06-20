@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fluxor — QR & link maker</title>
+<style>
+  :root{
+    --bg:#0c1118; --panel:#141c27; --panel-2:#0f1620; --phosphor:#39e0c4; --phosphor-dim:#1f8f7e;
+    --amber:#f4b740; --green:#46e08a; --red:#ff5d6c; --line:#26384b; --ink:#dde7f0; --ink-dim:#7d93a8;
+    --mono:ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --disp:"Space Grotesk",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--disp);
+    min-height:100vh;padding:40px 20px;line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .dot{width:14px;height:14px;border-radius:50%;background:var(--phosphor);box-shadow:0 0 12px var(--phosphor)}
+  h1{font-size:24px;margin:0;letter-spacing:.01em}
+  header small{font-family:var(--mono);color:var(--ink-dim);font-size:12px;text-transform:uppercase;letter-spacing:.12em;margin-left:4px}
+  .lede{color:var(--ink-dim);font-size:14px;margin:0 0 26px;font-family:var(--mono)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px}
+  label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-dim);display:block;margin-bottom:8px}
+  input[type=text]{width:100%;font-family:var(--mono);font-size:15px;background:var(--panel-2);color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:13px 14px}
+  input[type=text]:focus{outline:none;border-color:var(--phosphor);box-shadow:0 0 0 1px var(--phosphor)}
+  .row{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}
+  .row .field{flex:1;min-width:150px}
+  input[type=color]{width:46px;height:38px;padding:2px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;cursor:pointer;vertical-align:middle}
+  select{font-family:var(--mono);font-size:14px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;cursor:pointer}
+  .swatch-line{display:flex;align-items:center;gap:10px}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:18px}
+  #qrbox{background:#fff;padding:16px;border-radius:14px;line-height:0;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  #qrbox svg{display:block}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  button{font-family:var(--disp);font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--panel-2);
+    color:var(--ink);border-radius:9px;padding:11px 18px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--phosphor-dim)}
+  button.primary{background:var(--phosphor);color:#06231d;border-color:var(--phosphor)}
+  button.primary:hover{background:#5cead2}
+  .hint{font-family:var(--mono);font-size:12px;color:var(--ink-dim);text-align:center}
+  .err{color:var(--amber);font-family:var(--mono);font-size:13px;text-align:center;min-height:18px}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  .steps li{counter-increment:s;position:relative;padding:8px 0 8px 38px;color:var(--ink-dim);font-size:14px;border-bottom:1px solid var(--line)}
+  .steps li:last-child{border-bottom:0}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:7px;width:24px;height:24px;border-radius:6px;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--phosphor);font-family:var(--mono);font-size:12px;
+    display:flex;align-items:center;justify-content:center}
+  .steps b{color:var(--ink)}
+  a{color:var(--phosphor)}
+  code{font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;color:var(--amber)}
+  .foot{text-align:center;color:var(--ink-dim);font-family:var(--mono);font-size:11px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="dot"></span><h1>Fluxor</h1><small>QR &amp; link maker</small></header>
+  <p class="lede">Turn your live site address into a scannable QR code — generated on your device, nothing uploaded.</p>
+
+  <div class="panel">
+    <label for="url">Your site address</label>
+    <input type="text" id="url" value="https://fluxor.prodigyai.uk/" spellcheck="false" autocomplete="off">
+    <div class="row">
+      <div class="field">
+        <label for="size">Size</label>
+        <select id="size">
+          <option value="256">Small (256px)</option>
+          <option value="512" selected>Medium (512px)</option>
+          <option value="1024">Large (1024px)</option>
+          <option value="2048">Print (2048px)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="ec">Error correction</label>
+        <select id="ec">
+          <option value="L">Low</option>
+          <option value="M" selected>Medium</option>
+          <option value="Q">Quartile</option>
+          <option value="H">High (best for print/logos)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Colours</label>
+        <div class="swatch-line">
+          <input type="color" id="fg" value="#0c1118" title="Dots">
+          <input type="color" id="bg" value="#ffffff" title="Background">
+          <span class="hint" style="text-align:left">dots / background</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel stage">
+    <div id="qrbox" aria-label="QR code preview"></div>
+    <div class="err" id="err"></div>
+    <div class="actions">
+      <button class="primary" id="dlPng">Download PNG</button>
+      <button id="dlSvg">Download SVG</button>
+      <button id="copyUrl">Copy link</button>
+    </div>
+    <p class="hint">Scan it with any phone camera to open your site. Test it before printing or sharing.</p>
+  </div>
+
+  <div class="panel">
+    <label>How to get your free short link</label>
+    <ol class="steps">
+      <li>Your GitHub Pages address already works as-is — paste it above to make the QR code.</li>
+      <li>For something shorter to say or type, make a <b>free</b> short link at a redirect service such as <a href="https://tinyurl.com" target="_blank" rel="noopener">TinyURL</a> or <a href="https://is.gd" target="_blank" rel="noopener">is.gd</a>: paste your Pages URL, and you can set a custom ending like <code>tinyurl.com/my-revision</code>.</li>
+      <li>Paste that short link back in the box above to put it inside the QR code instead.</li>
+      <li>Tip: a custom domain (in your repo's <b>Settings → Pages</b>) gives the cleanest address of all, e.g. <code>revise.yoursite.com</code>.</li>
+    </ol>
+  </div>
+
+  <p class="foot">All generation happens locally in your browser. Works offline.</p>
+</div>
+
+<!-- QR library: qrcode-generator (MIT), small and dependency-free -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var elUrl=$("url"), elSize=$("size"), elEc=$("ec"), elFg=$("fg"), elBg=$("bg"), elErr=$("err"), box=$("qrbox");
+
+  function buildModel(){
+    var text=elUrl.value.trim();
+    if(!text){ elErr.textContent="Type or paste a web address above to make a QR code."; box.innerHTML=""; return null; }
+    elErr.textContent="";
+    var ec=elEc.value;
+    // type 0 = auto-detect smallest version that fits
+    var qr=qrcode(0, ec);
+    qr.addData(text);
+    qr.make();
+    return qr;
+  }
+
+  function svgString(qr, px){
+    var count=qr.getModuleCount();
+    var quiet=4;                       // quiet-zone modules
+    var total=count+quiet*2;
+    var cell=px/total;
+    var fg=elFg.value, bg=elBg.value;
+    var rects="";
+    for(var r=0;r<count;r++){
+      for(var c=0;c<count;c++){
+        if(qr.isDark(r,c)){
+          var x=((c+quiet)*cell).toFixed(2), y=((r+quiet)*cell).toFixed(2), s=(cell+0.4).toFixed(2);
+          rects+='<rect x="'+x+'" y="'+y+'" width="'+s+'" height="'+s+'"/>';
+        }
+      }
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+px+'" height="'+px+'" viewBox="0 0 '+px+' '+px+'" shape-rendering="crispEdges">'
+      + '<rect width="'+px+'" height="'+px+'" fill="'+bg+'"/>'
+      + '<g fill="'+fg+'">'+rects+'</g></svg>';
+  }
+
+  function render(){
+    var qr=buildModel(); if(!qr) return;
+    // preview at a sensible on-screen size regardless of chosen export size
+    var preview=Math.min(320, parseInt(elSize.value,10));
+    box.innerHTML=svgString(qr, preview);
+  }
+
+  function download(filename, href){
+    var a=document.createElement("a"); a.href=href; a.download=filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  $("dlSvg").addEventListener("click",function(){
+    var qr=buildModel(); if(!qr) return;
+    var svg=svgString(qr, parseInt(elSize.value,10));
+    download("fluxor-qr.svg", "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg));
+  });
+
+  $("dlPng").addEventListener("click",function(){
+    var qr=buildModel(); if(!qr) return;
+    var px=parseInt(elSize.value,10);
+    var svg=svgString(qr, px);
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement("canvas"); canvas.width=px; canvas.height=px;
+      var ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0,px,px);
+      download("fluxor-qr.png", canvas.toDataURL("image/png"));
+    };
+    img.onerror=function(){ elErr.textContent="Could not render PNG — try the SVG download instead."; };
+    img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  });
+
+  $("copyUrl").addEventListener("click",function(){
+    var t=elUrl.value.trim(); if(!t) return;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){ elErr.style.color="var(--green)"; elErr.textContent="Link copied."; setTimeout(function(){elErr.style.color="";elErr.textContent="";},1500); });
+    }
+  });
+
+  ["input","change"].forEach(function(ev){
+    elUrl.addEventListener(ev,render); elSize.addEventListener(ev,render);
+    elEc.addEventListener(ev,render); elFg.addEventListener(ev,render); elBg.addEventListener(ev,render);
+  });
+
+  // wait for the QR library, then draw
+  function start(){ if(window.qrcode){ render(); } else { setTimeout(start,80); } }
+  start();
+})();
+</script>
+</body>
+</html>

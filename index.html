@@ -3458,6 +3458,78 @@ ocr_alevel: {
 </script>
 <script>
 /* ============================================================
+   FLUXOR — MATHS LATER-UNIT TOP-UP (Edexcel Higher)
+   Brings the thinner Higher-only later units up to ~12-15
+   quiz questions each. Quiz only (no new cards).
+   Loaded AFTER maths_hard.js, BEFORE shuffle.js.
+   Quiz format: [q,[A,B,C,D],correctIndex,explanation,diagram?]
+   Correct answer is authored at index 0; shuffle.js rebalances.
+   ============================================================ */
+(function(){
+  const C=window.COURSES;
+  if(!C||!C.edexcel_higher){ console.error("maths courses not loaded before topup"); return; }
+  function add(topic,quiz){ const t=C.edexcel_higher.topics[topic];
+    if(!t){console.warn("topup: missing topic",topic);return;}
+    t.quiz.push(...quiz); }
+
+  /* ===== VECTORS (had 4 → +9 = 13) ===== */
+  add("vectors_h",[
+    ["Subtract the vectors: (7, 2) − (3, 5). Working component by component gives:", ["(4, −3)","(4, 3)","(10, 7)","(−4, 3)"], 0, "(7−3, 2−5) = <b>(4, −3)</b>."],
+    ["A vector is given as 3a − 2b where a = (1, 4) and b = (2, −1). Substituting and simplifying gives:", ["(−1, 14)","(5, 10)","(1, 10)","(−1, 10)"], 0, "3(1,4) = (3,12); 2(2,−1) = (4,−2); (3,12) − (4,−2) = <b>(−1, 14)</b>."],
+    ["The magnitude of the vector (5, 12), found with √(x² + y²), is:", ["13","17","60","7"], 0, "√(25 + 144) = √169 = <b>13</b>."],
+    ["Vector AB = (4, −2) and B has coordinates (9, 3). Since AB = B − A, the coordinates of A are:", ["(5, 5)","(13, 1)","(5, 1)","(13, 5)"], 0, "A = B − AB = (9−4, 3−(−2)) = <b>(5, 5)</b>."],
+    ["Which of these vectors is parallel to (2, −6)?", ["(−1, 3)","(6, 2)","(2, 6)","(−3, −1)"], 0, "(−1, 3) = −½ × (2, −6), a scalar multiple, so it is <b>parallel</b>."],
+    ["In a triangle, vector AB = a and BC = b. The vector AC, found by adding AB + BC, is:", ["a + b","a − b","b − a","2a"], 0, "AC = AB + BC = <b>a + b</b> (following the path A→B→C)."],
+    ["M is the midpoint of OA where OA = (8, 6). The position vector of M (half of OA) is:", ["(4, 3)","(8, 3)","(16, 12)","(4, 6)"], 0, "Half of (8, 6) = <b>(4, 3)</b>."],
+    ["Vector p = (−3, 4). The magnitude |p| using Pythagoras, √((−3)² + 4²), is:", ["5","1","7","25"], 0, "√(9 + 16) = √25 = <b>5</b>. A negative component still gives a positive length."],
+    ["OABC is a parallelogram with OA = a and OC = c. The diagonal vector OB, reached via O→A→B, equals:", ["a + c","a − c","c − a","a + 2c"], 0, "In a parallelogram OB = OA + AB and AB = OC = c, so OB = <b>a + c</b>."],
+  ]);
+
+  /* ===== FUNCTIONS & ITERATION (had 6 → +7 = 13) ===== */
+  add("functions_h",[
+    ["Given f(x) = 4x − 5, solving f(x) = 11 means 4x − 5 = 11. The value of x is:", ["4","1.5","2.75","64"], 0, "4x = 16 → x = <b>4</b>. Set the rule equal to the output and rearrange."],
+    ["For g(x) = x² − 1, the composite gg(2) means apply g twice: g(2) = 3, then g(3) =", ["8","3","2","15"], 0, "g(2) = 4−1 = 3; g(3) = 9−1 = <b>8</b>."],
+    ["The inverse of f(x) = (x − 2)/3, found by solving y = (x−2)/3 for x, is f⁻¹(x) =", ["3x + 2","3x − 2","(x + 2)/3","x/3 + 2"], 0, "y = (x−2)/3 → 3y = x − 2 → x = 3y + 2, so f⁻¹(x) = <b>3x + 2</b>."],
+    ["Using the iteration xₙ₊₁ = √(2xₙ + 3) with x₀ = 3, the first iterate x₁ = √(2×3 + 3) is:", ["3","√9 = 3","4.5","9"], 0, "x₁ = √(6 + 3) = √9 = <b>3</b> (this happens to be a fixed point here)."],
+    ["For the iteration xₙ₊₁ = (5 + xₙ)/3 with x₀ = 1, the value of x₁ is:", ["2","1.67","6","5.33"], 0, "(5 + 1)/3 = 6/3 = <b>2</b>. Feed the previous answer back in."],
+    ["f(x) = 2x and g(x) = x − 4. The composite fg(x) = f(g(x)) = 2(x − 4) simplifies to:", ["2x − 8","2x − 4","x − 8","2x + 8"], 0, "2(x − 4) = <b>2x − 8</b> (do g first, then f)."],
+    ["An iteration formula is used to solve x³ + x − 5 = 0 near x = 1.5. Rearranged to xₙ₊₁ = ∛(5 − xₙ), this method finds a root by:", ["Repeatedly substituting each answer back in","Factorising the cubic","Completing the square","Drawing the graph once"], 0, "Iteration <b>repeatedly substitutes each answer back in</b> to converge on a root."],
+  ]);
+
+  /* ===== CUMULATIVE FREQUENCY & HISTOGRAMS (had 6 → +7 = 13) ===== */
+  add("cumulative_h",[
+    ["A histogram bar spans a class width of 8 with frequency density 2.5. The frequency, found by density × width, is:", ["20","10.5","3.2","32"], 0, "2.5 × 8 = <b>20</b>."],
+    ["A class of width 10 contains a frequency of 45. Its frequency density (frequency ÷ width) for the histogram is:", ["4.5","450","55","35"], 0, "45 ÷ 10 = <b>4.5</b>."],
+    ["A cumulative frequency curve for 120 data values is drawn. The median is read across at a frequency of (half the total):", ["60","120","30","40"], 0, "Median is at ½ × 120 = <b>60</b>."],
+    ["For 120 values, the interquartile range uses the cumulative frequencies at positions:", ["30 and 90","60 only","20 and 100","40 and 80"], 0, "LQ at ¼×120 = 30, UQ at ¾×120 = 90, so <b>30 and 90</b>."],
+    ["A cumulative frequency graph gives a lower quartile of 22 and an upper quartile of 38. The interquartile range (UQ − LQ) is:", ["16","60","30","8"], 0, "38 − 22 = <b>16</b>. The IQR measures the spread of the middle half."],
+    ["In a histogram, two bars have frequency densities 3 and 6 over equal class widths. This tells you the second class contains:", ["Twice as many values","Half as many values","The same number","Six values"], 0, "With equal widths, double the density means <b>twice as many values</b>."],
+    ["A grouped data set has 200 values. Reading the cumulative frequency at 150 then converting to a percentile, the 150th value corresponds to the:", ["75th percentile","50th percentile","15th percentile","150th percentile"], 0, "150 ÷ 200 = 0.75, so it is the <b>75th percentile</b> (the same point as the upper quartile)."],
+  ]);
+
+  /* ===== GROWTH & DECAY (had 4 → +9 = 13) ===== */
+  add("growth_decay_h",[
+    ["£3000 is invested at 5% compound interest for 3 years. Using P(1 + r/100)ⁿ = 3000 × 1.05³, the total is:", ["£3472.88","£3450.00","£3157.50","£4500.00"], 0, "3000 × 1.05³ = 3000 × 1.157625 = <b>£3472.88</b> (to the nearest penny)."],
+    ["A car worth £18 000 depreciates by 12% per year. After 2 years its value (×0.88²) is:", ["£13 939.20","£13 680.00","£15 840.00","£12 960.00"], 0, "18000 × 0.88² = 18000 × 0.7744 = <b>£13 939.20</b>."],
+    ["A bacterial colony of 500 grows by 8% per hour. After 4 hours, using 500 × 1.08⁴, the population is about:", ["680","720","660","2160"], 0, "500 × 1.08⁴ = 500 × 1.3605 ≈ <b>680</b>."],
+    ["The single decimal multiplier for a 15% decrease is:", ["0.85","1.15","0.15","0.95"], 0, "100% − 15% = 85% → <b>0.85</b>."],
+    ["A 7% annual increase applied over n years uses the multiplier:", ["1.07ⁿ","0.93ⁿ","1.7ⁿ","7ⁿ"], 0, "A 7% rise is × 1.07 each year, so <b>1.07ⁿ</b>."],
+    ["£800 grows to £882 over 2 years of compound interest. Since 800 × m² = 882, m² = 1.1025, so the annual multiplier m is:", ["1.05","1.10","1.025","1.21"], 0, "√1.1025 = 1.05, a <b>5%</b> annual rate."],
+    ["A radioactive sample halves every year. Starting at 240 g, after 3 years (×0.5³) the mass remaining is:", ["30 g","60 g","80 g","120 g"], 0, "240 × 0.5³ = 240 × 0.125 = <b>30 g</b>."],
+    ["A price rises 10% then falls 10%. The overall single multiplier (1.1 × 0.9) and net effect are:", ["0.99, a 1% loss","1.00, no change","1.01, a 1% gain","0.90, a 10% loss"], 0, "1.1 × 0.9 = <b>0.99</b>, a net 1% decrease — successive percentages don't cancel."],
+    ["An investment doubles in value after growing at compound interest. If 1.06ⁿ = 2, the number of years (using trial or logs) is closest to:", ["12 years","6 years","2 years","20 years"], 0, "1.06¹² ≈ 2.01, so about <b>12 years</b> (the 'rule of 72': 72 ÷ 6 = 12)."],
+  ]);
+
+  const H=C.edexcel_higher.topics;
+  console.log("[topup.js] later units now — vectors:"+H.vectors_h.quiz.length+
+    " functions:"+H.functions_h.quiz.length+
+    " cumulative:"+H.cumulative_h.quiz.length+
+    " growth_decay:"+H.growth_decay_h.quiz.length+
+    " circle_theorems:"+H.circle_theorems_h.quiz.length);
+})();
+</script>
+<script>
+/* ============================================================
    FLUXOR CONTENT — GCSE Biology (AQA 8461 / combined 8464)
    Full triple-science course. Same conventions as Physics:
    - flashcards cover definitions/key terms

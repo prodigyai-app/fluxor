@@ -1,6 +1,6 @@
 # Fluxor — Revision Console
 
-A free, self-contained web app for exam revision: flashcards, exam-style multiple-choice questions with worked explanations, a progress dashboard, and an avatar rewards scheme. It covers **GCSE Physics (AQA)**, **A-Level Physics (OCR A)**, and **GCSE Maths Foundation & Higher (Edexcel)**.
+A free, self-contained web app for exam revision: flashcards, exam-style multiple-choice questions with worked explanations, embedded video lessons, a progress dashboard, and an avatar rewards scheme. It covers GCSE Biology, Chemistry, Physics and Combined Science (AQA), GCSE Computer Science (OCR), GCSE Maths Foundation & Higher (Edexcel), and A-Level Physics (OCR A).
 
 Everything lives in a single `index.html` file — no server, no database, no build step. Progress is saved to a downloadable `.fluxor` file that you can re-load on any device.
 
@@ -11,6 +11,7 @@ Everything lives in a single `index.html` file — no server, no database, no bu
 | File | Purpose |
 |------|---------|
 | `index.html` | The entire app. This is all you strictly need. |
+| `qr.html` | A QR-code & link maker. Open it, paste your live site address, and download a QR code (PNG or SVG). Runs entirely in the browser. |
 | `404.html` | A friendly "page not found" screen that links back to the app. |
 | `.nojekyll` | Tells GitHub Pages to serve the files as-is (recommended). |
 | `LICENSE` | MIT license — free to use and adapt. |
@@ -57,15 +58,44 @@ Then do steps 7–9 from Option A to switch Pages on.
 
 ---
 
-## Using a custom domain (optional)
+## Custom domain — fluxor.prodigyai.uk (set up for this build)
 
-If you own a domain (e.g. `revise.example.com`):
+This package already contains a `CNAME` file set to **fluxor.prodigyai.uk**, so once it's in your GitHub Pages repo you only need to add one DNS record at GoDaddy:
 
-1. In the repository **Settings → Pages → Custom domain**, type your domain and **Save**.
-2. With your domain provider, add a **CNAME record** pointing your subdomain to `YOUR-USERNAME.github.io`.
-3. Tick **Enforce HTTPS** once it becomes available.
+1. Sign in to **GoDaddy → My Products → DNS** for prodigyai.uk.
+2. Add a record:
+   - **Type:** CNAME
+   - **Name / Host:** `fluxor`
+   - **Value / Points to:** `prodigyai-app.github.io`  (the account root — *not* the `/fluxor` path)
+   - **TTL:** default (1 hour) is fine
+3. Save. DNS usually propagates within minutes to an hour.
+4. In the repo, go to **Settings → Pages** and tick **Enforce HTTPS** once the option appears (GitHub issues the certificate automatically after DNS resolves).
 
-GitHub will create a `CNAME` file in your repo automatically — leave it there.
+The site will then serve at **https://fluxor.prodigyai.uk** — the address bar stays on your domain, and the old `prodigyai-app.github.io/fluxor` address redirects to it. Use a CNAME record (not an A record) for a subdomain like this.
+
+To use a different domain instead, change the contents of the `CNAME` file to that domain and point its DNS the same way.
+
+---
+
+## Video lessons
+
+Science topics embed Cognito playlists directly. GCSE Maths (Foundation and Higher) links each topic to the matching free **Maths Genie** lesson page, which opens on mathsgenie.co.uk in a new tab alongside practice questions and worked solutions. Open any maths topic and choose the **Videos** tab.
+
+## Transfer progress between devices
+
+Fluxor can move a student's progress from one device to another with no account and no server. On the first device, open the progress bar and choose **Transfer out** — it shows a QR code (and a copyable code) holding the compressed progress. On the second device, choose **Transfer in** and either scan the QR with the camera or paste the code. The progress, rewards and badges arrive directly; nothing is uploaded anywhere.
+
+The downloadable `.fluxor` file remains the durable backup; the QR handoff is the quick way to hop between devices.
+
+## Making a QR code and a short link
+
+Once your site is live and you have its address (e.g. `https://YOUR-USERNAME.github.io/fluxor/`):
+
+- **QR code:** open `qr.html` (it deploys alongside the app at `https://YOUR-USERNAME.github.io/fluxor/qr.html`, or just double-click the file locally). Paste your address, pick a size, and download a PNG or SVG. Great for posters, worksheets, or the board.
+- **Short link:** paste your address into a free redirect service such as TinyURL or is.gd and choose a custom ending (e.g. `tinyurl.com/my-revision`). Paste that short link back into `qr.html` if you'd rather the QR points at the short version.
+- **Cleanest of all:** set a custom domain under **Settings → Pages** so the address itself is short.
+
+Always scan or click the finished code/link once to test it before sharing widely.
 
 ---
 
