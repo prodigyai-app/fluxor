@@ -1703,11 +1703,80 @@ ocr_alevel: {
     return wrap(W, H, s, o.alt2||("circle theorem: "+t));
   }
 
+  // Vectors. o:{ mode:"grid"|"shape", ... }
+  //  grid: draws column vectors as arrows on a coordinate grid.
+  //    o.vectors=[{x,y,from?,color?,label?}], from defaults to origin.
+  //    o.sum:true draws a tip-to-tail resultant; o.span sets grid range.
+  //    o.magnitude:{x,y} draws the right-triangle for |v| with x,y legs.
+  //  shape: a triangle or parallelogram with labelled vector arrows.
+  //    o.shape="triangle"|"parallelogram"; o.a,o.b labels; o.show=["AB","BC","AC"...]
+  function vector(o){
+    o=o||{}; const W=o.w||280, H=o.h||260;
+    const ARROW=(id,col)=>`<marker id="${id}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="${col}"/></marker>`;
+    if((o.mode||"grid")==="grid"){
+      const span=o.span||6, pad=24;
+      const gw=W-pad*2, gh=H-pad*2, ox=pad+gw/2, oy=pad+gh/2;   // origin at centre
+      const u=Math.min(gw,gh)/(span*2);                          // pixels per unit
+      const PX=(x)=>ox+x*u, PY=(y)=>oy-y*u;
+      let s=defs();
+      // grid lines
+      let g="";
+      for(let i=-span;i<=span;i++){ g+=`<line x1="${PX(i)}" y1="${pad}" x2="${PX(i)}" y2="${H-pad}" stroke="${LINE}" stroke-width="${i===0?1.4:0.6}"/>`;
+        g+=`<line x1="${pad}" y1="${PY(i)}" x2="${W-pad}" y2="${PY(i)}" stroke="${LINE}" stroke-width="${i===0?1.4:0.6}"/>`; }
+      s+=g;
+      const cols=[CYAN,AMBER,GREEN,RED];
+      let defsArrows="", body="";
+      (o.vectors||[]).forEach((v,i)=>{
+        const col=v.color||cols[i%cols.length]; const id="va"+i;
+        defsArrows+=ARROW(id,col);
+        const fx=(v.from&&v.from.x)||0, fy=(v.from&&v.from.y)||0;
+        body+=`<line x1="${PX(fx)}" y1="${PY(fy)}" x2="${PX(fx+v.x)}" y2="${PY(fy+v.y)}" stroke="${col}" stroke-width="2.4" marker-end="url(#${id})"/>`;
+        if(v.label){ const mx=PX(fx+v.x/2), my=PY(fy+v.y/2); body+=txt(mx+8, my-4, v.label, {fill:col,size:13,weight:700}); }
+      });
+      // tip-to-tail resultant
+      if(o.sum && (o.vectors||[]).length>=2){
+        const v1=o.vectors[0], v2=o.vectors[1];
+        defsArrows+=ARROW("vsum",INK);
+        // draw v2 starting at tip of v1 (faded), then resultant origin->(v1+v2)
+        body+=`<line x1="${PX(v1.x)}" y1="${PY(v1.y)}" x2="${PX(v1.x+v2.x)}" y2="${PY(v1.y+v2.y)}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="4 3" opacity="0.7"/>`;
+        body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(v1.x+v2.x)}" y2="${PY(v1.y+v2.y)}" stroke="${INK}" stroke-width="2.6" marker-end="url(#vsum)"/>`;
+        body+=txt(PX((v1.x+v2.x)/2)-6, PY((v1.y+v2.y)/2)-6, o.sumLabel||"a + b", {fill:INK,size:13,weight:700,anchor:"end"});
+      }
+      // magnitude right-triangle
+      if(o.magnitude){ const m=o.magnitude; body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(0)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/><line x1="${PX(m.x)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(m.y)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/>`; }
+      return wrap(W,H,`<defs>${defsArrows}</defs>`+s+body, o.alt2||"vector diagram");
+    } else {
+      // shape mode
+      const pad=30;
+      let s=defs(), defsArrows=ARROW("vsa",AMBER)+ARROW("vsb",CYAN);
+      const arrow=(a,b,col,id,label)=>{ let g=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width="2.4" marker-end="url(#${id})"/>`;
+        const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2; if(label) g+=txt(mx+8,my-4,label,{fill:col,size:14,weight:700}); return g; };
+      const dot=(p)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${INK}"/>`;
+      const lab=(p,t,dx,dy)=>txt(p[0]+(dx||0),p[1]+(dy||0),t,{fill:INK,size:12,weight:700});
+      if(o.shape==="parallelogram"){
+        const O=[pad,H-pad], A=[pad+90,pad+30], Cc=[W-pad,H-pad], B=[A[0]+(Cc[0]-O[0]),A[1]];
+        s+=`<polygon points="${O} ${A} ${B} ${Cc}" fill="${CYAN}" fill-opacity="0.05" stroke="${LINE}" stroke-width="1"/>`;
+        s+=arrow(O,A,AMBER,"vsa",o.a||"a")+arrow(O,Cc,CYAN,"vsb",o.c||"c");
+        if(o.diagonal){ defsArrows+=ARROW("vsd",GREEN); s+=arrow(O,B,GREEN,"vsd",o.diagLabel||"a + c"); }
+        s+=dot(O)+dot(A)+dot(B)+dot(Cc)+lab(O,"O",-12,4)+lab(A,"A",-4,-6)+lab(B,"B",6,0)+lab(Cc,"C",6,12);
+        s+=txt(W/2,H-6,"OABC is a parallelogram",{anchor:"middle",fill:DIM,size:10});
+      } else {
+        const A=[pad,H-pad], B=[W/2+10,pad+10], Cc=[W-pad,H-pad];
+        s+=`<polygon points="${A} ${B} ${Cc}" fill="${CYAN}" fill-opacity="0.05" stroke="${LINE}" stroke-width="1"/>`;
+        s+=arrow(A,B,AMBER,"vsa",o.a||"a")+arrow(B,Cc,CYAN,"vsb",o.b||"b");
+        if(o.resultant){ defsArrows+=ARROW("vsr",GREEN); s+=arrow(A,Cc,GREEN,"vsr",o.resLabel||"a + b"); }
+        s+=dot(A)+dot(B)+dot(Cc)+lab(A,"A",-12,4)+lab(B,"B",0,-6)+lab(Cc,"C",6,4);
+        s+=txt(W/2,H-6,"triangle ABC",{anchor:"middle",fill:DIM,size:10});
+      }
+      return wrap(W,H,`<defs>${defsArrows}</defs>`+s, o.alt2||"vector shape");
+    }
+  }
+
   window.DIAGRAMS = {
     graphLinear, graphCurve, graphSegments, wave, refraction, reflection,
     freeBody, barMagnet, wireField, circuit,
     rightTriangle, pieChart, scatter, rectShape, parabola, circle,
-    reactionProfile, dissociationCurve, enzymeRate, circleTheorem
+    reactionProfile, dissociationCurve, enzymeRate, circleTheorem, vector
   };
   // Render helper used by the app: accepts a spec {d, o} and returns SVG (or "")
   window.renderDiagram = function(spec){
@@ -3202,10 +3271,10 @@ ocr_alevel: {
       ["What is the magnitude of a vector (x, y)?", "Its length: <b>√(x² + y²)</b> (Pythagoras)."],
     ],
     quiz:[
-      ["Add the vectors (3, 1) and (2, 4).", ["(5, 5)","(6, 4)","(1, 3)","(5, 4)"], 0, "Add components: (3+2, 1+4) = <b>(5, 5)</b>."],
-      ["Multiply the vector (2, −3) by the scalar 4.", ["(8, −12)","(6, −7)","(8, 12)","(2, −12)"], 0, "Multiply each component: <b>(8, −12)</b>."],
-      ["The magnitude of the vector (6, 8) is:", ["10","14","48","2"], 0, "√(6² + 8²) = √100 = <b>10</b>."],
-      ["Which vector is parallel to (1, 2)?", ["(3, 6)","(2, 1)","(1, −2)","(3, 5)"], 0, "(3, 6) = 3 × (1, 2), a scalar multiple → <b>parallel</b>."],
+      ["Add the vectors (3, 1) and (2, 4).", ["(5, 5)","(6, 4)","(1, 3)","(5, 4)"], 0, "Add components: (3+2, 1+4) = <b>(5, 5)</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:3,y:1,label:"(3,1)"},{x:2,y:4,label:"(2,4)"}],sum:true,sumLabel:"sum"}}],
+      ["Multiply the vector (2, −3) by the scalar 4.", ["(8, −12)","(6, −7)","(8, 12)","(2, −12)"], 0, "Multiply each component: <b>(8, −12)</b>.", {d:"vector",o:{mode:"grid",span:13,vectors:[{x:8,y:-12,color:"#f4b740",label:"4v"},{x:2,y:-3,label:"v"}]}}],
+      ["The magnitude of the vector (6, 8) is:", ["10","14","48","2"], 0, "√(6² + 8²) = √100 = <b>10</b>.", {d:"vector",o:{mode:"grid",span:9,vectors:[{x:6,y:8,label:"(6,8)"}],magnitude:{x:6,y:8}}}],
+      ["Which vector is parallel to (1, 2)?", ["(3, 6)","(2, 1)","(1, −2)","(3, 5)"], 0, "(3, 6) = 3 × (1, 2), a scalar multiple → <b>parallel</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:1,y:2,label:"(1,2)"},{x:3,y:6,color:"#f4b740",label:"(3,6)"}]}}],
     ],
   };
 
@@ -3479,10 +3548,10 @@ ocr_alevel: {
     ["The magnitude of the vector (5, 12), found with √(x² + y²), is:", ["13","17","60","7"], 0, "√(25 + 144) = √169 = <b>13</b>."],
     ["Vector AB = (4, −2) and B has coordinates (9, 3). Since AB = B − A, the coordinates of A are:", ["(5, 5)","(13, 1)","(5, 1)","(13, 5)"], 0, "A = B − AB = (9−4, 3−(−2)) = <b>(5, 5)</b>."],
     ["Which of these vectors is parallel to (2, −6)?", ["(−1, 3)","(6, 2)","(2, 6)","(−3, −1)"], 0, "(−1, 3) = −½ × (2, −6), a scalar multiple, so it is <b>parallel</b>."],
-    ["In a triangle, vector AB = a and BC = b. The vector AC, found by adding AB + BC, is:", ["a + b","a − b","b − a","2a"], 0, "AC = AB + BC = <b>a + b</b> (following the path A→B→C)."],
+    ["In a triangle, vector AB = a and BC = b. The vector AC, found by adding AB + BC, is:", ["a + b","a − b","b − a","2a"], 0, "AC = AB + BC = <b>a + b</b> (following the path A→B→C).", {d:"vector",o:{mode:"shape",shape:"triangle",a:"a",b:"b",resultant:true,resLabel:"AC"}}],
     ["M is the midpoint of OA where OA = (8, 6). The position vector of M (half of OA) is:", ["(4, 3)","(8, 3)","(16, 12)","(4, 6)"], 0, "Half of (8, 6) = <b>(4, 3)</b>."],
     ["Vector p = (−3, 4). The magnitude |p| using Pythagoras, √((−3)² + 4²), is:", ["5","1","7","25"], 0, "√(9 + 16) = √25 = <b>5</b>. A negative component still gives a positive length."],
-    ["OABC is a parallelogram with OA = a and OC = c. The diagonal vector OB, reached via O→A→B, equals:", ["a + c","a − c","c − a","a + 2c"], 0, "In a parallelogram OB = OA + AB and AB = OC = c, so OB = <b>a + c</b>."],
+    ["OABC is a parallelogram with OA = a and OC = c. The diagonal vector OB, reached via O→A→B, equals:", ["a + c","a − c","c − a","a + 2c"], 0, "In a parallelogram OB = OA + AB and AB = OC = c, so OB = <b>a + c</b>.", {d:"vector",o:{mode:"shape",shape:"parallelogram",a:"a",c:"c",diagonal:true,diagLabel:"OB"}}],
   ]);
 
   /* ===== FUNCTIONS & ITERATION (had 6 → +7 = 13) ===== */
