@@ -131,6 +131,11 @@
   .q-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px}
   .q-num{font-family:var(--mono);font-size:12px;color:var(--phosphor);letter-spacing:.08em}
   .q-text{font-size:19px;font-weight:600;margin:10px 0 20px;line-height:1.4}
+  .colv{display:inline-flex;align-items:center;vertical-align:middle;font-family:var(--mono,monospace);font-weight:700;line-height:1;margin:0 1px}
+  .colv::before,.colv::after{content:"";width:5px;align-self:stretch;border:1.4px solid currentColor;border-right:none;border-radius:3px 0 0 3px;margin-right:1px}
+  .colv::after{border:1.4px solid currentColor;border-left:none;border-radius:0 3px 3px 0;margin-right:0;margin-left:1px}
+  .colv .cvn{display:inline-flex;flex-direction:column;align-items:center;padding:1px 0}
+  .colv .cvn span{display:block;padding:1px 3px}
   .options{display:flex;flex-direction:column;gap:10px}
   .opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:8px;border:1px solid var(--line);
     background:var(--panel-2);text-align:left;font-size:15px;transition:.15s}
@@ -1757,10 +1762,14 @@ ocr_alevel: {
       });
       if(o.sum && (o.vectors||[]).length>=2){
         const v1=o.vectors[0], v2=o.vectors[1];
+        // resultant from origin to the tip of (v1 then v2)
+        const ex=v1.x+v2.x, ey=v1.y+v2.y;
         defsArrows+=ARROW("vsum",INK);
-        body+=`<line x1="${PX(v1.x)}" y1="${PY(v1.y)}" x2="${PX(v1.x+v2.x)}" y2="${PY(v1.y+v2.y)}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="4 3" opacity="0.6"/>`;
-        body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(v1.x+v2.x)}" y2="${PY(v1.y+v2.y)}" stroke="${INK}" stroke-width="2.6" marker-end="url(#vsum)"/>`;
-        body+=sideLabel(PX(0),PY(0),PX(v1.x+v2.x),PY(v1.y+v2.y),INK,o.sumLabel||"a + b",-1,false);
+        // if v2 wasn't already drawn tip-to-tail from v1, show a faint connector
+        const v2placed = v2.from && v2.from.x===v1.x && v2.from.y===v1.y;
+        if(!v2placed){ body+=`<line x1="${PX(v1.x)}" y1="${PY(v1.y)}" x2="${PX(ex)}" y2="${PY(ey)}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="4 3" opacity="0.6"/>`; }
+        body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(ex)}" y2="${PY(ey)}" stroke="${INK}" stroke-width="2.6" marker-end="url(#vsum)"/>`;
+        body+=sideLabel(PX(0),PY(0),PX(ex),PY(ey),INK,o.sumLabel||"a + b",-1,false);
       }
       if(o.magnitude){ const m=o.magnitude; body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(0)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/><line x1="${PX(m.x)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(m.y)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/>`; }
       return wrap(W,H,`<defs>${defsArrows}</defs>`+s+body, o.alt2||"vector diagram");
@@ -3183,7 +3192,7 @@ ocr_alevel: {
       ["What does a negative scale factor enlargement do?", "Enlarges through the centre and <b>inverts</b> the shape on the opposite side."],
     ],
     quiz:[
-      ["A shape is translated by the vector (3, −2). Each point moves:", ["3 right, 2 down","3 left, 2 up","2 right, 3 down","3 up, 2 right"], 0, "The vector means <b>3 right and 2 down</b>."],
+      ["A shape is translated by the vector <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>−2</span></span></span>. Each point moves:", ["3 right, 2 down","3 left, 2 up","2 right, 3 down","3 up, 2 right"], 0, "The vector means <b>3 right and 2 down</b>."],
       ["A shape is enlarged by scale factor 3. A side of 4 cm becomes:", ["12 cm","7 cm","1.3 cm","4 cm"], 0, "4 × 3 = <b>12 cm</b>."],
       ["Reflecting a point in the y-axis sends (4, 2) to:", ["(−4, 2)","(4, −2)","(−4, −2)","(2, 4)"], 0, "Reflection in the y-axis changes the sign of x → <b>(−4, 2)</b>."],
       ["Which transformation changes the SIZE of a shape?", ["Enlargement","Translation","Reflection","Rotation"], 0, "Only <b>enlargement</b> changes size; the others keep it congruent."],
@@ -3289,10 +3298,10 @@ ocr_alevel: {
       ["What is the magnitude of a vector (x, y)?", "Its length: <b>√(x² + y²)</b> (Pythagoras)."],
     ],
     quiz:[
-      ["Add the vectors (3, 1) and (2, 4).", ["(5, 5)","(6, 4)","(1, 3)","(5, 4)"], 0, "Add components: (3+2, 1+4) = <b>(5, 5)</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:3,y:1,col:true},{x:2,y:4,col:true}],sum:true,sumLabel:"a + b"}}],
-      ["Multiply the vector (2, −3) by the scalar 4.", ["(8, −12)","(6, −7)","(8, 12)","(2, −12)"], 0, "Multiply each component: <b>(8, −12)</b>.", {d:"vector",o:{mode:"grid",span:13,vectors:[{x:8,y:-12,color:"#f4b740",col:true},{x:2,y:-3,col:true}]}}],
-      ["The magnitude of the vector (6, 8) is:", ["10","14","48","2"], 0, "√(6² + 8²) = √100 = <b>10</b>.", {d:"vector",o:{mode:"grid",span:9,vectors:[{x:6,y:8,col:true}],magnitude:{x:6,y:8}}}],
-      ["Which vector is parallel to (1, 2)?", ["(3, 6)","(2, 1)","(1, −2)","(3, 5)"], 0, "(3, 6) = 3 × (1, 2), a scalar multiple → <b>parallel</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:1,y:2,col:true},{x:3,y:6,color:"#f4b740",col:true}]}}],
+      ["Add the vectors <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>1</span></span></span> and <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>4</span></span></span>.", ["<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>4</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>4</span></span></span>"], 0, "Add the components: 3+2=5 and 1+4=5, giving <b><span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:8,vectors:[{x:3,y:1,col:true},{x:2,y:4,from:{x:3,y:1},col:true}],sum:true,sumLabel:"a + b"}}],
+      ["Multiply the vector <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−3</span></span></span> by the scalar 4.", ["<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>−7</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−12</span></span></span>"], 0, "Multiply each component by 4: <b><span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:13,vectors:[{x:8,y:-12,color:"#f4b740",col:true},{x:2,y:-3,col:true}]}}],
+      ["The magnitude of the vector <span class=\"colv\"><span class=\"cvn\"><span>6</span><span>8</span></span></span> is:", ["10","14","48","2"], 0, "√(6² + 8²) = √100 = <b>10</b>.", {d:"vector",o:{mode:"grid",span:9,vectors:[{x:6,y:8,col:true}],magnitude:{x:6,y:8}}}],
+      ["Which vector is parallel to <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>?", ["<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>1</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>−2</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>5</span></span></span>"], 0, "<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span> = 3 × <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>, a scalar multiple, so it is <b>parallel</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:1,y:2,col:true},{x:3,y:6,color:"#f4b740",col:true}]}}],
     ],
   };
 
@@ -3561,14 +3570,14 @@ ocr_alevel: {
 
   /* ===== VECTORS (had 4 → +9 = 13) ===== */
   add("vectors_h",[
-    ["Subtract the vectors: (7, 2) − (3, 5). Working component by component gives:", ["(4, −3)","(4, 3)","(10, 7)","(−4, 3)"], 0, "(7−3, 2−5) = <b>(4, −3)</b>."],
-    ["A vector is given as 3a − 2b where a = (1, 4) and b = (2, −1). Substituting and simplifying gives:", ["(−1, 14)","(5, 10)","(1, 10)","(−1, 10)"], 0, "3(1,4) = (3,12); 2(2,−1) = (4,−2); (3,12) − (4,−2) = <b>(−1, 14)</b>."],
-    ["The magnitude of the vector (5, 12), found with √(x² + y²), is:", ["13","17","60","7"], 0, "√(25 + 144) = √169 = <b>13</b>."],
-    ["Vector AB = (4, −2) and B has coordinates (9, 3). Since AB = B − A, the coordinates of A are:", ["(5, 5)","(13, 1)","(5, 1)","(13, 5)"], 0, "A = B − AB = (9−4, 3−(−2)) = <b>(5, 5)</b>."],
-    ["Which of these vectors is parallel to (2, −6)?", ["(−1, 3)","(6, 2)","(2, 6)","(−3, −1)"], 0, "(−1, 3) = −½ × (2, −6), a scalar multiple, so it is <b>parallel</b>."],
+    ["Subtract the vectors <span class=\"colv\"><span class=\"cvn\"><span>7</span><span>2</span></span></span> − <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>5</span></span></span>. Working component by component gives:", ["<span class=\"colv\"><span class=\"cvn\"><span>4</span><span>−3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>4</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>10</span><span>7</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>−4</span><span>3</span></span></span>"], 0, "7−3=4 and 2−5=−3, giving <b><span class=\"colv\"><span class=\"cvn\"><span>4</span><span>−3</span></span></span></b>."],
+    ["A vector is given as 3a − 2b where a = <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>4</span></span></span> and b = <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−1</span></span></span>. Substituting and simplifying gives:", ["<span class=\"colv\"><span class=\"cvn\"><span>−1</span><span>14</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>10</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>10</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>−1</span><span>10</span></span></span>"], 0, "3a = <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>12</span></span></span>; 2b = <span class=\"colv\"><span class=\"cvn\"><span>4</span><span>−2</span></span></span>; subtracting gives <b><span class=\"colv\"><span class=\"cvn\"><span>−1</span><span>14</span></span></span></b>."],
+    ["The magnitude of the vector <span class=\"colv\"><span class=\"cvn\"><span>5</span><span>12</span></span></span>, found with √(x² + y²), is:", ["13","17","60","7"], 0, "√(25 + 144) = √169 = <b>13</b>."],
+    ["Vector AB = <span class=\"colv\"><span class=\"cvn\"><span>4</span><span>−2</span></span></span> and B has coordinates (9, 3). Since AB = B − A, the coordinates of A are:", ["(5, 5)","(13, 1)","(5, 1)","(13, 5)"], 0, "A = B − AB = (9−4, 3−(−2)) = <b>(5, 5)</b>."],
+    ["Which of these vectors is parallel to <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−6</span></span></span>?", ["<span class=\"colv\"><span class=\"cvn\"><span>−1</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>2</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>6</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>−3</span><span>−1</span></span></span>"], 0, "<span class=\"colv\"><span class=\"cvn\"><span>−1</span><span>3</span></span></span> = −½ × <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−6</span></span></span>, a scalar multiple, so it is <b>parallel</b>."],
     ["In a triangle, vector AB = a and BC = b. The vector AC, found by adding AB + BC, is:", ["a + b","a − b","b − a","2a"], 0, "AC = AB + BC = <b>a + b</b> (following the path A→B→C).", {d:"vector",o:{mode:"shape",shape:"triangle",a:"a",b:"b",resultant:true,resLabel:"AC"}}],
-    ["M is the midpoint of OA where OA = (8, 6). The position vector of M (half of OA) is:", ["(4, 3)","(8, 3)","(16, 12)","(4, 6)"], 0, "Half of (8, 6) = <b>(4, 3)</b>."],
-    ["Vector p = (−3, 4). The magnitude |p| using Pythagoras, √((−3)² + 4²), is:", ["5","1","7","25"], 0, "√(9 + 16) = √25 = <b>5</b>. A negative component still gives a positive length."],
+    ["M is the midpoint of OA where OA = <span class=\"colv\"><span class=\"cvn\"><span>8</span><span>6</span></span></span>. The position vector of M (half of OA) is:", ["<span class=\"colv\"><span class=\"cvn\"><span>4</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>16</span><span>12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>4</span><span>6</span></span></span>"], 0, "Half of <span class=\"colv\"><span class=\"cvn\"><span>8</span><span>6</span></span></span> = <b><span class=\"colv\"><span class=\"cvn\"><span>4</span><span>3</span></span></span></b>."],
+    ["Vector p = <span class=\"colv\"><span class=\"cvn\"><span>−3</span><span>4</span></span></span>. The magnitude |p| using Pythagoras, √((−3)² + 4²), is:", ["5","1","7","25"], 0, "√(9 + 16) = √25 = <b>5</b>. A negative component still gives a positive length."],
     ["OABC is a parallelogram with OA = a and OC = c. The diagonal vector OB, reached via O→A→B, equals:", ["a + c","a − c","c − a","a + 2c"], 0, "In a parallelogram OB = OA + AB and AB = OC = c, so OB = <b>a + c</b>.", {d:"vector",o:{mode:"shape",shape:"parallelogram",a:"a",c:"c",diagonal:true,diagLabel:"OB"}}],
     ["OAB is a triangle with OA = a and OB = b. M is the midpoint of AB. Using OM = OA + ½AB and AB = b − a, the vector OM is:", ["½a + ½b","a + ½b","½(b − a)","a + b"], 0, "OM = a + ½(b − a) = ½a + ½b = <b>½(a + b)</b>. A midpoint gives the average of the two position vectors.", {d:"vector",o:{mode:"shape",shape:"triangle",a:"a",b:"b"}}],
     ["In triangle OAB, OA = a and OB = b. Point P divides AB in the ratio AP : PB = 1 : 2, so AP = ⅓AB. Since AB = b − a, the vector OP = a + ⅓(b − a) simplifies to:", ["⅔a + ⅓b","⅓a + ⅔b","½a + ½b","a + ⅓b"], 0, "OP = a + ⅓(b − a) = a − ⅓a + ⅓b = <b>⅔a + ⅓b</b>. Split the line in the given ratio."],
@@ -6114,6 +6123,262 @@ ocr_alevel: {
 </script>
 <script>
 /* ============================================================
+   FLUXOR CONTENT — GCSE Physical Education (AQA 8582)
+   Paper 1: the human body & movement. Paper 2: socio-cultural
+   influences & wellbeing. Topic keys prefixed p1_/p2_ so they
+   group by paper in the dashboard.
+   Card:  [q,a]   Quiz: [q,[opts],correctIdx,explanation,diagram?]
+   ============================================================ */
+(function(){
+  if(!window.COURSES){ console.error("COURSES not loaded before pe.js"); return; }
+  window.COURSES.aqa_pe = {
+    name: "GCSE PE (AQA)",
+    topics: {
+
+      p1_musculoskeletal: {
+        name: "P1 · Musculoskeletal system",
+        cards: [
+          ["State the four functions of the skeleton.", "<b>Support, protection, movement</b> and blood-cell production (plus mineral storage)."],
+          ["Name the three types of muscle.", "<b>Skeletal (voluntary), cardiac, and smooth (involuntary)</b>."],
+          ["Define an antagonistic muscle pair.", "Two muscles working across a joint: as one <b>contracts (agonist)</b>, the other <b>relaxes (antagonist)</b>."],
+          ["Name the antagonistic pair at the elbow.", "The <b>biceps (agonist) and triceps (antagonist)</b>."],
+          ["Define the role of a tendon and a ligament.", "A tendon joins <b>muscle to bone</b>; a ligament joins <b>bone to bone</b>."],
+          ["Name the type of joint at the knee and the shoulder.", "Knee: <b>hinge joint</b>; shoulder: <b>ball and socket</b>."],
+          ["List the movements possible at a ball-and-socket joint.", "Flexion, extension, abduction, adduction, rotation and <b>circumduction</b>."],
+          ["Define flexion and extension.", "Flexion <b>decreases</b> the angle at a joint; extension <b>increases</b> it."],
+          ["Define abduction and adduction.", "Abduction moves a limb <b>away</b> from the midline; adduction moves it <b>towards</b> the midline."],
+          ["State the role of cartilage at a joint.", "Covers bone ends to <b>reduce friction</b> and absorb shock."],
+          ["State the role of synovial fluid.", "<b>Lubricates</b> the joint to allow smooth movement."],
+          ["Define plantar flexion and dorsiflexion.", "Plantar flexion points the toes <b>down</b>; dorsiflexion pulls the foot <b>up</b>."],
+          ["Name the muscle that contracts to extend the lower leg at the knee.", "The <b>quadriceps</b>."],
+        ],
+        quiz: [
+          ["During the upward phase of a biceps curl the elbow flexes. The agonist (the muscle contracting) is the:", ["Biceps","Triceps","Deltoid","Hamstring"], 0, "Flexing the elbow, the <b>biceps</b> is the agonist; the triceps relaxes."],
+          ["A performer points their toes to strike a football. The movement at the ankle is:", ["Dorsiflexion","Plantar flexion","Abduction","Rotation"], 1, "Pointing the toes is <b>plantar flexion</b>."],
+          ["A footballer takes their leg out sideways from the body. This movement is:", ["Adduction","Flexion","Abduction","Extension"], 2, "Moving the limb away from the midline is <b>abduction</b>."],
+          ["The shoulder allows the widest range of movement, including circumduction. It is a:", ["Hinge joint","Pivot joint","Fixed joint","Ball and socket joint"], 3, "Circumduction is only possible at a <b>ball and socket joint</b>."],
+          ["Structures that attach muscle to bone, transferring the pull that creates movement, are:", ["Tendons","Ligaments","Cartilage","Synovial membranes"], 0, "<b>Tendons</b> attach muscle to bone."],
+          ["A long-distance runner needs to straighten the knee in the recovery phase. The agonist responsible is the:", ["Hamstring","Quadriceps","Gastrocnemius","Biceps"], 1, "The <b>quadriceps</b> extends the knee."],
+          ["The skeleton produces red and white blood cells. This function takes place in the:", ["Cartilage","Tendons","Bone marrow","Synovial fluid"], 2, "Blood-cell production occurs in the <b>bone marrow</b>."],
+          ["At the elbow during the downward (lowering) phase of a press-up, the triceps contracts and the biceps relaxes. The triceps is acting as the:", ["Antagonist","Fixator","Ligament","Agonist"], 3, "The contracting muscle (triceps) is the <b>agonist</b> in that phase."],
+          ["Cartilage at the ends of bones in a joint mainly works to:", ["Reduce friction and absorb shock","Attach bone to bone","Produce blood cells","Store calcium only"], 0, "Cartilage <b>reduces friction and absorbs shock</b>."],
+          ["A gymnast brings their arms back together in front of the chest from a wide position. This movement is:", ["Abduction","Adduction","Extension","Rotation"], 1, "Moving limbs towards the midline is <b>adduction</b>."],
+          ["The hinge joint at the knee permits which two main movements?", ["Rotation and circumduction","Abduction and adduction","Flexion and extension","Plantar and dorsiflexion"], 2, "A hinge joint allows <b>flexion and extension</b>."],
+          ["Ligaments are important for joint stability because they:", ["Join muscle to bone","Lubricate the joint","Produce movement","Join bone to bone"], 3, "<b>Ligaments</b> join bone to bone, stabilising joints."],
+        ],
+      },
+
+      p1_cardiorespiratory: {
+        name: "P1 · Cardiorespiratory system",
+        cards: [
+          ["State the equation for cardiac output.", "Cardiac output (Q) = <b>stroke volume × heart rate</b>."],
+          ["Define stroke volume and heart rate.", "Stroke volume is the <b>blood pumped per beat</b>; heart rate is <b>beats per minute</b>."],
+          ["Describe the pathway of blood through the heart (right side).", "Vena cava → right atrium → right ventricle → <b>pulmonary artery</b> → lungs."],
+          ["Define tidal volume.", "The volume of air <b>breathed in or out per breath</b> at rest or during exercise."],
+          ["Define vital capacity.", "The <b>maximum air</b> that can be forcibly exhaled after a maximum inhalation."],
+          ["Describe gaseous exchange at the alveoli.", "Oxygen diffuses <b>into the blood</b> and carbon dioxide diffuses out, down concentration gradients."],
+          ["List features of alveoli that aid gas exchange.", "Large surface area, thin walls, moist lining and a <b>rich capillary network</b>."],
+          ["Name the main muscles of breathing.", "The <b>diaphragm and intercostal muscles</b>."],
+          ["Define aerobic respiration.", "Energy release <b>with oxygen</b>: glucose + oxygen → energy + carbon dioxide + water."],
+          ["Define anaerobic respiration and its by-product.", "Energy release <b>without oxygen</b>, producing <b>lactic acid</b>."],
+          ["Define oxygen debt / EPOC.", "The extra oxygen needed after exercise to <b>break down lactic acid</b> and restore the body."],
+          ["State the role of red blood cells.", "Carry <b>oxygen</b> (bound to haemoglobin) around the body."],
+        ],
+        quiz: [
+          ["A performer has a stroke volume of 70 ml and a heart rate of 60 bpm. Using Q = stroke volume × heart rate, their cardiac output is:", ["4200 ml/min","130 ml/min","1.17 ml/min","700 ml/min"], 0, "70 × 60 = <b>4200 ml/min</b> (4.2 l/min)."],
+          ["During a 100 m sprint the body cannot supply enough oxygen, so energy is released anaerobically. The by-product that builds up is:", ["Carbon dioxide","Lactic acid","Water","Glucose"], 1, "Anaerobic respiration produces <b>lactic acid</b>."],
+          ["After a hard sprint a performer continues to breathe heavily to repay the oxygen debt. This excess oxygen mainly serves to:", ["Store glucose","Increase tidal volume permanently","Break down lactic acid","Lower heart rate below resting"], 2, "The oxygen debt is repaid to <b>break down lactic acid</b> (EPOC)."],
+          ["Gaseous exchange occurs in the alveoli. Oxygen moves into the blood because it:", ["Is actively pumped","Moves from low to high concentration","Dissolves in lactic acid","Diffuses down a concentration gradient"], 3, "Oxygen <b>diffuses down a concentration gradient</b> into the blood."],
+          ["A marathon runner relies mainly on aerobic respiration because it:", ["Releases energy using oxygen for sustained activity","Produces lactic acid quickly","Works only in short bursts","Requires no glucose"], 0, "Aerobic respiration uses <b>oxygen</b> for long-duration activity."],
+          ["The maximum volume of air a performer can forcibly breathe out after breathing in fully is the:", ["Tidal volume","Vital capacity","Residual volume","Cardiac output"], 1, "That maximum is the <b>vital capacity</b>."],
+          ["During exercise both stroke volume and heart rate rise. The effect on cardiac output is that it:", ["Decreases","Stays the same","Increases","Falls then rises"], 2, "Both factors rising means cardiac output <b>increases</b>."],
+          ["The muscle that contracts and flattens to draw air into the lungs is the:", ["Bicep","Heart","Alveolus","Diaphragm"], 3, "The <b>diaphragm</b> contracts and flattens during inhalation."],
+          ["Oxygen is transported around the body bound to haemoglobin within the:", ["Red blood cells","White blood cells","Platelets","Plasma only"], 0, "<b>Red blood cells</b> carry oxygen via haemoglobin."],
+          ["A games player's tidal volume increases during a match. Tidal volume is the volume of air:", ["Left after full exhalation","Breathed in or out per breath","Pumped per heartbeat","In the alveoli only"], 1, "Tidal volume is air <b>per breath</b>."],
+          ["A swimmer's resting heart rate is lower than an untrained person's. This adaptation, a larger stroke volume lowering resting HR, is called:", ["Tachycardia","Oxygen debt","Bradycardia","Tidal breathing"], 2, "A trained low resting heart rate is <b>bradycardia</b>."],
+        ],
+      },
+
+      p1_effects_exercise: {
+        name: "P1 · Effects of exercise",
+        cards: [
+          ["Give two short-term effects of exercise.", "Increased <b>heart rate and breathing rate</b> (also raised body temperature, lactic acid)."],
+          ["Give two long-term effects of exercise on the heart.", "<b>Cardiac hypertrophy</b> (bigger, stronger heart) and a lower resting heart rate."],
+          ["Define hypertrophy.", "An <b>increase in the size</b> of muscle (or the heart) through training."],
+          ["State a long-term respiratory adaptation to training.", "Increased <b>vital capacity</b> and stronger respiratory muscles."],
+          ["State a long-term effect on the muscular system.", "Muscles get <b>bigger and stronger</b>, with increased tolerance to lactic acid."],
+          ["Define the relationship between health and fitness.", "Health is complete physical, mental and social wellbeing; fitness is the <b>ability to meet the demands</b> of the environment."],
+          ["State why bone density improves with exercise.", "Weight-bearing exercise <b>strengthens bones</b>, reducing osteoporosis risk."],
+        ],
+        quiz: [
+          ["Immediately after starting to run, a performer notices their breathing rate rises. This is a:", ["Long-term effect of exercise","Sign of overtraining","Permanent adaptation","Short-term effect of exercise"], 3, "An immediate change is a <b>short-term effect</b>."],
+          ["After months of training a performer's heart wall has thickened and their resting heart rate has dropped. This long-term adaptation is:", ["Cardiac hypertrophy","Tachycardia","Oxygen debt","Tidal change"], 0, "A bigger, stronger heart is <b>cardiac hypertrophy</b>."],
+          ["A weightlifter's muscles have visibly increased in size after a training programme. This is:", ["Atrophy","Muscle hypertrophy","Bradycardia","Fatigue"], 1, "Growth in muscle size is <b>hypertrophy</b>."],
+          ["A long-term benefit of regular weight-bearing exercise on the skeletal system is:", ["Reduced cartilage","Smaller muscles","Increased bone density","Higher resting heart rate"], 2, "Weight-bearing exercise <b>increases bone density</b>."],
+          ["During exercise the working muscles produce more heat, so the performer's body temperature:", ["Falls","Stays the same","Drops then rises","Rises"], 3, "Body temperature <b>rises</b> as a short-term effect."],
+          ["Over a season a runner's vital capacity has increased. This shows a long-term adaptation of the:", ["Respiratory system","Skeletal system only","Nervous system","Digestive system"], 0, "Improved vital capacity is a <b>respiratory</b> adaptation."],
+        ],
+      },
+
+      p1_movement_analysis: {
+        name: "P1 · Movement analysis",
+        cards: [
+          ["Name the three classes of lever.", "First, second and third class — remembered by the order of fulcrum, load, effort (<b>1-2-3 = F-L-E</b> in the middle)."],
+          ["Identify the lever at the ankle when standing on tiptoes.", "A <b>second-class lever</b> (load between fulcrum and effort), giving high mechanical advantage."],
+          ["Identify the lever type at the elbow during a biceps curl.", "A <b>third-class lever</b> (effort between fulcrum and load)."],
+          ["Define mechanical advantage.", "Load ÷ effort — a <b>large load moved by a small effort</b> (second-class levers have high MA)."],
+          ["Name the three planes of movement.", "<b>Sagittal, frontal and transverse</b>."],
+          ["Name the three axes of rotation.", "<b>Transverse, sagittal (anteroposterior) and longitudinal (vertical)</b>."],
+          ["State which plane and axis a forward somersault occurs in.", "The <b>sagittal plane</b> about the <b>transverse axis</b>."],
+          ["State which plane and axis a cartwheel occurs in.", "The <b>frontal plane</b> about the <b>sagittal axis</b>."],
+          ["State which plane and axis a full twist/spin occurs in.", "The <b>transverse plane</b> about the <b>longitudinal axis</b>."],
+        ],
+        quiz: [
+          ["A performer rises onto tiptoes; the foot acts as a lever with the load between the fulcrum and effort. This is a:", ["First-class lever","Second-class lever","Third-class lever","Fixed lever"], 1, "Load in the middle = <b>second-class lever</b> (high mechanical advantage)."],
+          ["During a biceps curl the effort (biceps) lies between the fulcrum (elbow) and the load (hand). This is a:", ["Second-class lever","First-class lever","Third-class lever","Pulley"], 2, "Effort in the middle = <b>third-class lever</b>."],
+          ["A gymnast performs a forward somersault. This rotation takes place in the:", ["Frontal plane about the sagittal axis","Transverse plane about the longitudinal axis","Sagittal plane about the longitudinal axis","Sagittal plane about the transverse axis"], 3, "A somersault is <b>sagittal plane, transverse axis</b>."],
+          ["An ice skater performs a flat spin, rotating about a vertical line through the body. This is the:", ["Transverse plane about the longitudinal axis","Sagittal plane about the transverse axis","Frontal plane about the sagittal axis","Frontal plane about the longitudinal axis"], 0, "A spin is <b>transverse plane, longitudinal axis</b>."],
+          ["A second-class lever produces a high mechanical advantage, meaning it can:", ["Move a small load with a large effort","Move a large load with a small effort","Only move quickly","Not move at all"], 1, "High MA = <b>large load, small effort</b>."],
+          ["A cartwheel is a sideways rotation. It occurs in the:", ["Sagittal plane about the transverse axis","Transverse plane about the longitudinal axis","Frontal plane about the sagittal axis","Frontal plane about the vertical axis"], 2, "A cartwheel is <b>frontal plane, sagittal axis</b>."],
+          ["Mechanical advantage is calculated as:", ["Effort ÷ load","Load × effort","Effort − load","Load ÷ effort"], 3, "Mechanical advantage = <b>load ÷ effort</b>."],
+        ],
+      },
+
+      p1_physical_training: {
+        name: "P1 · Physical training",
+        cards: [
+          ["List the components of fitness (any six).", "Cardiovascular endurance, muscular endurance, strength, speed, power, flexibility, agility, balance, coordination, reaction time."],
+          ["Define the SPORT principles of training.", "<b>S</b>pecificity, <b>P</b>rogressive overload, <b>R</b>eversibility, <b>T</b>edium."],
+          ["Define the FITT principles.", "<b>F</b>requency, <b>I</b>ntensity, <b>T</b>ime, <b>T</b>ype."],
+          ["State a test for cardiovascular endurance.", "The <b>multi-stage fitness test (bleep test)</b> or Cooper 12-minute run."],
+          ["State a test for flexibility.", "The <b>sit and reach test</b>."],
+          ["State a test for agility.", "The <b>Illinois agility run</b>."],
+          ["State a test for power.", "The <b>vertical jump (Sergeant jump)</b> test."],
+          ["Define progressive overload.", "Gradually <b>increasing the training demand</b> so the body keeps adapting."],
+          ["Define the target heart rate zone for aerobic training.", "Roughly <b>60–80%</b> of maximum heart rate (max HR ≈ 220 − age)."],
+          ["Name three methods of training.", "<b>Continuous, interval (incl. HIIT), fartlek, circuit, weight, plyometric</b> training."],
+          ["State the purpose of a warm-up.", "Raise heart rate, increase muscle temperature and <b>reduce injury risk</b>."],
+          ["Define reversibility.", "Fitness is <b>lost</b> when training stops."],
+        ],
+        quiz: [
+          ["A 16-year-old wants to train aerobically. Max HR ≈ 220 − 16 = 204. The lower end of the 60% aerobic zone (0.6 × 204) is about:", ["122 bpm","204 bpm","102 bpm","164 bpm"], 0, "0.6 × 204 ≈ <b>122 bpm</b>."],
+          ["A coach gradually increases the weight a performer lifts each week so adaptation continues. This applies the principle of:", ["Reversibility","Progressive overload","Tedium","Specificity"], 1, "Steadily increasing demand is <b>progressive overload</b>."],
+          ["A footballer designs training that mirrors the sprinting and turning of a match. This applies:", ["Reversibility","Tedium","Specificity","Frequency"], 2, "Matching training to the activity is <b>specificity</b>."],
+          ["To measure a basketball player's leg power before a programme, the most suitable test is the:", ["Sit and reach test","Bleep test","Ruler drop test","Vertical jump test"], 3, "Leg power is measured by the <b>vertical jump</b>."],
+          ["A performer stops training for two months through injury and loses fitness. This demonstrates:", ["Reversibility","Progressive overload","Specificity","Overload"], 0, "Loss of fitness when training stops is <b>reversibility</b>."],
+          ["The 'I' in the FITT principle, increased to make training harder, stands for:", ["Interval","Intensity","Injury","Improvement"], 1, "FITT's I is <b>intensity</b>."],
+          ["A games player wants to test agility for dodging opponents. The best test is the:", ["Cooper run","Hand grip test","Illinois agility run","Sit and reach"], 2, "Agility is tested by the <b>Illinois agility run</b>."],
+          ["A long-distance cyclist mainly needs to develop:", ["Maximal strength","Reaction time","Flexibility","Cardiovascular endurance"], 3, "Endurance cycling relies on <b>cardiovascular endurance</b>."],
+          ["The 'T for type' in FITT and 'T for tedium' in SPORT differ. Tedium is best avoided by:", ["Varying the training","Training less often","Lowering intensity always","Never resting"], 0, "Varying sessions prevents <b>tedium</b> (boredom)."],
+          ["High-intensity interval training (HIIT) alternates hard effort with recovery. It is a form of:", ["Continuous training","Interval training","Flexibility training","Static stretching"], 1, "HIIT is a type of <b>interval training</b>."],
+          ["A cool-down after exercise helps remove lactic acid and gradually lower heart rate. Its main benefit is to:", ["Build strength","Increase flexibility permanently","Aid recovery","Warm the muscles up"], 2, "A cool-down <b>aids recovery</b> and waste removal."],
+        ],
+      },
+
+      p2_sports_psychology: {
+        name: "P2 · Sports psychology",
+        cards: [
+          ["Define a skill (in sport).", "A <b>learned, goal-directed</b> action performed with maximum certainty and efficiency."],
+          ["Distinguish open and closed skills.", "Open skills are affected by the <b>environment</b> (e.g. a pass in football); closed skills are not (e.g. a free throw)."],
+          ["Define the SMART goal-setting targets.", "<b>S</b>pecific, <b>M</b>easurable, <b>A</b>chievable, <b>R</b>ealistic (or Recorded), <b>T</b>ime-bound."],
+          ["Describe the basic information-processing model.", "Input → <b>decision making</b> → output → feedback."],
+          ["Distinguish intrinsic and extrinsic feedback.", "Intrinsic comes from <b>within the performer</b> (feel); extrinsic comes from <b>outside</b> (coach, result)."],
+          ["Distinguish knowledge of results and knowledge of performance.", "Results = the <b>outcome</b>; performance = the <b>quality of the technique</b>."],
+          ["Name the four types of guidance.", "<b>Visual, verbal, manual and mechanical</b>."],
+          ["Describe the inverted-U theory of arousal.", "Performance improves with arousal up to an <b>optimal point</b>, then declines if arousal is too high."],
+          ["Distinguish intrinsic and extrinsic motivation.", "Intrinsic is the <b>internal drive/enjoyment</b>; extrinsic is from <b>rewards</b> (medals, money)."],
+        ],
+        quiz: [
+          ["A netball pass must adapt to moving opponents and is affected by the environment. It is best classified as a(n):", ["Closed skill","Gross skill only","Self-paced skill","Open skill"], 3, "Environment-affected skills are <b>open skills</b>."],
+          ["A coach sets a target: 'improve your 100 m time by 0.5 s within eight weeks.' This follows which approach?", ["SMART goal setting","FITT principles","Inverted-U theory","Information processing"], 0, "Specific, measurable, time-bound = <b>SMART</b> goal setting."],
+          ["A beginner is shown a demonstration video of a tennis serve. This is which type of guidance?", ["Verbal","Visual","Manual","Mechanical"], 1, "A demonstration is <b>visual</b> guidance."],
+          ["According to the inverted-U theory, when a performer's arousal is too high their performance will:", ["Continue to improve","Stay at its peak","Decline","Not change"], 2, "Beyond the optimal point, over-arousal causes performance to <b>decline</b>."],
+          ["A coach physically supports a gymnast through a vault for the first time. This is which guidance?", ["Visual","Verbal","Mechanical","Manual"], 3, "Physically supporting the body is <b>manual</b> guidance."],
+          ["A performer plays sport purely for the enjoyment and personal satisfaction. This is:", ["Intrinsic motivation","Extrinsic motivation","Negative feedback","Knowledge of results"], 0, "Internal enjoyment is <b>intrinsic motivation</b>."],
+          ["A free throw in basketball is performed in a stable, predictable environment. It is a:", ["Open skill","Closed skill","Externally-paced skill","Gross skill only"], 1, "Predictable, unaffected by environment = <b>closed skill</b>."],
+          ["A coach tells a swimmer their stroke timing was poor. Feedback about the quality of technique is:", ["Knowledge of results","Intrinsic feedback","Knowledge of performance","Positive reinforcement"], 2, "Feedback on technique quality is <b>knowledge of performance</b>."],
+          ["A float and harness used to teach a trampoline move is which type of guidance?", ["Manual","Visual","Verbal","Mechanical"], 3, "Equipment/aids = <b>mechanical</b> guidance."],
+          ["A sprinter rewarded with prize money is driven by:", ["Extrinsic motivation","Intrinsic motivation","Arousal","Feedback"], 0, "External rewards give <b>extrinsic motivation</b>."],
+        ],
+      },
+
+      p2_socio_cultural: {
+        name: "P2 · Socio-cultural influences",
+        cards: [
+          ["List factors affecting participation.", "<b>Gender, age, ethnicity, disability, socio-economic status</b> and family/peers."],
+          ["Define commercialisation of sport.", "Managing sport to <b>generate income</b> — the link between sport, sponsorship and the media (the 'golden triangle')."],
+          ["Define sponsorship.", "A company provides <b>money or resources</b> to a performer/event in return for advertising."],
+          ["Give one positive and one negative of the media on sport.", "Positive: raises <b>profile/income</b>. Negative: can focus only on <b>popular sports</b> or demand rule changes."],
+          ["Define gamesmanship.", "Bending the rules/spirit of the game to gain an advantage <b>without actually cheating</b>."],
+          ["Define sportsmanship.", "Playing fairly, with <b>respect</b> for opponents, officials and the rules."],
+          ["Define a performance-enhancing drug (PED) and one example.", "A banned substance used to <b>improve performance</b>, e.g. anabolic steroids."],
+          ["State two reasons athletes risk taking PEDs.", "To <b>win/gain advantage</b> and financial reward, despite health and ban risks."],
+          ["Give an example of technology improving officiating.", "<b>Hawk-Eye</b> or the Television Match Official (TMO/VAR)."],
+        ],
+        quiz: [
+          ["A company pays for its logo on a football club's shirt in return for advertising exposure. This is:", ["Gamesmanship","Sponsorship","Commercial gamesmanship","Media bias"], 1, "Money/resources for advertising is <b>sponsorship</b>."],
+          ["The interdependent link between sport, sponsorship and the media is often called the:", ["Inverted U","Information loop","Golden triangle","Performance pyramid"], 2, "It's known as the <b>golden triangle</b> of commercialisation."],
+          ["A footballer wastes time by taking a long throw-in while winning, within the rules but against the spirit of the game. This is:", ["Sportsmanship","Deviance only","A foul","Gamesmanship"], 3, "Bending the spirit, not the rules, is <b>gamesmanship</b>."],
+          ["An athlete takes anabolic steroids to build muscle faster. This is an example of:", ["Using a performance-enhancing drug","Sportsmanship","Sponsorship","Gamesmanship"], 0, "Banned muscle-building substances are <b>PEDs</b>."],
+          ["A wheelchair user finds a local gym has no accessible equipment. The participation barrier here relates to:", ["Age","Disability","Gender","Ethnicity"], 1, "Lack of accessible provision is a <b>disability</b> barrier."],
+          ["Goal-line technology and Hawk-Eye are examples of technology used to:", ["Increase sponsorship","Reduce participation","Improve the accuracy of officiating","Lower fitness"], 2, "Such systems <b>improve officiating accuracy</b>."],
+          ["A player shakes hands with opponents and accepts the referee's decision without protest. This shows:", ["Gamesmanship","Deviance","Commercialisation","Sportsmanship"], 3, "Fair, respectful conduct is <b>sportsmanship</b>."],
+          ["The media tends to give far more coverage to some sports than others, which can:", ["Influence participation and funding","Have no effect","Only affect officials","Reduce sponsorship for all sports"], 0, "Media coverage <b>influences participation and funding</b>."],
+          ["A talented young athlete from a low-income family struggles to afford coaching and equipment. This barrier is:", ["Gender","Socio-economic status","Disability","Ethnicity"], 1, "Cost-related barriers relate to <b>socio-economic status</b>."],
+        ],
+      },
+
+      p2_health_wellbeing: {
+        name: "P2 · Health, fitness & wellbeing",
+        cards: [
+          ["Define the three aspects of health and wellbeing.", "<b>Physical, emotional (mental) and social</b> wellbeing."],
+          ["Give two consequences of a sedentary lifestyle.", "<b>Obesity, heart disease, type 2 diabetes</b>, poor self-esteem (any)."],
+          ["Define obesity.", "Having an <b>excessive amount of body fat</b> (BMI over 30) that may harm health."],
+          ["Name the seven components of a balanced diet.", "Carbohydrates, fats, proteins, vitamins, minerals, fibre and <b>water</b>."],
+          ["State the main role of carbohydrates and of protein.", "Carbohydrates are the <b>main energy source</b>; protein is for <b>growth and repair</b> of muscle."],
+          ["Define energy balance.", "Energy in (food) equals energy out (activity); a surplus causes <b>weight gain</b>."],
+          ["State why hydration matters for performance.", "Water regulates temperature and prevents <b>dehydration</b>, which reduces performance."],
+          ["Give one emotional benefit of exercise.", "Reduces <b>stress</b> and improves mood/self-esteem."],
+          ["Give one social benefit of exercise.", "<b>Meeting people / making friends</b> and teamwork."],
+        ],
+        quiz: [
+          ["A person eats far more energy than they use over time. According to energy balance, they will:", ["Lose weight","Stay the same weight","Gain weight","Become dehydrated"], 2, "An energy surplus causes <b>weight gain</b>."],
+          ["A games player needs a nutrient mainly for muscle growth and repair after training. This is:", ["Carbohydrate","Fat","Vitamin C","Protein"], 3, "<b>Protein</b> supports growth and repair."],
+          ["A marathon runner loads up on pasta the day before a race for slow-release energy. The key nutrient is:", ["Carbohydrate","Protein","Fat","Fibre"], 0, "<b>Carbohydrate</b> is the main energy source."],
+          ["Someone who spends most of the day sitting with little activity has a sedentary lifestyle, which raises the risk of:", ["Improved fitness","Obesity and heart disease","Lower body fat","Greater flexibility"], 1, "A sedentary lifestyle increases <b>obesity and heart disease</b> risk."],
+          ["Playing in a team and making new friends is which kind of benefit of exercise?", ["Physical","Emotional only","Social","Financial"], 2, "Friendship and teamwork are <b>social</b> benefits."],
+          ["A performer becomes dehydrated during a long match. The likely effect on performance is that it:", ["Increases","Stays the same","Improves reaction time","Decreases"], 3, "Dehydration <b>decreases</b> performance."],
+          ["Regular exercise is shown to reduce stress and improve mood. This is which aspect of wellbeing?", ["Emotional","Physical","Social","Commercial"], 0, "Mood and stress relate to <b>emotional</b> wellbeing."],
+          ["A balanced diet for an athlete should include water because it:", ["Builds muscle directly","Regulates body temperature and prevents dehydration","Provides most energy","Replaces protein"], 1, "Water <b>regulates temperature and prevents dehydration</b>."],
+        ],
+      },
+
+      p2_data_use: {
+        name: "P2 · Use of data",
+        cards: [
+          ["Distinguish qualitative and quantitative data.", "Quantitative is <b>numerical</b> (times, scores); qualitative is <b>descriptive</b> (opinions, technique quality)."],
+          ["Define the mean, median and mode.", "Mean = average; median = <b>middle value</b>; mode = most common value."],
+          ["State why athletes record training data.", "To <b>monitor progress</b>, set targets and adjust training."],
+          ["Name a common way to present performance data.", "Tables, bar charts, line graphs or <b>pie charts</b>."],
+          ["State what a line graph is best for showing.", "<b>Changes/trends over time</b> (e.g. heart rate during exercise)."],
+        ],
+        quiz: [
+          ["A performer records resting heart rate (bpm) each week for ten weeks. This is:", ["Qualitative data","An opinion","Quantitative data","A goal"], 2, "Numerical measurements are <b>quantitative data</b>."],
+          ["Five heart-rate readings are 60, 62, 64, 66 and 68 bpm. The mean (sum ÷ 5 = 320 ÷ 5) is:", ["66 bpm","320 bpm","62 bpm","64 bpm"], 3, "320 ÷ 5 = <b>64 bpm</b>."],
+          ["To best show how a performer's heart rate changes over the course of a match, you would use a:", ["Line graph","Pie chart","Single number","Word description"], 0, "Trends over time suit a <b>line graph</b>.", {d:"graphLinear",o:{slope:1,intercept:0,xlabel:"time",ylabel:"heart rate"}}],
+          ["A coach's written notes describing the 'smoothness' of a swimmer's stroke are:", ["Quantitative data","Qualitative data","A mean","A bar chart"], 1, "Descriptive judgements are <b>qualitative data</b>."],
+          ["In the data set 5, 7, 7, 8, 9 the mode (most common value) is:", ["8","9","7","36"], 2, "The most frequent value is <b>7</b>."],
+        ],
+      },
+
+    },
+  };
+  console.log("[pe.js] GCSE PE added:", Object.keys(window.COURSES.aqa_pe.topics).length, "topics");
+})();
+
+</script>
+<script>
+/* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
    in every SOURCE course, it deterministically permutes the 4
@@ -6159,9 +6424,11 @@ ocr_alevel: {
     const seed = hash(q[0] + "|" + opts.join("~"));
     const rand = rng(seed);
 
-    // target position for the correct answer: balance via counter, but
-    // make it deterministic per-question by mixing the seed.
-    const target = (counter + (seed % 4)) % 4;
+    // target position for the correct answer: a clean rotating counter gives
+    // an even A/B/C/D spread within every course; the per-question seed below
+    // still randomises the distractor order. Deterministic across reloads
+    // because the counter advances in fixed course/topic/question order.
+    const target = counter % 4;
     counter++;
 
     // distractors in their original relative order
@@ -6176,7 +6443,7 @@ ocr_alevel: {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
@@ -6245,6 +6512,7 @@ ocr_alevel: {
     "combined_biology","combined_chemistry","combined_physics",
     "aqa_biology","aqa_chemistry","aqa_gcse",
     "ocr_compsci",
+    "aqa_pe",
     "ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry",
     "edexcel_foundation","edexcel_higher"
   ];
@@ -6282,6 +6550,7 @@ ocr_alevel: {
     aqa_chemistry:      { level:"GCSE",    subject:"Chemistry" },
     aqa_gcse:           { level:"GCSE",    subject:"Physics" },
     ocr_compsci:        { level:"GCSE",    subject:"Computer Science" },
+    aqa_pe:             { level:"GCSE",    subject:"Physical Education" },
     ocr_alevel:         { level:"A-Level", subject:"Physics" },
     ocr_alevel_biology: { level:"A-Level", subject:"Biology" },
     ocr_alevel_chemistry:{ level:"A-Level", subject:"Chemistry" },
@@ -6380,6 +6649,31 @@ ocr_alevel: {
   // Higher gets the common maps plus the harder-topic maps
   Object.keys(COMMON).forEach(function(k){ TV["edexcel_higher."+k]={provider:"Maths Genie",note:NOTE,links:COMMON[k]}; });
   Object.keys(HIGHER).forEach(function(k){ TV["edexcel_higher."+k]={provider:"Maths Genie",note:NOTE,links:HIGHER[k]}; });
+  // ---- GCSE PE (AQA): each topic links to its paper's revision playlist (Mr Matthews | PE Tutor) ----
+  var PE_P1="https://www.youtube.com/playlist?list=PLc4cxUpeG52PVg5EdoGuDh9MByxuFL0_B";
+  var PE_P2="https://www.youtube.com/playlist?list=PLc4cxUpeG52PyFvyg5LGdZuxcxO9qAhwR";
+  var PENOTE="Video lessons for AQA GCSE PE. Links open on YouTube in a new tab.";
+  function peSearch(q){ return "https://www.youtube.com/results?search_query="+encodeURIComponent("AQA GCSE PE "+q); }
+  // each topic: a topic-specific search first, then its paper's full playlist
+  var peMap={
+    p1_musculoskeletal:  ["Musculoskeletal system: bones, joints & muscles", PE_P1],
+    p1_cardiorespiratory:["Cardiorespiratory system & gas exchange", PE_P1],
+    p1_effects_exercise: ["Short and long term effects of exercise", PE_P1],
+    p1_movement_analysis:["Movement analysis: levers, planes & axes", PE_P1],
+    p1_physical_training:["Physical training: fitness, SPORT & FITT", PE_P1],
+    p2_sports_psychology:["Sports psychology: skills, goals & arousal", PE_P2],
+    p2_socio_cultural:   ["Socio-cultural influences & commercialisation", PE_P2],
+    p2_health_wellbeing: ["Health, fitness & wellbeing", PE_P2],
+    p2_data_use:         ["Use of data", PE_P2]
+  };
+  Object.keys(peMap).forEach(function(k){
+    var topic=peMap[k][0], playlist=peMap[k][1];
+    var paper = k.indexOf("p1_")===0 ? "Paper 1" : "Paper 2";
+    TV["aqa_pe."+k]={ provider:"YouTube · GCSE PE", note:PENOTE, links:[
+      { title:"Search: "+topic, url:peSearch(topic) },
+      { title:"AQA GCSE PE — "+paper+" revision playlist", url:playlist }
+    ]};
+  });
   window.TOPIC_VIDEOS = TV;
   console.log("[meta.js] Maths Genie topic videos: "+Object.keys(TV).length+" topic mappings");
 })();
