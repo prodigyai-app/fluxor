@@ -1716,34 +1716,35 @@ ocr_alevel: {
   //  shape: a triangle or parallelogram with labelled vector arrows.
   //    o.shape="triangle"|"parallelogram"; o.a,o.b labels; o.show=["AB","BC","AC"...]
   function vector(o){
-    o=o||{}; const W=o.w||300, H=o.h||270;
+    o=o||{}; const W=o.w||300, H=o.h||280;
     const ARROW=(id,col)=>`<marker id="${id}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="${col}"/></marker>`;
-    // a column-vector label: small bracketed stack of two numbers, drawn centred at (x,y)
     function colVec(x,y,top,bot,col){
-      const fs=12, lh=12;
-      return `<text x="${x}" y="${y-2}" text-anchor="middle" font-family="var(--mono,monospace)" font-size="${fs}" font-weight="700" fill="${col}">`
+      const fsz=12, lh=12;
+      return `<text x="${x}" y="${y-2}" text-anchor="middle" font-family="var(--mono,monospace)" font-size="${fsz}" font-weight="700" fill="${col}">`
         +`<tspan x="${x}" dy="0">${top}</tspan><tspan x="${x}" dy="${lh}">${bot}</tspan></text>`
-        // brackets
         +`<path d="M${x-15} ${y-12} q-4,0 -4,12 q0,12 4,12" fill="none" stroke="${col}" stroke-width="1.2"/>`
         +`<path d="M${x+15} ${y-12} q4,0 4,12 q0,12 -4,12" fill="none" stroke="${col}" stroke-width="1.2"/>`;
     }
-    // place a label offset PERPENDICULAR to the arrow a->b, on the side given by sign
-    function sideLabel(ax,ay,bx,by,col,label,sign,asCol,top,bot){
-      const mx=(ax+bx)/2, my=(ay+by)/2;
-      let dx=bx-ax, dy=by-ay; const len=Math.hypot(dx,dy)||1; dx/=len; dy/=len;
-      const off=(asCol?24:16)*(sign||1);
-      const px=-dy*off, py=dx*off;               // perpendicular offset
-      const lx=mx+px, ly=my+py;
-      if(asCol) return colVec(lx, ly-4, top, bot, col);
-      return txt(lx, ly+4, label, {anchor:"middle", fill:col, size:13, weight:700});
-    }
+    // clamp a label centre so its box stays fully inside [min,max]
+    function clamp(v,lo,hi){ return v<lo?lo:(v>hi?hi:v); }
     if((o.mode||"grid")==="grid"){
-      const span=o.span||6, pad=26;
+      const span=o.span||6, pad=34;
       const gw=W-pad*2, gh=H-pad*2, ox=pad+gw/2, oy=pad+gh/2;
       const u=Math.min(gw,gh)/(span*2);
       const PX=(x)=>ox+x*u, PY=(y)=>oy-y*u;
-      let s=defs();
-      let g="";
+      // label box half-extents (column vectors are wider/taller than text)
+      const colHW=22, colHH=20, txtHW=24, txtHH=10;
+      function place(ax,ay,bx,by,col,sign,asCol,top,bot,label){
+        const mx=(ax+bx)/2, my=(ay+by)/2;
+        let dx=bx-ax, dy=by-ay; const len=Math.hypot(dx,dy)||1; dx/=len; dy/=len;
+        const off=(asCol?26:16)*(sign||1);
+        let lx=mx-dy*off, ly=my+dx*off;
+        const hw=asCol?colHW:txtHW, hh=asCol?colHH:txtHH;
+        lx=clamp(lx, pad+hw, W-pad-hw); ly=clamp(ly, pad+hh, H-pad-hh);
+        if(asCol) return colVec(lx, ly-4, top, bot, col);
+        return txt(lx, ly+4, label, {anchor:"middle", fill:col, size:13, weight:700});
+      }
+      let s=defs(), g="";
       for(let i=-span;i<=span;i++){ g+=`<line x1="${PX(i)}" y1="${pad}" x2="${PX(i)}" y2="${H-pad}" stroke="${LINE}" stroke-width="${i===0?1.4:0.6}"/>`;
         g+=`<line x1="${pad}" y1="${PY(i)}" x2="${W-pad}" y2="${PY(i)}" stroke="${LINE}" stroke-width="${i===0?1.4:0.6}"/>`; }
       s+=g;
@@ -1755,43 +1756,45 @@ ocr_alevel: {
         const fx=(v.from&&v.from.x)||0, fy=(v.from&&v.from.y)||0;
         const ax=PX(fx), ay=PY(fy), bx=PX(fx+v.x), by=PY(fy+v.y);
         body+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${col}" stroke-width="2.4" marker-end="url(#${id})"/>`;
-        // label to the side: column-vector form if asked, else text
         const sign = v.labelSide || (v.x>=0?1:-1);
-        if(v.col){ body+=sideLabel(ax,ay,bx,by,col,null,sign,true, (v.x>=0?"":"")+v.x, (v.y>=0?"":"")+v.y); }
-        else if(v.label){ body+=sideLabel(ax,ay,bx,by,col,v.label,sign,false); }
+        if(v.col) body+=place(ax,ay,bx,by,col,sign,true,(""+v.x),(""+v.y));
+        else if(v.label) body+=place(ax,ay,bx,by,col,sign,false,null,null,v.label);
       });
+      // optional resultant — only drawn when explicitly asked to SHOW it (givens),
+      // otherwise hidden so it doesn't reveal the answer. If o.askResultant, mark "?".
       if(o.sum && (o.vectors||[]).length>=2){
         const v1=o.vectors[0], v2=o.vectors[1];
-        // resultant from origin to the tip of (v1 then v2)
         const ex=v1.x+v2.x, ey=v1.y+v2.y;
         defsArrows+=ARROW("vsum",INK);
-        // if v2 wasn't already drawn tip-to-tail from v1, show a faint connector
-        const v2placed = v2.from && v2.from.x===v1.x && v2.from.y===v1.y;
-        if(!v2placed){ body+=`<line x1="${PX(v1.x)}" y1="${PY(v1.y)}" x2="${PX(ex)}" y2="${PY(ey)}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="4 3" opacity="0.6"/>`; }
         body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(ex)}" y2="${PY(ey)}" stroke="${INK}" stroke-width="2.6" marker-end="url(#vsum)"/>`;
-        body+=sideLabel(PX(0),PY(0),PX(ex),PY(ey),INK,o.sumLabel||"a + b",-1,false);
+        const lab = o.askResultant ? "?" : (o.sumLabel||"a + b");
+        body+=place(PX(0),PY(0),PX(ex),PY(ey),INK,-1,false,null,null,lab);
       }
       if(o.magnitude){ const m=o.magnitude; body+=`<line x1="${PX(0)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(0)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/><line x1="${PX(m.x)}" y1="${PY(0)}" x2="${PX(m.x)}" y2="${PY(m.y)}" stroke="${DIM}" stroke-width="1.4" stroke-dasharray="3 3"/>`; }
       return wrap(W,H,`<defs>${defsArrows}</defs>`+s+body, o.alt2||"vector diagram");
     } else {
-      const pad=34;
+      const pad=38;
       let s=defs(), defsArrows=ARROW("vsa",AMBER)+ARROW("vsb",CYAN);
+      function clampPt(p){ return [clamp(p[0],pad,W-pad), clamp(p[1],pad,H-pad)]; }
       const arrow=(a,b,col,id,label,sign)=>{ let g=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width="2.4" marker-end="url(#${id})"/>`;
-        if(label) g+=sideLabel(a[0],a[1],b[0],b[1],col,label,sign||1,false); return g; };
+        if(label){ const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2; let dx=b[0]-a[0],dy=b[1]-a[1];const len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;
+          let lx=clamp(mx-dy*16*(sign||1),pad+12,W-pad-12), ly=clamp(my+dx*16*(sign||1),pad+8,H-pad-8);
+          g+=txt(lx,ly+4,label,{anchor:"middle",fill:col,size:14,weight:700}); } return g; };
       const dot=(p)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${INK}"/>`;
-      const lab=(p,t,dx,dy)=>txt(p[0]+(dx||0),p[1]+(dy||0),t,{fill:INK,size:12,weight:700});
+      const lab=(p,t,dx,dy)=>txt(clamp(p[0]+(dx||0),10,W-10),clamp(p[1]+(dy||0),12,H-6),t,{fill:INK,size:12,weight:700});
       if(o.shape==="parallelogram"){
-        const O=[pad,H-pad], A=[pad+86,pad+34], Cc=[W-pad,H-pad], B=[A[0]+(Cc[0]-O[0]),A[1]];
+        const O=[pad,H-pad], A=[pad+80,pad+36], Cc=[W-pad,H-pad], B=[A[0]+(Cc[0]-O[0]),A[1]];
         s+=`<polygon points="${O} ${A} ${B} ${Cc}" fill="${CYAN}" fill-opacity="0.05" stroke="${LINE}" stroke-width="1"/>`;
         s+=arrow(O,A,AMBER,"vsa",o.a||"a",-1)+arrow(O,Cc,CYAN,"vsb",o.c||"c",1);
-        if(o.diagonal){ defsArrows+=ARROW("vsd",GREEN); s+=arrow(O,B,GREEN,"vsd",o.diagLabel||"a + c",-1); }
-        s+=dot(O)+dot(A)+dot(B)+dot(Cc)+lab(O,"O",-14,4)+lab(A,"A",-6,-8)+lab(B,"B",8,0)+lab(Cc,"C",8,14);
+        // diagonal: draw as the unknown ("?") unless told to reveal it
+        if(o.diagonal){ defsArrows+=ARROW("vsd",GREEN); s+=arrow(O,B,GREEN,"vsd",(o.showResult?(o.diagLabel||"a + c"):"?"),-1); }
+        s+=dot(O)+dot(A)+dot(B)+dot(Cc)+lab(O,"O",-14,4)+lab(A,"A",-6,-8)+lab(B,"B",10,0)+lab(Cc,"C",6,16);
         s+=txt(W/2,H-6,"OABC is a parallelogram",{anchor:"middle",fill:DIM,size:10});
       } else {
-        const A=[pad,H-pad], B=[W/2+6,pad+12], Cc=[W-pad,H-pad];
+        const A=[pad,H-pad], B=[W/2+4,pad+14], Cc=[W-pad,H-pad];
         s+=`<polygon points="${A} ${B} ${Cc}" fill="${CYAN}" fill-opacity="0.05" stroke="${LINE}" stroke-width="1"/>`;
         s+=arrow(A,B,AMBER,"vsa",o.a||"a",-1)+arrow(B,Cc,CYAN,"vsb",o.b||"b",1);
-        if(o.resultant){ defsArrows+=ARROW("vsr",GREEN); s+=arrow(A,Cc,GREEN,"vsr",o.resLabel||"a + b",1); }
+        if(o.resultant){ defsArrows+=ARROW("vsr",GREEN); s+=arrow(A,Cc,GREEN,"vsr",(o.showResult?(o.resLabel||"a + b"):"?"),1); }
         s+=dot(A)+dot(B)+dot(Cc)+lab(A,"A",-14,4)+lab(B,"B",0,-8)+lab(Cc,"C",8,4);
         s+=txt(W/2,H-6,"triangle ABC",{anchor:"middle",fill:DIM,size:10});
       }
@@ -3298,10 +3301,10 @@ ocr_alevel: {
       ["What is the magnitude of a vector (x, y)?", "Its length: <b>√(x² + y²)</b> (Pythagoras)."],
     ],
     quiz:[
-      ["Add the vectors <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>1</span></span></span> and <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>4</span></span></span>.", ["<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>4</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>4</span></span></span>"], 0, "Add the components: 3+2=5 and 1+4=5, giving <b><span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:8,vectors:[{x:3,y:1,col:true},{x:2,y:4,from:{x:3,y:1},col:true}],sum:true,sumLabel:"a + b"}}],
-      ["Multiply the vector <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−3</span></span></span> by the scalar 4.", ["<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>−7</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−12</span></span></span>"], 0, "Multiply each component by 4: <b><span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:13,vectors:[{x:8,y:-12,color:"#f4b740",col:true},{x:2,y:-3,col:true}]}}],
+      ["Add the vectors <span class=\"colv\"><span class=\"cvn\"><span>3</span><span>1</span></span></span> and <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>4</span></span></span>.", ["<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>4</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>3</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>5</span><span>4</span></span></span>"], 0, "Add the components: 3+2=5 and 1+4=5, giving <b><span class=\"colv\"><span class=\"cvn\"><span>5</span><span>5</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:8,vectors:[{x:3,y:1,col:true},{x:2,y:4,from:{x:3,y:1},col:true}],sum:true,askResultant:true}}],
+      ["Multiply the vector <span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−3</span></span></span> by the scalar 4.", ["<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>6</span><span>−7</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>8</span><span>12</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>−12</span></span></span>"], 0, "Multiply each component by 4: <b><span class=\"colv\"><span class=\"cvn\"><span>8</span><span>−12</span></span></span></b>.", {d:"vector",o:{mode:"grid",span:5,vectors:[{x:2,y:-3,col:true}]}}],
       ["The magnitude of the vector <span class=\"colv\"><span class=\"cvn\"><span>6</span><span>8</span></span></span> is:", ["10","14","48","2"], 0, "√(6² + 8²) = √100 = <b>10</b>.", {d:"vector",o:{mode:"grid",span:9,vectors:[{x:6,y:8,col:true}],magnitude:{x:6,y:8}}}],
-      ["Which vector is parallel to <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>?", ["<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>1</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>−2</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>5</span></span></span>"], 0, "<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span> = 3 × <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>, a scalar multiple, so it is <b>parallel</b>.", {d:"vector",o:{mode:"grid",span:7,vectors:[{x:1,y:2,col:true},{x:3,y:6,color:"#f4b740",col:true}]}}],
+      ["Which vector is parallel to <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>?", ["<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>2</span><span>1</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>1</span><span>−2</span></span></span>","<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>5</span></span></span>"], 0, "<span class=\"colv\"><span class=\"cvn\"><span>3</span><span>6</span></span></span> = 3 × <span class=\"colv\"><span class=\"cvn\"><span>1</span><span>2</span></span></span>, a scalar multiple, so it is <b>parallel</b>.", {d:"vector",o:{mode:"grid",span:4,vectors:[{x:1,y:2,col:true}]}}],
     ],
   };
 
