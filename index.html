@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fluxor — Revision Console</title>
+<!-- Maths audit: Foundation and Higher quiz banks checked; corrected wording where needed. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2346e7c8'/><stop offset='1' stop-color='%232bb89e'/></linearGradient></defs><rect x='2' y='2' width='44' height='44' rx='13' fill='url(%23g)'/><path d='M17 12 H33 V17.5 H22.5 V22 H30 V27.5 H22.5 V36 H17 Z' fill='%230c1118'/><path d='M31 27 h6 l-8 11 2.6 -7 -4.2 0 z' fill='%230c1118'/></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
@@ -1219,6 +1220,7 @@ ocr_alevel: {
         case "inverse":   y=(x<0.4)?a.ymax:Math.min(a.ymax,(a.xmax*0.8)/x); break;
         case "exp_decay": y=a.ymax*Math.exp(-3*x/a.xmax); break;
         case "exp_rise":  y=a.ymax*(1-Math.exp(-3*x/a.xmax)); break;
+        case "growth":    y=a.ymax*(Math.exp(2.0*x/a.xmax)-1)/(Math.exp(2.0)-1); break; // true exponential growth: starts shallow, gets steeper
         case "filament":  y=a.ymax*Math.sign(x)*Math.pow(Math.abs(x)/a.xmax,0.55); break; // I-V: S-ish, current rises then flattens vs V (drawn as concave)
         default:          y=x;
       }
@@ -1490,15 +1492,52 @@ ocr_alevel: {
 
   // Parabola for quadratics. o:{a,roots:[r1,r2],xmax,ymax,label}
   function parabola(o){
-    o=o||{}; const ax=axes(Object.assign({ymax:o.ymax||10,xmax:o.xmax||10},o));
-    const W=ax.W,H=ax.H;
-    // upward-opening parabola with vertex near the bottom-centre
-    let pts=[]; const N=50; const span=(ax.x1-ax.ox); const topY=14, baseY=ax.oy;
-    for(let i=0;i<=N;i++){ const t=i/N; const x=ax.ox+t*span; const dx=(t-0.5); const y=baseY-(0.9*(baseY-topY))*(4*dx*dx); pts.push(`${x.toFixed(1)},${Math.min(baseY,Math.max(topY,y)).toFixed(1)}`); }
-    let s=ax.s + `<polyline points="${pts.join(' ')}" fill="none" stroke="${CYAN}" stroke-width="2.5"/>`;
-    if(o.label) s += txt(W-16, 30, o.label, {fill:CYAN, anchor:"end", size:12});
-    return wrap(W,H,s,o.alt||"parabola");
+    o=o||{};
+    // Plots y = a*(x-h)^2 + k on centred axes (four quadrants).
+    // Back-compat: accepts {label, roots:[r1,r2], a, h, k, vertex:[h,k], down:true}.
+    const W=o.w||300, H=o.height||240, pad=24;
+    const R=o.range||5;                       // x and y shown from -R..R
+    const ox=pad+(W-2*pad)/2, oy=pad+(H-2*pad)/2;
+    const sx=(W-2*pad)/(2*R), sy=(H-2*pad)/(2*R);
+    const PX=x=>ox+x*sx, PY=y=>oy-y*sy;
+    // determine coefficients
+    let a = (o.a!==undefined)? o.a : (o.down?-1:1);
+    let h = (o.h!==undefined)? o.h : (o.vertex? o.vertex[0] : 0);
+    let k = (o.k!==undefined)? o.k : (o.vertex? o.vertex[1] : 0);
+    if(o.roots && o.roots.length===2){ // build from roots: a(x-r1)(x-r2)
+      const r1=o.roots[0], r2=o.roots[1]; h=(r1+r2)/2; k=a*(h-r1)*(h-r2);
+    }
+    let s=defs();
+    // grid
+    let g="";
+    for(let i=-R;i<=R;i++){ g+=`<line x1="${PX(i)}" y1="${pad}" x2="${PX(i)}" y2="${H-pad}" stroke="${LINE}" stroke-width="${i===0?1.4:0.5}"/>`;
+      g+=`<line x1="${pad}" y1="${PY(i)}" x2="${W-pad}" y2="${PY(i)}" stroke="${LINE}" stroke-width="${i===0?1.4:0.5}"/>`; }
+    s+=g;
+    // axis arrows + labels
+    s+=`<line x1="${pad}" y1="${PY(0)}" x2="${W-pad}" y2="${PY(0)}" stroke="${INK}" stroke-width="1.4"/>`;
+    s+=`<line x1="${PX(0)}" y1="${H-pad}" x2="${PX(0)}" y2="${pad}" stroke="${INK}" stroke-width="1.4"/>`;
+    s+=txt(W-pad+2, PY(0)+4, o.xlabel||"x", {fill:INK,size:11});
+    s+=txt(PX(0)+6, pad+2, o.ylabel||"y", {fill:INK,size:11});
+    // optional horizontal line y = c (for intersection questions)
+    if(o.hline!==undefined){ s+=`<line x1="${pad}" y1="${PY(o.hline)}" x2="${W-pad}" y2="${PY(o.hline)}" stroke="${AMBER}" stroke-width="2" stroke-dasharray="5 3"/>`;
+      s+=txt(W-pad-2, PY(o.hline)-4, "y = "+o.hline, {fill:AMBER,anchor:"end",size:11}); }
+    // the parabola curve, clipped to the visible y-range
+    let pts=[]; const N=80;
+    for(let i=0;i<=N;i++){ const x=-R+(2*R)*i/N; const y=a*(x-h)*(x-h)+k;
+      if(y< -R-1 || y> R+1){ if(pts.length){ s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${CYAN}" stroke-width="2.5"/>`; pts=[]; } continue; }
+      pts.push(`${PX(x).toFixed(1)},${PY(y).toFixed(1)}`);
+    }
+    if(pts.length) s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${CYAN}" stroke-width="2.5"/>`;
+    // mark roots (x-intercepts) if asked
+    if(o.showRoots && o.roots){ o.roots.forEach(r=>{ s+=`<circle cx="${PX(r)}" cy="${PY(0)}" r="3.5" fill="${AMBER}"/>`;
+      s+=txt(PX(r), PY(0)+ (a>0?16:-10), (r>0?"":"")+r, {anchor:"middle",fill:AMBER,size:11,weight:700}); }); }
+    // mark turning point if asked
+    if(o.showVertex){ s+=`<circle cx="${PX(h)}" cy="${PY(k)}" r="3.5" fill="${GREEN}"/>`;
+      s+=txt(PX(h)+8, PY(k)+(a>0?14:-8), "("+h+", "+k+")", {fill:GREEN,size:11,weight:700}); }
+    if(o.label) s+=txt(W-14, 18, o.label, {fill:CYAN, anchor:"end", size:12});
+    return wrap(W,H,s,o.alt||"parabola graph");
   }
+
 
   // Circle or semicircle. o:{ semi:false, rLabel, dLabel, alt }
   // Draws a circle (or upper semicircle when semi:true) with a radius line
@@ -2788,7 +2827,7 @@ ocr_alevel: {
     ],
     quiz:[
       ["Work out 2/3 + 3/4, giving your answer as a mixed number.", ["1 5/12","5/7","1 1/12","17/12"], 0, "Common denom 12: 8/12 + 9/12 = 17/12 = <b>1 5/12</b>."],
-      ["A recipe needs 3/4 of a 800 g bag of flour. The mass used is:", ["600 g","200 g","1067 g","750 g"], 0, "800 ÷ 4 × 3 = <b>600 g</b>. A worded fraction-of-amount problem."],
+      ["A recipe needs 3/4 of an 800 g bag of flour. The mass used is:", ["600 g","200 g","1067 g","750 g"], 0, "800 ÷ 4 × 3 = <b>600 g</b>. A worded fraction-of-amount problem."],
       ["Work out 5/6 − 1/4.", ["7/12","4/2","1/2","6/10"], 0, "Common denom 12: 10/12 − 3/12 = <b>7/12</b>."],
       ["Which is larger, 5/8 or 3/5?", ["5/8","3/5","Equal","Cannot tell"], 0, "Over 40: 25/40 vs 24/40, so <b>5/8</b> is larger."],
     ],
@@ -2933,7 +2972,7 @@ ocr_alevel: {
     quiz:[
       ["Solve 2x² − 5x − 3 = 0 by factorising.", ["x = 3 or −½","x = −3 or ½","x = 3 or ½","x = −3 or −½"], 0, "(2x+1)(x−3)=0 → x = −½ or <b>3</b>."],
       ["Using the quadratic formula on x² + 4x + 1 = 0, the roots are x = −2 ± √3, i.e. approximately:", ["−0.27 and −3.73","0.27 and 3.73","−2 and −1","−4 and −1"], 0, "x = [−4 ± √(16−4)]/2 = −2 ± √3 ≈ <b>−0.27 and −3.73</b>."],
-      ["The quadratic y = x² − 6x + 5 crosses the x-axis at:", ["x = 1 and 5","x = −1 and −5","x = 2 and 3","x = 6 and 5"], 0, "Factorise: (x−1)(x−5)=0 → x = 1 and <b>5</b>.", {d:"parabola",o:{xlabel:"x",ylabel:"y",label:"y = x² − 6x + 5"}}],
+      ["The quadratic y = x² − 6x + 5 crosses the x-axis at:", ["x = 1 and 5","x = −1 and −5","x = 2 and 3","x = 6 and 5"], 0, "Factorise: (x−1)(x−5)=0 → x = 1 and <b>5</b>.", {d:"parabola",o:{a:1,roots:[1,5],range:7,xlabel:"x",ylabel:"y",label:"y = x² − 6x + 5",showRoots:true}}],
       ["Completing the square, x² + 6x + 5 = (x+3)² − 4. The minimum point is at:", ["(−3, −4)","(3, −4)","(−3, 4)","(3, 4)"], 0, "Turning point at (−p, q) = <b>(−3, −4)</b>."],
     ],
   });
@@ -3350,7 +3389,7 @@ ocr_alevel: {
       ["What does the gradient of a distance–time graph show?", "The <b>speed</b>."],
     ],
     quiz:[
-      ["The graph of y = x² − 4 crosses the x-axis at:", ["x = ±2","x = 4","x = ±4","x = 0"], 0, "x² − 4 = 0 → x² = 4 → <b>x = ±2</b>.", {d:"parabola",o:{xlabel:"x",ylabel:"y",label:"y = x² − 4"}}],
+      ["The graph of y = x² − 4 crosses the x-axis at:", ["x = ±2","x = 4","x = ±4","x = 0"], 0, "x² − 4 = 0 → x² = 4 → <b>x = ±2</b>.", {d:"parabola",o:{a:1,k:-4,roots:[-2,2],xlabel:"x",ylabel:"y",label:"y = x² − 4",showRoots:true}}],
       ["Which equation gives a U-shaped parabola?", ["y = x²","y = 1/x","y = 2x + 1","y = 3"], 0, "<b>y = x²</b> is a parabola; the others are a hyperbola, a line and a constant."],
       ["The graph of y = 1/x is called a:", ["Hyperbola","Parabola","Straight line","Cubic"], 0, "A reciprocal graph is a <b>hyperbola</b>."],
       ["On a distance–time graph, a steeper line means a:", ["Greater speed","Slower speed","Negative distance","Longer time"], 0, "Steeper gradient = <b>greater speed</b>.", {d:"graphSegments",o:{segments:[[0,0,6,9]],xlabel:"t",ylabel:"distance",xmax:8,ymax:10}}],
@@ -7975,6 +8014,59 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
 })();
 
+</script>
+
+<script>
+/* ============================================================
+   FLUXOR — QUADRATIC & OTHER GRAPHS TOP-UP
+   Adds extra exam questions and attaches diagrams to graph items.
+   Loaded after the core maths content; quiz format remains:
+   [q,[A,B,C,D],correctIndex,explanation,diagram?]
+   ============================================================ */
+(function(){
+  const C = window.COURSES;
+  if(!C || !C.edexcel_higher || !C.edexcel_higher.topics.harder_graphs_h){
+    console.warn("Quadratic & other graphs top-up skipped: topic not found");
+    return;
+  }
+  const t = C.edexcel_higher.topics.harder_graphs_h;
+  const D = (d,o)=>({d,o:o||{}});
+
+  // Add diagrams to existing questions that were text-only, without changing their answers.
+  (t.quiz||[]).forEach(q=>{
+    if(String(q[0]).startsWith("Which equation gives a U-shaped parabola?")){
+      q[4] = D("graphCurve",{type:"square",xlabel:"x",ylabel:"y",xmax:5,ymax:5,label:"y = x²",alt:"U-shaped quadratic graph"});
+    }
+    if(String(q[0]).startsWith("The graph of y = 1/x is called")){
+      q[4] = D("graphCurve",{type:"inverse",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"y = 1/x",alt:"reciprocal graph"});
+    }
+  });
+
+  t.cards.push(
+    ["What does the turning point of a quadratic graph show?", "The <b>minimum</b> point if the parabola opens upwards, or the <b>maximum</b> point if it opens downwards.", D("graphCurve",{type:"square",xlabel:"x",ylabel:"y",xmax:5,ymax:5,label:"quadratic"})],
+    ["How can you solve simultaneous equations using graphs?", "Find the <b>point(s) of intersection</b>. The x- and y-coordinates give the solution(s).", D("graphLinear",{slope:1,intercept:1,xlabel:"x",ylabel:"y",xmax:6,ymax:8,label:"line"})],
+    ["What does the area under a speed–time graph represent?", "The <b>distance travelled</b>. For straight-line sections, split the area into rectangles and triangles.", D("graphSegments",{segments:[[0,0,4,8],[4,8,8,8]],shadeArea:true,xlabel:"time",ylabel:"speed",xmax:9,ymax:10,label:"speed–time"})]
+  );
+
+  t.quiz.push(
+    ["The graph of y = x² − 9 crosses the x-axis where y = 0. The roots are:", ["x = −3 and x = 3","x = −9 and x = 9","x = 0 and x = 9","x = 3 only"], 0, "Set y = 0: x² − 9 = 0, so x² = 9 and <b>x = −3 or 3</b>.", D("parabola",{a:1,k:-9,range:10,roots:[-3,3],showRoots:true,xlabel:"x",ylabel:"y",label:"y = x² − 9",alt:"quadratic crossing x-axis at -3 and 3"})],
+    ["The graph of y = x² + 4 is translated compared with y = x². Which statement is correct?", ["It is shifted 4 units up","It is shifted 4 units right","It is shifted 4 units down","It is reflected in the x-axis"], 0, "Adding 4 outside x² moves the graph <b>up 4 units</b>.", D("graphCurve",{type:"square",xlabel:"x",ylabel:"y",xmax:5,ymax:9,label:"y = x² + 4",alt:"quadratic shifted up"})],
+    ["The quadratic y = (x − 2)² has its turning point at:", ["(2, 0)","(−2, 0)","(0, 2)","(0, −2)"], 0, "In y = (x − h)², the turning point is <b>(h, 0)</b>. Here h = 2, so it is (2, 0).", D("parabola",{a:1,h:2,k:0,showVertex:true,xlabel:"x",ylabel:"y",label:"y = (x − 2)²",alt:"quadratic with turning point at (2,0)"})],
+    ["The quadratic y = −x² opens:", ["Downwards","Upwards","As a straight line","As a reciprocal graph"], 0, "A negative coefficient of x² reflects the parabola in the x-axis, so it opens <b>downwards</b>.", D("parabola",{a:-1,down:true,xlabel:"x",ylabel:"y",label:"y = −x²",alt:"downward-opening parabola"})],
+    ["The graphs y = x² and y = 4 meet where x² = 4. The x-values of the intersections are:", ["x = −2 and x = 2","x = 4 only","x = 0 and x = 4","x = −4 and x = 4"], 0, "At intersections the y-values are equal: x² = 4, so <b>x = ±2</b>.", D("parabola",{a:1,hline:4,range:5,roots:[-2,2],showRoots:true,xlabel:"x",ylabel:"y",label:"y = x²",alt:"y=x² meeting y=4 at x=-2 and 2"})],
+    ["A reciprocal graph has equation y = 6/x. When x = 2, y is:", ["3","12","8","1/3"], 0, "Substitute x = 2: y = 6 ÷ 2 = <b>3</b>.", D("graphCurve",{type:"inverse",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"y = 6/x",alt:"reciprocal graph"})],
+    ["For y = 1/x, as x gets larger and positive, y:", ["Gets closer to 0 but never reaches it","Increases without limit","Stays equal to 1","Becomes a straight line"], 0, "For positive x, 1/x becomes smaller and approaches the x-axis, but <b>never reaches 0</b>.", D("graphCurve",{type:"inverse",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"y = 1/x",alt:"reciprocal graph approaching the axes"})],
+    ["The graph of y = x³ passes through which point?", ["(2, 8)","(2, 6)","(2, 4)","(8, 2)"], 0, "Substitute x = 2: y = 2³ = <b>8</b>, so the point is (2, 8)."],
+    ["A speed–time graph is a horizontal line at 12 m/s from 0 to 5 seconds. The distance travelled is:", ["60 m","17 m","12 m","5 m"], 0, "Distance = area under the graph = 12 × 5 = <b>60 m</b>.", D("graphSegments",{segments:[[0,12,5,12]],shadeArea:true,xlabel:"time / s",ylabel:"speed / m/s",xmax:6,ymax:14,label:"constant speed",alt:"speed time graph with horizontal line"})],
+    ["On a speed–time graph, a straight line rising from 0 m/s to 10 m/s in 4 seconds represents:", ["Constant acceleration","Constant speed","No movement","Decreasing speed"], 0, "A straight sloping line on a speed–time graph means the speed changes by equal amounts each second: <b>constant acceleration</b>.", D("graphSegments",{segments:[[0,0,4,10]],xlabel:"time / s",ylabel:"speed / m/s",xmax:5,ymax:12,label:"accelerating",alt:"speed time graph with positive gradient"})],
+    ["A distance–time graph is horizontal between 3 minutes and 7 minutes. What does this show?", ["The object is stationary","The object is speeding up","The object is moving backwards","The distance is negative"], 0, "A horizontal distance–time graph means distance from the start is unchanged, so the object is <b>stationary</b>.", D("graphSegments",{segments:[[0,0,3,6],[3,6,7,6]],xlabel:"time / min",ylabel:"distance",xmax:8,ymax:8,label:"stationary section",alt:"distance time graph with horizontal section"})],
+    ["An exponential growth graph starts slowly and then becomes steeper. Which context best matches this shape?", ["A population increasing by a fixed percentage each year","A car travelling at constant speed","A number being divided by 2 repeatedly","A reciprocal relationship"], 0, "Fixed percentage growth is <b>exponential growth</b>, so the graph gets steeper over time.", D("graphCurve",{type:"growth",xlabel:"time",ylabel:"amount",xmax:8,ymax:8,label:"growth",alt:"exponential growth curving upward"})],
+    ["An exponential decay graph starts high, falls quickly, then levels off near zero. Which equation type could model it?", ["y = 20 × 0.5ˣ","y = x²","y = 2x + 1","y = 1/x + 20"], 0, "A multiplier between 0 and 1 gives <b>exponential decay</b>, such as 20 × 0.5ˣ.", D("graphCurve",{type:"exp_decay",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"decay",halfLife:true,alt:"exponential decay graph"})],
+    ["A scatter graph shows points rising from bottom-left to top-right. This suggests:", ["Positive correlation","Negative correlation","No correlation","A quadratic curve only"], 0, "Bottom-left to top-right means as one variable increases, the other tends to increase: <b>positive correlation</b>.", D("scatter",{points:[[1,2],[2,3],[3,3.5],[4,5],[5,6],[6,7.5]],fit:"pos",xlabel:"x",ylabel:"y",xmax:7,ymax:8,fitLabel:"positive",alt:"scatter graph with positive correlation"})]
+  );
+
+  console.log("[graphs_topup] Added extra Quadratic & other graphs questions and diagrams:", t.quiz.length, "quiz questions total");
+})();
 </script>
 </body>
 </html>
