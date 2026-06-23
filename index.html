@@ -1211,19 +1211,25 @@ ocr_alevel: {
   // Curve from sampled function name. o:{type:'sqrt'|'square'|'inverse'|'exp_decay'|'filament', label,color,...}
   function graphCurve(o){
     o=o||{}; const a=axes(o); const c=o.color||CYAN;
-    const N=60; let pts=[];
+    const N=120; let pts=[];
+    const isInverse = (o.type==="inverse");
+    // start just above 0 for inverse so it can approach (not touch) the y-axis
+    const x0 = isInverse ? a.xmax*0.06 : 0;
     for(let i=0;i<=N;i++){
-      const x=(i/N)*a.xmax; let y;
+      const x = x0 + (i/N)*(a.xmax - x0); let y;
       switch(o.type){
         case "square":    y=(x*x)/a.xmax; break;
         case "sqrt":      y=Math.sqrt(x/a.xmax)*a.ymax; break;
-        case "inverse":   y=(x<0.4)?a.ymax:Math.min(a.ymax,(a.xmax*0.8)/x); break;
+        case "inverse":   y=(a.xmax*0.8)/x; break;            // true reciprocal, no clamp
         case "exp_decay": y=a.ymax*Math.exp(-3*x/a.xmax); break;
         case "exp_rise":  y=a.ymax*(1-Math.exp(-3*x/a.xmax)); break;
         case "growth":    y=a.ymax*(Math.exp(2.0*x/a.xmax)-1)/(Math.exp(2.0)-1); break; // true exponential growth: starts shallow, gets steeper
         case "filament":  y=a.ymax*Math.sign(x)*Math.pow(Math.abs(x)/a.xmax,0.55); break; // I-V: S-ish, current rises then flattens vs V (drawn as concave)
         default:          y=x;
       }
+      // for the reciprocal, break the line where it would exceed the top of the
+      // grid instead of drawing a false vertical segment up the y-axis
+      if(isInverse && y>a.ymax){ continue; }
       pts.push(`${a.px(x).toFixed(1)},${a.py(Math.max(0,Math.min(a.ymax,y))).toFixed(1)}`);
     }
     let s=a.s + `<polyline points="${pts.join(" ")}" fill="none" stroke="${c}" stroke-width="2.5"/>`;
@@ -2972,7 +2978,7 @@ ocr_alevel: {
     quiz:[
       ["Solve 2x² − 5x − 3 = 0 by factorising.", ["x = 3 or −½","x = −3 or ½","x = 3 or ½","x = −3 or −½"], 0, "(2x+1)(x−3)=0 → x = −½ or <b>3</b>."],
       ["Using the quadratic formula on x² + 4x + 1 = 0, the roots are x = −2 ± √3, i.e. approximately:", ["−0.27 and −3.73","0.27 and 3.73","−2 and −1","−4 and −1"], 0, "x = [−4 ± √(16−4)]/2 = −2 ± √3 ≈ <b>−0.27 and −3.73</b>."],
-      ["The quadratic y = x² − 6x + 5 crosses the x-axis at:", ["x = 1 and 5","x = −1 and −5","x = 2 and 3","x = 6 and 5"], 0, "Factorise: (x−1)(x−5)=0 → x = 1 and <b>5</b>.", {d:"parabola",o:{a:1,roots:[1,5],range:7,xlabel:"x",ylabel:"y",label:"y = x² − 6x + 5",showRoots:true}}],
+      ["The quadratic y = x² − 6x + 5 crosses the x-axis at:", ["x = 1 and 5","x = −1 and −5","x = 2 and 3","x = 6 and 5"], 0, "Factorise: (x−1)(x−5)=0 → x = 1 and <b>5</b>.", {d:"parabola",o:{a:1,roots:[1,5],range:7,xlabel:"x",ylabel:"y",label:"y = x² − 6x + 5"}}],
       ["Completing the square, x² + 6x + 5 = (x+3)² − 4. The minimum point is at:", ["(−3, −4)","(3, −4)","(−3, 4)","(3, 4)"], 0, "Turning point at (−p, q) = <b>(−3, −4)</b>."],
     ],
   });
@@ -3389,7 +3395,7 @@ ocr_alevel: {
       ["What does the gradient of a distance–time graph show?", "The <b>speed</b>."],
     ],
     quiz:[
-      ["The graph of y = x² − 4 crosses the x-axis at:", ["x = ±2","x = 4","x = ±4","x = 0"], 0, "x² − 4 = 0 → x² = 4 → <b>x = ±2</b>.", {d:"parabola",o:{a:1,k:-4,roots:[-2,2],xlabel:"x",ylabel:"y",label:"y = x² − 4",showRoots:true}}],
+      ["The graph of y = x² − 4 crosses the x-axis at:", ["x = ±2","x = 4","x = ±4","x = 0"], 0, "x² − 4 = 0 → x² = 4 → <b>x = ±2</b>.", {d:"parabola",o:{a:1,k:-4,range:6,xlabel:"x",ylabel:"y",label:"y = x² − 4"}}],
       ["Which equation gives a U-shaped parabola?", ["y = x²","y = 1/x","y = 2x + 1","y = 3"], 0, "<b>y = x²</b> is a parabola; the others are a hyperbola, a line and a constant."],
       ["The graph of y = 1/x is called a:", ["Hyperbola","Parabola","Straight line","Cubic"], 0, "A reciprocal graph is a <b>hyperbola</b>."],
       ["On a distance–time graph, a steeper line means a:", ["Greater speed","Slower speed","Negative distance","Longer time"], 0, "Steeper gradient = <b>greater speed</b>.", {d:"graphSegments",o:{segments:[[0,0,6,9]],xlabel:"t",ylabel:"distance",xmax:8,ymax:10}}],
@@ -8049,11 +8055,11 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   );
 
   t.quiz.push(
-    ["The graph of y = x² − 9 crosses the x-axis where y = 0. The roots are:", ["x = −3 and x = 3","x = −9 and x = 9","x = 0 and x = 9","x = 3 only"], 0, "Set y = 0: x² − 9 = 0, so x² = 9 and <b>x = −3 or 3</b>.", D("parabola",{a:1,k:-9,range:10,roots:[-3,3],showRoots:true,xlabel:"x",ylabel:"y",label:"y = x² − 9",alt:"quadratic crossing x-axis at -3 and 3"})],
+    ["The graph of y = x² − 9 crosses the x-axis where y = 0. The roots are:", ["x = −3 and x = 3","x = −9 and x = 9","x = 0 and x = 9","x = 3 only"], 0, "Set y = 0: x² − 9 = 0, so x² = 9 and <b>x = −3 or 3</b>.", D("parabola",{a:1,k:-9,range:10,xlabel:"x",ylabel:"y",label:"y = x² − 9",alt:"quadratic crossing the x-axis"})],
     ["The graph of y = x² + 4 is translated compared with y = x². Which statement is correct?", ["It is shifted 4 units up","It is shifted 4 units right","It is shifted 4 units down","It is reflected in the x-axis"], 0, "Adding 4 outside x² moves the graph <b>up 4 units</b>.", D("graphCurve",{type:"square",xlabel:"x",ylabel:"y",xmax:5,ymax:9,label:"y = x² + 4",alt:"quadratic shifted up"})],
-    ["The quadratic y = (x − 2)² has its turning point at:", ["(2, 0)","(−2, 0)","(0, 2)","(0, −2)"], 0, "In y = (x − h)², the turning point is <b>(h, 0)</b>. Here h = 2, so it is (2, 0).", D("parabola",{a:1,h:2,k:0,showVertex:true,xlabel:"x",ylabel:"y",label:"y = (x − 2)²",alt:"quadratic with turning point at (2,0)"})],
+    ["The quadratic y = (x − 2)² has its turning point at:", ["(2, 0)","(−2, 0)","(0, 2)","(0, −2)"], 0, "In y = (x − h)², the turning point is <b>(h, 0)</b>. Here h = 2, so it is (2, 0).", D("parabola",{a:1,h:2,k:0,range:6,xlabel:"x",ylabel:"y",label:"y = (x − 2)²",alt:"upward parabola with vertex on the x-axis"})],
     ["The quadratic y = −x² opens:", ["Downwards","Upwards","As a straight line","As a reciprocal graph"], 0, "A negative coefficient of x² reflects the parabola in the x-axis, so it opens <b>downwards</b>.", D("parabola",{a:-1,down:true,xlabel:"x",ylabel:"y",label:"y = −x²",alt:"downward-opening parabola"})],
-    ["The graphs y = x² and y = 4 meet where x² = 4. The x-values of the intersections are:", ["x = −2 and x = 2","x = 4 only","x = 0 and x = 4","x = −4 and x = 4"], 0, "At intersections the y-values are equal: x² = 4, so <b>x = ±2</b>.", D("parabola",{a:1,hline:4,range:5,roots:[-2,2],showRoots:true,xlabel:"x",ylabel:"y",label:"y = x²",alt:"y=x² meeting y=4 at x=-2 and 2"})],
+    ["The graphs y = x² and y = 4 meet where x² = 4. The x-values of the intersections are:", ["x = −2 and x = 2","x = 4 only","x = 0 and x = 4","x = −4 and x = 4"], 0, "At intersections the y-values are equal: x² = 4, so <b>x = ±2</b>.", D("parabola",{a:1,hline:4,range:5,xlabel:"x",ylabel:"y",label:"y = x²",alt:"y = x² and the line y = 4"})],
     ["A reciprocal graph has equation y = 6/x. When x = 2, y is:", ["3","12","8","1/3"], 0, "Substitute x = 2: y = 6 ÷ 2 = <b>3</b>.", D("graphCurve",{type:"inverse",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"y = 6/x",alt:"reciprocal graph"})],
     ["For y = 1/x, as x gets larger and positive, y:", ["Gets closer to 0 but never reaches it","Increases without limit","Stays equal to 1","Becomes a straight line"], 0, "For positive x, 1/x becomes smaller and approaches the x-axis, but <b>never reaches 0</b>.", D("graphCurve",{type:"inverse",xlabel:"x",ylabel:"y",xmax:8,ymax:8,label:"y = 1/x",alt:"reciprocal graph approaching the axes"})],
     ["The graph of y = x³ passes through which point?", ["(2, 8)","(2, 6)","(2, 4)","(8, 2)"], 0, "Substitute x = 2: y = 2³ = <b>8</b>, so the point is (2, 8)."],
