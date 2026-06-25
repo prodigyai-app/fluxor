@@ -219,6 +219,8 @@
 .wiz-dot.done{background:rgba(57,224,196,.18);color:var(--cyan,#39e0c4);border-color:var(--cyan,#39e0c4)}
 .wiz-choices{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .wiz-choices-scroll{max-height:280px;overflow-y:auto;padding-right:4px}
+.wiz-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;max-height:300px;overflow-y:auto;padding-right:4px}
+.wiz-grid .wiz-choice{text-align:center;padding:14px 10px}
 .wiz-choice{font-family:var(--mono);font-size:14px;text-align:left;background:var(--panel-2);color:var(--ink);
   border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:all .12s}
 .wiz-choice:hover{border-color:var(--cyan,#39e0c4)}
@@ -389,7 +391,7 @@
   <div class="wiz-panel" data-panel="2" style="display:none">
     <h3>Choose your subject</h3>
     <p id="wizSubjectText">Pick a subject.</p>
-    <div class="wiz-choices" id="wizSubjects"></div>
+    <div class="wiz-choices wiz-grid" id="wizSubjects"></div>
   </div>
 
   <!-- Step 3: topic -->
