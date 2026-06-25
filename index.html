@@ -37,6 +37,11 @@
   [data-theme="light"] body{ background-image:
       radial-gradient(circle at 12% 10%, rgba(15,155,134,.06), transparent 40%),
       radial-gradient(circle at 88% 0%, rgba(244,183,64,.05), transparent 40%); }
+  /* flashcard faces use hard-coded dark gradients; lighten them so dark text is readable */
+  [data-theme="light"] .face-front{ background:linear-gradient(160deg,#ffffff,#eaf0f6); border-color:#cdd8e3; }
+  [data-theme="light"] .face-back{ background:linear-gradient(160deg,#f1f8ed,#e4f0dd); border-color:#bcd6ad; }
+  [data-theme="light"] .face .tag{ color:var(--phosphor-dim); }
+  [data-theme="light"] .face .hint{ color:var(--ink-dim); }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
