@@ -2101,11 +2101,193 @@ ocr_alevel: {
     return wrap(W,H,s,o.alt||"lines of symmetry");
   }
 
+  // Normal distribution bell curve. o:{ mean, sd, shade:"within1"/"within2"/"within3"/null, markSd:bool, label }
+  function normalCurve(o){
+    o=o||{}; const W=o.w||320, H=o.h||210, pad=34;
+    const ox=pad, oy=H-pad, x1=W-14, y1=18;
+    const cx=(ox+x1)/2;                      // mean sits at centre
+    const halfW=(x1-ox)/2;                    // pixels for +3 sd span
+    const sdPx=halfW/3.2;                      // pixels per sd (leave a little margin)
+    const peak=oy-(oy-y1);                     // top of curve region
+    const amp=oy-y1-6;
+    function bell(z){ return Math.exp(-(z*z)/2); }   // standard normal shape, z in sd units
+    let s=defs();
+    // baseline axis
+    s += `<line x1="${ox}" y1="${oy}" x2="${x1}" y2="${oy}" stroke="${INK}" stroke-width="1.5"/>`;
+    // optional shaded region (within k sd)
+    const shadeMap={ within1:1, within2:2, within3:3 };
+    const k = shadeMap[o.shade];
+    function xAt(z){ return cx + z*sdPx; }
+    function yAt(z){ return oy - bell(z)*amp; }
+    if(k){
+      let pts=`${xAt(-k).toFixed(1)},${oy}`;
+      for(let z=-k; z<=k; z+=0.1) pts+=` ${xAt(z).toFixed(1)},${yAt(z).toFixed(1)}`;
+      pts+=` ${xAt(k).toFixed(1)},${oy}`;
+      s += `<polygon points="${pts}" fill="${CYAN}" fill-opacity="0.18" stroke="none"/>`;
+    }
+    // the bell curve path
+    let d="";
+    for(let z=-3.2; z<=3.2; z+=0.08){ const X=xAt(z).toFixed(1), Y=yAt(z).toFixed(1); d += (d?` L${X},${Y}`:`M${X},${Y}`); }
+    s += `<path d="${d}" fill="none" stroke="${CYAN}" stroke-width="2"/>`;
+    // mean line
+    s += `<line x1="${cx}" y1="${oy}" x2="${cx}" y2="${yAt(0).toFixed(1)}" stroke="${AMBER}" stroke-width="1.3" stroke-dasharray="4 3"/>`;
+    s += txt(cx, oy+15, o.meanLabel||"μ", {anchor:"middle", fill:AMBER, size:12, weight:700});
+    // sd markers
+    if(o.markSd!==false){
+      [-3,-2,-1,1,2,3].forEach(z=>{
+        const X=xAt(z);
+        s += `<line x1="${X}" y1="${oy-3}" x2="${X}" y2="${oy+3}" stroke="${DIM}" stroke-width="1"/>`;
+        s += txt(X, oy+15, (z>0?"+":"")+z+"σ", {anchor:"middle", fill:DIM, size:9});
+      });
+    }
+    if(o.label) s += txt(W-12, y1+8, o.label, {anchor:"end", fill:CYAN, size:12, weight:600});
+    return wrap(W,H,s,o.alt||"normal distribution curve");
+  }
+
+  // Moments / beam balance. o:{ beamLabel, pivot:0..1 (fraction along), forces:[{at:0..1, mag, dir:"down"/"up", label}], supports:[{at,label}] }
+  function beam(o){
+    o=o||{}; const W=o.w||340, H=o.h||190;
+    const bx0=28, bx1=W-28, by=H/2;            // beam line
+    const span=bx1-bx0;
+    const xAt=f=>bx0+f*span;
+    let s=defs();
+    // beam
+    s += `<line x1="${bx0}" y1="${by}" x2="${bx1}" y2="${by}" stroke="${INK}" stroke-width="3"/>`;
+    if(o.beamLabel) s += txt((bx0+bx1)/2, by-8, o.beamLabel, {anchor:"middle", fill:DIM, size:11});
+    // pivot (triangle) — default centre
+    const pf = (o.pivot!=null)?o.pivot:0.5;
+    const pxp=xAt(pf);
+    s += `<polygon points="${pxp},${by+2} ${pxp-10},${by+22} ${pxp+10},${by+22}" fill="${AMBER}" fill-opacity="0.8" stroke="${AMBER}"/>`;
+    // support reactions (up arrows from below) drawn as triangles + arrow
+    (o.supports||[]).forEach(sp=>{ const X=xAt(sp.at);
+      s += `<polygon points="${X},${by+2} ${X-9},${by+20} ${X+9},${by+20}" fill="none" stroke="${GREEN}" stroke-width="1.6"/>`;
+      if(sp.label) s += txt(X, by+34, sp.label, {anchor:"middle", fill:GREEN, size:11, weight:600});
+    });
+    // forces (arrows) at positions
+    (o.forces||[]).forEach(f=>{ const X=xAt(f.at); const up=f.dir==="up"; const col=f.color||(up?GREEN:AMBER);
+      const len=34;
+      const y0 = up ? by : by;
+      const y1f = up ? by-len : by+len;
+      // arrow line
+      s += `<line x1="${X}" y1="${y0}" x2="${X}" y2="${y1f}" stroke="${col}" stroke-width="2"/>`;
+      // arrowhead
+      if(up) s += `<polygon points="${X},${y1f-1} ${X-4},${y1f+7} ${X+4},${y1f+7}" fill="${col}"/>`;
+      else   s += `<polygon points="${X},${y1f+1} ${X-4},${y1f-7} ${X+4},${y1f-7}" fill="${col}"/>`;
+      if(f.label){ const ly = up ? y1f-8 : y1f+14; s += txt(X, ly, f.label, {anchor:"middle", fill:col, size:11, weight:600}); }
+      // distance tick on the beam
+      if(f.distLabel){ s += txt((X+pxp)/2, by-6, f.distLabel, {anchor:"middle", fill:DIM, size:9}); }
+    });
+    return wrap(W,H,s,o.alt||"beam and moments");
+  }
+
+  // Atomic energy-level diagram. o:{ levels:[{E,label}], transition:[fromIdx,toIdx], emit:bool }
+  function energyLevels(o){
+    o=o||{}; const W=o.w||300, H=o.h||220, padL=54, padR=20, padT=20, padB=24;
+    const levels=o.levels||[{E:0,label:"n=1"},{E:5,label:"n=2"},{E:7.5,label:"n=3"},{E:8.7,label:"n=4"}];
+    const Emax=Math.max(...levels.map(l=>l.E))||10;
+    const x0=padL, x1=W-padR, plotH=H-padT-padB, base=H-padB;
+    const yAt=E=>base-(E/Emax)*plotH;
+    let s=defs();
+    levels.forEach(l=>{ const y=yAt(l.E);
+      s+=`<line x1="${x0}" y1="${y.toFixed(1)}" x2="${x1}" y2="${y.toFixed(1)}" stroke="${INK}" stroke-width="1.6"/>`;
+      s+=txt(x0-6,y+4,l.label,{anchor:"end",fill:DIM,size:11});
+    });
+    s+=txt(8,padT+plotH/2,"energy",{anchor:"middle",fill:DIM,size:10});
+    // transition arrow between two levels
+    if(o.transition){ const [a,b]=o.transition; const xa=(x0+x1)/2; const ya=yAt(levels[a].E), yb=yAt(levels[b].E);
+      const emit = levels[a].E>levels[b].E;     // higher->lower emits
+      const col = emit?AMBER:CYAN;
+      s+=`<line x1="${xa}" y1="${ya.toFixed(1)}" x2="${xa}" y2="${yb.toFixed(1)}" stroke="${col}" stroke-width="2"/>`;
+      const head = yb>ya ? 1 : -1;              // arrowhead direction
+      s+=`<polygon points="${xa},${yb.toFixed(1)} ${xa-4},${(yb-head*7).toFixed(1)} ${xa+4},${(yb-head*7).toFixed(1)}" fill="${col}"/>`;
+      s+=txt(xa+10,(ya+yb)/2+4,o.photonLabel||(emit?"photon emitted":"photon absorbed"),{fill:col,size:10});
+    }
+    return wrap(W,H,s,o.alt||"energy level diagram");
+  }
+
+  // Field lines. o:{ mode:"radial"|"uniform", charge:"+"|"-", label }
+  function fieldLines(o){
+    o=o||{}; const W=o.w||260, H=o.h||220, cx=W/2, cy=H/2;
+    let s=defs();
+    const mode=o.mode||"radial";
+    if(mode==="uniform"){
+      // two parallel plates with uniform field lines between
+      const top=40, bot=H-40, left=46, right=W-46;
+      s+=`<line x1="${left}" y1="${top}" x2="${right}" y2="${top}" stroke="${INK}" stroke-width="3"/>`;
+      s+=`<line x1="${left}" y1="${bot}" x2="${right}" y2="${bot}" stroke="${INK}" stroke-width="3"/>`;
+      s+=txt(left-10,top+4,o.topLabel||"+",{anchor:"end",fill:RED,size:14,weight:700});
+      s+=txt(left-10,bot+4,o.botLabel||"−",{anchor:"end",fill:CYAN,size:14,weight:700});
+      const n=5; for(let i=0;i<n;i++){ const x=left+ (i+0.5)*(right-left)/n;
+        s+=`<line x1="${x}" y1="${top+4}" x2="${x}" y2="${bot-4}" stroke="${CYAN}" stroke-width="1.4"/>`;
+        s+=`<polygon points="${x},${cy+4} ${x-4},${cy-4} ${x+4},${cy-4}" fill="${CYAN}"/>`;
+      }
+      return wrap(W,H,s,o.alt||"uniform field between plates");
+    }
+    // radial field (point charge or mass)
+    const neg = o.charge==="-" || o.mass;
+    const col = o.mass?GREEN:(neg?CYAN:AMBER);
+    s+=`<circle cx="${cx}" cy="${cy}" r="16" fill="${col}" fill-opacity="0.2" stroke="${col}" stroke-width="2"/>`;
+    s+=txt(cx,cy+5,o.mass?"M":(neg?"−":"+"),{anchor:"middle",fill:col,size:15,weight:700});
+    const N=8, R=Math.min(W,H)/2-14;
+    for(let i=0;i<N;i++){ const a=i*2*Math.PI/N; const inward=neg||o.mass;
+      const r0=inward?R:20, r1=inward?20:R;
+      const x0=cx+r0*Math.cos(a), y0=cy+r0*Math.sin(a), x1=cx+r1*Math.cos(a), y1=cy+r1*Math.sin(a);
+      s+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="${col}" stroke-width="1.3"/>`;
+      // arrowhead partway
+      const am=0.6, ax=cx+(r0+(r1-r0)*am)*Math.cos(a), ay=cy+(r0+(r1-r0)*am)*Math.sin(a);
+      const da = inward ? a+Math.PI : a;
+      s+=`<polygon points="${(ax).toFixed(1)},${(ay).toFixed(1)} ${(ax-5*Math.cos(da-0.4)).toFixed(1)},${(ay-5*Math.sin(da-0.4)).toFixed(1)} ${(ax-5*Math.cos(da+0.4)).toFixed(1)},${(ay-5*Math.sin(da+0.4)).toFixed(1)}" fill="${col}"/>`;
+    }
+    return wrap(W,H,s,o.alt||"radial field lines");
+  }
+
+  // Binding energy per nucleon vs mass number. o:{ markFe:bool, label }
+  function bindingEnergy(o){
+    o=o||{}; const a=axes(Object.assign({xmax:240,ymax:10,xlabel:"mass number A",ylabel:"BE per nucleon (MeV)"},o));
+    let s=a.s;
+    // characteristic curve: rises steeply, peaks ~8.8 at A=56, falls gently
+    let pts=[];
+    for(let i=0;i<=80;i++){ const A=2+ (238-2)*(i/80);
+      let be;
+      if(A<56){ be = 8.8*(1-Math.exp(-A/18)); }
+      else { be = 8.8 - (A-56)*0.0045; }
+      pts.push(a.px(A)+","+a.py(Math.max(0,be)));
+    }
+    s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${CYAN}" stroke-width="2"/>`;
+    if(o.markFe!==false){ const fx=a.px(56), fy=a.py(8.8);
+      s+=`<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="3.5" fill="${AMBER}"/>`;
+      s+=txt(fx+6,fy-2,o.peakLabel||"Fe-56 (most stable)",{fill:AMBER,size:10});
+    }
+    return wrap(a.W||320,a.H||220,s,o.alt||"binding energy per nucleon");
+  }
+
+  // Gas law graph. o:{ law:"boyle"|"pressureTemp"|"charles", label }
+  function gasLaw(o){
+    o=o||{}; const law=o.law||"boyle";
+    if(law==="boyle"){ // p vs V : inverse curve
+      const a=axes(Object.assign({xmax:10,ymax:10,xlabel:"volume V",ylabel:"pressure p"},o));
+      let s=a.s, pts=[];
+      for(let i=1;i<=60;i++){ const V=0.8+(9.2)*(i/60); const p=8/V; if(p<=a.ymax) pts.push(a.px(V)+","+a.py(p)); }
+      s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${CYAN}" stroke-width="2"/>`;
+      s+=txt(a.px(7),a.py(8/7)-8,o.label||"p ∝ 1/V",{fill:CYAN,size:11});
+      return wrap(320,220,s,o.alt||"Boyle's law p–V");
+    }
+    if(law==="charles"||law==="pressureTemp"){ // straight line through (or toward) origin in °C extends to −273
+      const ylab = law==="charles" ? "volume V" : "pressure p";
+      const a=axes(Object.assign({xmax:10,ymax:10,xlabel:"temperature (K)",ylabel:ylab},o));
+      let s=a.s;
+      s+=`<line x1="${a.px(0)}" y1="${a.py(0)}" x2="${a.px(9)}" y2="${a.py(9)}" stroke="${CYAN}" stroke-width="2"/>`;
+      s+=txt(a.px(6),a.py(6)-8,o.label||(law==="charles"?"V ∝ T":"p ∝ T"),{fill:CYAN,size:11});
+      return wrap(320,220,s,o.alt||"gas law (proportional to T in kelvin)");
+    }
+    return wrap(320,220,defs(),"gas law");
+  }
+
   window.DIAGRAMS = {
     graphLinear, graphCurve, graphSegments, wave, refraction, reflection,
     freeBody, barMagnet, wireField, circuit,
     rightTriangle, pieChart, scatter, rectShape, parabola, circle,
-    reactionProfile, dissociationCurve, enzymeRate, circleTheorem, vector, angles, barChart, pictogram, symmetry
+    reactionProfile, dissociationCurve, enzymeRate, circleTheorem, vector, angles, barChart, pictogram, symmetry, normalCurve, beam, energyLevels, fieldLines, bindingEnergy, gasLaw
   };
   // Render helper used by the app: accepts a spec {d, o} and returns SVG (or "")
   window.renderDiagram = function(spec){
@@ -9350,6 +9532,416 @@ ocr_alevel: {
   // ---------- A-LEVEL BIOLOGY: ENZYMES (already has some; add to cards) ----------
 
   console.log("[sci_diagrams] science diagram pass applied");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — GCSE MATHS FOUNDATION DIAGRAM PASS
+   Attaches diagrams to geometry & graph questions that lack them.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_foundation) return;
+  const T=C.edexcel_foundation.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- ANGLES (show given angles, unknown as ?) ----------
+  qa("geo_angles","Two angles on a straight line are 110°", D("angles",{mode:"line",split:110,known:"110°",unknown:"x"}));
+  qa("geo_angles","A triangle has angles 50° and 60°", D("angles",{mode:"triangle",a:50,b:60,aLabel:"50°",bLabel:"60°",cLabel:"?"}));
+  qa("geo_angles","Angles around a point are 120°, 150°", D("angles",{mode:"point",given:[120,150]}));
+  qa("geo_angles","Two parallel lines are crossed by a transversal. One co-in", D("angles",{mode:"parallel",known:120,knownLabel:"co-int",unknownLabel:"?"}));
+  qa("geo_angles","Angles on a straight line add to 180°. If one is 130°", D("angles",{mode:"line",split:130,known:"130°",unknown:"?"}));
+  qa("geo_angles","Angles in a triangle add to 180°. Two are 90° and 40°", D("angles",{mode:"triangle",a:90,b:40,aLabel:"90°",bLabel:"40°",cLabel:"?"}));
+  qa("geo_angles","Angles around a point add to 360°. Three are 100°, 120°", D("angles",{mode:"point",given:[100,120,90]}));
+
+  // ---------- AREA & PERIMETER ----------
+  qa("geo_area_perimeter","A trapezium has parallel sides 6 cm and 10 cm", D("rectShape",{wLabel:"a=6, b=10",hLabel:"h=4",alt:"trapezium"}));
+  qa("geo_area_perimeter","A square has area 49 cm²", D("rectShape",{wLabel:"?",hLabel:"?",w:200,h:200,alt:"square area 49"}));
+  qa("geo_area_perimeter","The area of a rectangle 6 cm by 4 cm", D("rectShape",{wLabel:"6 cm",hLabel:"4 cm"}));
+  qa("geo_area_perimeter","The perimeter of a square of side 5 cm", D("rectShape",{wLabel:"5 cm",hLabel:"5 cm",w:200,h:200}));
+  qa("geo_area_perimeter","The area of a triangle with base 10 cm and height 4 cm", D("rightTriangle",{labels:{b:"10",h:"4"}}));
+  qa("geo_area_perimeter","The perimeter of a rectangle 7 cm by 3 cm", D("rectShape",{wLabel:"7 cm",hLabel:"3 cm"}));
+  qa("geo_area_perimeter","The area of a square of side 9 cm", D("rectShape",{wLabel:"9 cm",hLabel:"9 cm",w:200,h:200}));
+
+  // ---------- VOLUME (circles for cylinder/sphere/cone radius) ----------
+  qa("geo_volume","A cylinder has radius 5 cm and height 10 cm", D("circle",{rLabel:"r = 5"}));
+  qa("geo_volume","A sphere has radius 3 cm", D("circle",{rLabel:"r = 3"}));
+  qa("geo_volume","A cone has radius 4 cm and height 9 cm", D("circle",{rLabel:"r = 4"}));
+
+  // ---------- COORDINATES ----------
+  qa("geo_coordinates","The length of the segment from (1, 1) to (4, 5)", D("rightTriangle",{labels:{b:"Δx=3",h:"Δy=4",hyp:"?"}}));
+
+  // ---------- STRAIGHT-LINE GRAPHS ----------
+  qa("alg_graphs","The line y = 3x − 2 has a gradient of", D("graphLinear",{slope:3,intercept:-2,xlabel:"x",ylabel:"y",xmax:5,ymax:13}));
+  qa("alg_graphs","Where does y = 2x + 5 cross the y-axis", D("graphLinear",{slope:2,intercept:5,xlabel:"x",ylabel:"y",xmax:5,ymax:15}));
+  qa("alg_graphs","The line y = −2x + 6 crosses the x-axis", D("graphLinear",{slope:-2,intercept:6,xlabel:"x",ylabel:"y",xmax:5,ymax:8}));
+  qa("alg_graphs","Where does y = x + 4 cross the y-axis", D("graphLinear",{slope:1,intercept:4,xlabel:"x",ylabel:"y",xmax:5,ymax:10}));
+  qa("alg_graphs","What is the gradient of y = 5x − 1", D("graphLinear",{slope:5,intercept:-1,xlabel:"x",ylabel:"y",xmax:4,ymax:14}));
+
+  // ---------- STATS CHARTS (pie charts) ----------
+  qa("stats_charts","In a pie chart, 20 of 80 people chose tea", D("pieChart",{slices:[{label:"tea",value:20},{label:"rest",value:60}]}));
+  qa("stats_charts","A category has frequency 15 out of a total of 60", D("pieChart",{slices:[{label:"this",value:15},{label:"rest",value:45}]}));
+
+  console.log("[found_diagrams] Foundation geometry & graph diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — GCSE MATHS HIGHER DIAGRAM PASS
+   Attaches diagrams to geometry/trig/graph questions that lack them.
+   Diagrams illustrate the setup; they never reveal the answer.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_higher) return;
+  const T=C.edexcel_higher.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- TRIGONOMETRY (right-triangle setups; non-right gets a generic triangle) ----------
+  qa("geo_trig_h","In a right-angled triangle the opposite is 4 cm and the adja", D("rightTriangle",{labels:{b:"adj 3",h:"opp 4",hyp:"?"},angleLabel:"θ"}));
+  qa("geo_trig_h","A right-angled triangle has opposite 7 cm and hypotenuse 14", D("rightTriangle",{labels:{b:"",h:"opp 7",hyp:"hyp 14"},angleLabel:"θ"}));
+  qa("geo_trig_h","In a triangle, area = ½ab·sin C. With a = 6, b = 8 and C = 3", D("angles",{mode:"triangle",a:50,b:60,aLabel:"a=6",bLabel:"b=8",cLabel:"C=30°"}));
+  qa("geo_trig_h","Using the cosine rule a² = b² + c² − 2bc cos A with b = 5, c", D("angles",{mode:"triangle",a:55,b:55,aLabel:"c",bLabel:"b=5",cLabel:"A"}));
+  qa("geo_trig_h","A non-right triangle has sides a = 8, b = 5 and the angle C", D("angles",{mode:"triangle",a:50,b:55,aLabel:"a=8",bLabel:"b=5",cLabel:"C"}));
+  qa("geo_trig_h","The area of a triangle with two sides 9 and 6 and an include", D("angles",{mode:"triangle",a:55,b:55,aLabel:"9",bLabel:"6",cLabel:"30°"}));
+  qa("geo_trig_h","In a right triangle, opposite = 5, hypotenuse = 10", D("rightTriangle",{labels:{b:"",h:"opp 5",hyp:"hyp 10"},angleLabel:"θ"}));
+  qa("geo_trig_h","Using tan θ = opposite/adjacent, with opposite 4 and adjacen", D("rightTriangle",{labels:{b:"adj 4",h:"opp 4",hyp:""},angleLabel:"θ"}));
+  qa("geo_trig_h","In a right triangle the adjacent is 8 and angle is 60°", D("rightTriangle",{labels:{b:"adj 8",h:"opp ?",hyp:""},angleLabel:"60°"}));
+
+  // ---------- ANGLES (mark given, unknown ?) ----------
+  qa("geo_angles","Two angles on a straight line are 110°", D("angles",{mode:"line",split:110,known:"110°",unknown:"x"}));
+  qa("geo_angles","A triangle has angles 50° and 60°", D("angles",{mode:"triangle",a:50,b:60,aLabel:"50°",bLabel:"60°",cLabel:"?"}));
+  qa("geo_angles","Angles around a point are 120°, 150°", D("angles",{mode:"point",given:[120,150]}));
+  qa("geo_angles","Two parallel lines are crossed by a transversal. One co-inte", D("angles",{mode:"parallel",known:120,knownLabel:"co-int",unknownLabel:"?"}));
+  qa("geo_angles","Angles on a straight line sum to 180°. If one is 115°", D("angles",{mode:"line",split:115,known:"115°",unknown:"?"}));
+  qa("geo_angles","The interior angles of a triangle sum to 180°. Two are 50°", D("angles",{mode:"triangle",a:50,b:55,aLabel:"50°",bLabel:"?",cLabel:"?"}));
+
+  // ---------- VOLUME (circles for radius-based solids) ----------
+  qa("geo_volume","A cylinder has radius 5 cm and height 10 cm", D("circle",{rLabel:"r = 5"}));
+  qa("geo_volume","A sphere has radius 3 cm", D("circle",{rLabel:"r = 3"}));
+  qa("geo_volume","A cone has radius 4 cm and height 9 cm", D("circle",{rLabel:"r = 4"}));
+  qa("geo_volume","The volume of a cylinder (πr²h) with r = 2 cm, h = 10 cm", D("circle",{rLabel:"r = 2"}));
+  qa("geo_volume","The volume of a sphere (4/3 πr³) with r = 3 cm", D("circle",{rLabel:"r = 3"}));
+
+  // ---------- COORDINATES (distance via right triangle, line graphs) ----------
+  qa("geo_coordinates","The length of the segment from (1, 1) to (4, 5)", D("rightTriangle",{labels:{b:"Δx=3",h:"Δy=4",hyp:"?"}}));
+  qa("geo_coordinates","The length of the line from (0, 0) to (3, 4)", D("rightTriangle",{labels:{b:"3",h:"4",hyp:"?"}}));
+  qa("geo_coordinates","A line has gradient 2 through (0, −3)", D("graphLinear",{slope:2,intercept:-3,xlabel:"x",ylabel:"y",xmax:5,ymax:8}));
+
+  // ---------- STRAIGHT-LINE GRAPHS ----------
+  qa("alg_graphs","The line y = 3x − 2 has a gradient of", D("graphLinear",{slope:3,intercept:-2,xlabel:"x",ylabel:"y",xmax:5,ymax:13}));
+  qa("alg_graphs","Where does y = 2x + 5 cross the y-axis", D("graphLinear",{slope:2,intercept:5,xlabel:"x",ylabel:"y",xmax:5,ymax:15}));
+  qa("alg_graphs","The line y = −2x + 6 crosses the x-axis", D("graphLinear",{slope:-2,intercept:6,xlabel:"x",ylabel:"y",xmax:5,ymax:8}));
+  qa("alg_graphs","A line passes through (0, 1) with gradient 2", D("graphLinear",{slope:2,intercept:1,xlabel:"x",ylabel:"y",xmax:5,ymax:12}));
+
+  // ---------- QUADRATICS (parabola without marked roots) ----------
+  qa("alg_quadratics_h","Solve x² + 5x + 6 = 0 by factorising", D("parabola",{a:1,roots:[-3,-2],range:6,xlabel:"x",ylabel:"y",label:"y = x² + 5x + 6"}));
+  qa("alg_quadratics_h","Solve x² = 9", D("parabola",{a:1,k:-9,range:10,xlabel:"x",ylabel:"y",label:"y = x² − 9"}));
+
+  // ---------- STATS CHARTS (pie charts) ----------
+  qa("stats_charts","In a pie chart, 20 of 80 people chose tea", D("pieChart",{slices:[{label:"tea",value:20},{label:"rest",value:60}]}));
+
+  console.log("[higher_diagrams] Higher geometry/trig/graph diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — A-LEVEL MATHS DIAGRAM PASS
+   Attaches diagrams to Pure/Stats/Mechanics questions.
+   Diagrams illustrate the setup; never reveal the answer.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_alevel_maths) return;
+  const T=C.edexcel_alevel_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- DIFFERENTIATION (curves; no stationary points marked) ----------
+  qa("p_differentiation","The gradient of y = x² at x = 3", D("parabola",{a:1,k:0,range:6,xlabel:"x",ylabel:"y",label:"y = x²"}));
+  qa("p_differentiation","A stationary point of y = x² − 4x occurs where 2x − 4 = 0", D("parabola",{a:1,h:2,k:-4,range:6,xlabel:"x",ylabel:"y",label:"y = x² − 4x"}));
+  qa("p_differentiation","For y = x² − 4x, d²y/dx² = 2 > 0", D("parabola",{a:1,h:2,k:-4,range:6,xlabel:"x",ylabel:"y",label:"y = x² − 4x"}));
+  qa("p_differentiation","The tangent to a curve is horizontal at a", D("parabola",{a:1,h:0,k:0,range:6,xlabel:"x",ylabel:"y",label:"turning point"}));
+  qa("p_differentiation","The gradient of y = √x = x^(1/2) at x = 4", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"x",ylabel:"y",label:"y = √x"}));
+  qa("p_differentiation","Differentiate y = ln x", D("graphCurve",{type:"sqrt",xmax:8,ymax:6,xlabel:"x",ylabel:"y",label:"y = ln x"}));
+  qa("p_differentiation","Differentiate y = e^(2x) using the chain rule", D("graphCurve",{type:"growth",xmax:6,ymax:8,xlabel:"x",ylabel:"y",label:"y = eˣ"}));
+
+  // ---------- INTEGRATION (area under curve) ----------
+  qa("p_integration","Evaluate the definite integral ∫ from 0 to 2 of 2x dx", D("graphLinear",{slope:2,intercept:0,xlabel:"x",ylabel:"y",xmax:4,ymax:8,shade:true}));
+  qa("p_integration","∫ from 0 to 1 of 3x² dx", D("parabola",{a:1,k:0,range:4,xlabel:"x",ylabel:"y",label:"y = 3x²"}));
+  qa("p_integration","The area between a curve and the x-axis below the axis comes", D("parabola",{a:1,k:-4,range:6,down:false,xlabel:"x",ylabel:"y",label:"area below axis"}));
+  qa("p_integration","A definite integral giving a negative value means the area i", D("parabola",{a:1,k:-4,range:6,xlabel:"x",ylabel:"y"}));
+  qa("p_integration","The area under a curve that lies below the x-axis", D("parabola",{a:1,k:-4,range:6,xlabel:"x",ylabel:"y"}));
+  qa("p_integration","The trapezium rule gives an estimate that, for a curve bend", D("graphCurve",{type:"square",xmax:6,ymax:8,xlabel:"x",ylabel:"y",label:"trapezium rule"}));
+
+  // ---------- TRIGONOMETRY ----------
+  qa("p_trigonometry","In a triangle, a = 7, b = 9, angle C = 60°", D("angles",{mode:"triangle",a:55,b:55,aLabel:"a=7",bLabel:"b=9",cLabel:"C=60°"}));
+  qa("p_trigonometry","The area of a triangle with sides 8 and 10 and included angl", D("angles",{mode:"triangle",a:55,b:55,aLabel:"8",bLabel:"10",cLabel:"C"}));
+  qa("p_trigonometry","An arc of a circle radius 6 cm subtends 0.5 radians", D("circle",{rLabel:"r = 6"}));
+  qa("p_trigonometry","A sector of radius 10 cm and angle 0.8 rad", D("circle",{rLabel:"r = 10"}));
+  qa("p_trigonometry","Using the sine rule, a/sinA = b/sinB. If a=10", D("angles",{mode:"triangle",a:50,b:60,aLabel:"a=10",bLabel:"b",cLabel:""}));
+  qa("p_trigonometry","Using the sine rule with a = 12, A = 90°, B = 30°", D("angles",{mode:"triangle",a:50,b:55,aLabel:"A=90°",bLabel:"B=30°",cLabel:""}));
+  qa("p_trigonometry","Express tan θ when sin θ = 3/5 and cos θ = 4/5", D("rightTriangle",{labels:{b:"4",h:"3",hyp:"5"},angleLabel:"θ"}));
+
+  // ---------- EXP & LOGS ----------
+  qa("p_exp_logs","The graph of y = eˣ passes through the point", D("graphCurve",{type:"growth",xmax:6,ymax:8,xlabel:"x",ylabel:"y",label:"y = eˣ"}));
+  qa("p_exp_logs","A population model N = 500e^(0.1t) has initial value", D("graphCurve",{type:"growth",xmax:8,ymax:8,xlabel:"t",ylabel:"N",label:"N = 500e^0.1t"}));
+  qa("p_exp_logs","For y = 3 × 2ˣ, taking logs gives log y = log 3 + x log 2", D("graphLinear",{slope:1,intercept:1,xlabel:"x",ylabel:"log y",xmax:5,ymax:8}));
+
+  // ---------- COORDINATE GEOMETRY ----------
+  qa("p_coordinate_geometry","The gradient of the line joining (1, 2) and (5, 14)", D("graphLinear",{slope:3,intercept:-1,xlabel:"x",ylabel:"y",xmax:6,ymax:16}));
+  qa("p_coordinate_geometry","The circle (x − 3)² + (y + 1)² = 25", D("circle",{rLabel:"r"}));
+  qa("p_coordinate_geometry","The equation of the line through (2, 5) with gradient 3", D("graphLinear",{slope:3,intercept:-1,xlabel:"x",ylabel:"y",xmax:6,ymax:16}));
+  qa("p_coordinate_geometry","The distance between (0, 0) and (6, 8)", D("rightTriangle",{labels:{b:"6",h:"8",hyp:"?"}}));
+  qa("p_coordinate_geometry","A circle has centre (0, 0) and passes through (3, 4)", D("circle",{rLabel:"r"}));
+  qa("p_coordinate_geometry","A circle has centre (2, −1) and passes through (5, 3)", D("circle",{rLabel:"r"}));
+  qa("p_coordinate_geometry","A circle has centre (2, −3) and passes through (5, 1)", D("circle",{rLabel:"r"}));
+
+  // ---------- VECTORS ----------
+  qa("p_vectors","The magnitude of the vector (3, 4) is", D("rightTriangle",{labels:{b:"3",h:"4",hyp:"?"}}));
+  qa("p_vectors","The magnitude of (5, 12) is", D("rightTriangle",{labels:{b:"5",h:"12",hyp:"?"}}));
+  qa("p_vectors","The resultant of (3, 0) and (0, 4) has magnitude", D("rightTriangle",{labels:{b:"3",h:"4",hyp:"?"}}));
+  qa("p_vectors","Add the vectors (3, −2) and (1, 5)", D("vector",{mode:"grid",span:7,vectors:[{x:3,y:-2,col:true},{x:1,y:5,from:{x:3,y:-2},col:true}],sum:true,askResultant:true}));
+
+  // ---------- KINEMATICS (velocity-time graphs) ----------
+  qa("m_kinematics","On a velocity-time graph, the acceleration is given by the", D("graphSegments",{segments:[[0,0,6,12]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:8,ymax:14}));
+  qa("m_kinematics","On a velocity-time graph, the distance travelled is the", D("graphSegments",{segments:[[0,0,6,12]],shadeArea:true,xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:8,ymax:14}));
+  qa("m_kinematics","The area of a triangular v-t region with base 10 s and heigh", D("graphSegments",{segments:[[0,0,10,8]],shadeArea:true,xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:12,ymax:10}));
+  qa("m_kinematics","A horizontal velocity-time line (constant velocity)", D("graphSegments",{segments:[[0,8,6,8]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:8,ymax:10}));
+  qa("m_kinematics","An object decelerating uniformly from 20 m/s to rest in 4 s", D("graphSegments",{segments:[[0,20,4,0]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:6,ymax:22}));
+
+  // ---------- MOMENTS (free-body) ----------
+  qa("m_moments","A force of 10 N acts 3 m from a pivot", D("freeBody",{boxLabel:"pivot",forces:[{dir:"down",label:"10 N",color:"#f4b740"}]}));
+  qa("m_moments","A see-saw has 20 N at 2 m on the left", D("freeBody",{boxLabel:"pivot",forces:[{dir:"down",label:"20 N",color:"#f4b740"},{dir:"down",label:"? N",color:"#39e0c4"}]}));
+  qa("m_moments","The weight of a uniform beam acts at its", D("freeBody",{boxLabel:"beam",forces:[{dir:"down",label:"W",color:"#f4b740"}]}));
+
+  // ---------- STATS DATA (scatter) ----------
+  qa("s_data","A scatter graph with no pattern shows", D("scatter",{points:[[1,5],[2,2],[3,6],[4,3],[5,5],[6,2]],xlabel:"x",ylabel:"y",xmax:7,ymax:8}));
+
+  console.log("[alevel_diagrams] A-Level Maths diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — A-LEVEL MATHS DIAGRAM PASS
+   Attaches diagrams to Pure/Stats/Mechanics questions that lack them.
+   Diagrams illustrate the setup; they never reveal the answer.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_alevel_maths) return;
+  const T=C.edexcel_alevel_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- ALGEBRA & FUNCTIONS (quadratic graphs; no marked vertex/roots where that's the answer) ----------
+  qa("p_algebra_functions","For a quadratic to have two distinct real roots", D("parabola",{a:1,roots:[-2,3],range:7,xlabel:"x",ylabel:"y",label:"two real roots"}));
+  qa("p_algebra_functions","The graph of y = (x − 4)² + 4 has a minimum point at", D("parabola",{a:1,h:4,k:4,range:10,xlabel:"x",ylabel:"y",label:"y = (x−4)² + 4"}));
+  qa("p_algebra_functions","For f(x) = x², the range", D("parabola",{a:1,h:0,k:0,range:6,xlabel:"x",ylabel:"y",label:"y = x²"}));
+  qa("p_algebra_functions","The number of real roots of x² + 4x + 7 = 0", D("parabola",{a:1,h:-2,k:3,range:8,xlabel:"x",ylabel:"y",label:"y = x² + 4x + 7"}));
+  qa("p_algebra_functions","The set of values for which x² − 9 < 0", D("parabola",{a:1,roots:[-3,3],range:7,xlabel:"x",ylabel:"y",label:"y = x² − 9"}));
+  qa("p_algebra_functions","The discriminant of 2x² + 3x + 5", D("parabola",{a:1,h:-1,k:2,range:8,xlabel:"x",ylabel:"y",label:"no real roots"}));
+
+  // ---------- EXP & LOGS (growth/decay curves) ----------
+  qa("p_exp_logs","The graph of ln y against x for y = ab^x is a straight line", D("graphLinear",{slope:1,intercept:1,xlabel:"x",ylabel:"ln y",xmax:6,ymax:8}));
+  qa("p_exp_logs","Make t the subject of P = P₀eᵏᵗ", D("graphCurve",{type:"growth",xmax:8,ymax:8,xlabel:"t",ylabel:"P",label:"P = P₀eᵏᵗ"}));
+
+  // ---------- DIFFERENTIATION (curve with stationary point illustrated, not the answer) ----------
+
+  // ---------- STATISTICS: DATA (scatter for correlation) ----------
+  qa("s_data","Correlation does not imply", D("scatter",{points:[[1,2],[2,3],[3,3.5],[4,5],[5,6]],fit:"pos",xlabel:"x",ylabel:"y",xmax:6,ymax:8}));
+
+  // ---------- STATISTICS: DISTRIBUTIONS (normal curve) ----------
+
+  // ---------- MECHANICS: MOMENTS (see-saw / beam balance via free-body) ----------
+  qa("m_moments","A uniform 4 m beam (weight 40 N at its centre) rests on a sup", D("freeBody",{boxLabel:"beam",forces:[{dir:"down",label:"40 N",color:"#f4b740"},{dir:"up",label:"R",color:"#39e0c4"}]}));
+
+  console.log("[alevel_diagrams] A-Level Maths diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — A-LEVEL MATHS DIAGRAM PASS 2
+   Uses the new normalCurve + beam generators for the
+   distributions and moments questions held back earlier.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_alevel_maths) return;
+  const T=C.edexcel_alevel_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- DISTRIBUTIONS (normal curve) ----------
+  qa("s_distributions","In a normal distribution, about 99.7% of data lies", D("normalCurve",{shade:"within3",label:"normal distribution"}));
+  qa("s_distributions","A continuous random variable is best modelled by the", D("normalCurve",{label:"normal curve"}));
+  qa("s_distributions","X ~ N(50, 5²). The value 50 is the", D("normalCurve",{meanLabel:"50",label:"X ~ N(50, 5²)"}));
+  qa("s_distributions","For X ~ N(50, 5²), about 95% of values lie between", D("normalCurve",{shade:"within2",meanLabel:"50",label:"95% within 2σ"}));
+  qa("s_distributions","In a normal distribution, the mean, median and mode are", D("normalCurve",{label:"symmetric: mean=median=mode"}));
+
+  // ---------- MOMENTS (beam) ----------
+  qa("m_moments","A 5 N force 4 m from a pivot is balanced by a 10 N force", D("beam",{beamLabel:"rod",pivot:0.5,forces:[{at:0.12,dir:"down",label:"5 N",distLabel:"4 m"},{at:0.82,dir:"down",label:"10 N",distLabel:"d"}]}));
+  qa("m_moments","The moment of a 4 N force acting 0.5 m from a pivot", D("beam",{beamLabel:"",pivot:0.5,forces:[{at:0.78,dir:"down",label:"4 N",distLabel:"0.5 m"}]}));
+  qa("m_moments","A uniform 4 m beam (weight 40 N at its centre) rests on a sup", D("beam",{beamLabel:"4 m beam",pivot:0.06,supports:[{at:0.06,label:"support"}],forces:[{at:0.5,dir:"down",label:"40 N",distLabel:"2 m"}]}));
+  qa("m_moments","A 3 m light rod has a 10 N weight at one end", D("beam",{beamLabel:"3 m rod",pivot:0.33,forces:[{at:0.0,dir:"down",label:"10 N",distLabel:"1 m"}]}));
+  qa("m_moments","A uniform 6 m plank weighs 200 N, supported at both ends", D("beam",{beamLabel:"6 m plank",pivot:0.5,supports:[{at:0.05,label:"R₁"},{at:0.95,label:"R₂"}],forces:[{at:0.5,dir:"down",label:"200 N"}]}));
+  qa("m_moments","A uniform beam 4 m long, weight 40 N, rests on a central piv", D("beam",{beamLabel:"4 m beam",pivot:0.5,forces:[{at:0.5,dir:"down",label:"40 N"}]}));
+  qa("m_moments","A 6 N force at 0.5 m and a 3 N force at distance d balance", D("beam",{beamLabel:"rod",pivot:0.5,forces:[{at:0.2,dir:"down",label:"6 N",distLabel:"0.5 m"},{at:0.82,dir:"down",label:"3 N",distLabel:"d"}]}));
+  qa("m_moments","A 6 N force at 0.5 m balances an unknown force at 1 m", D("beam",{beamLabel:"rod",pivot:0.5,forces:[{at:0.28,dir:"down",label:"6 N",distLabel:"0.5 m"},{at:0.92,dir:"down",label:"?",distLabel:"1 m"}]}));
+
+  console.log("[alevel_diagrams2] normal-curve + beam diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — A-LEVEL MATHS DIAGRAM PASS 2
+   Uses the normalCurve and beam generators for the stats
+   distribution and mechanics moments questions.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.edexcel_alevel_maths) return;
+  const T=C.edexcel_alevel_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- DISTRIBUTIONS (normal curve) ----------
+  qa("s_distributions","In a normal distribution, about 99.7% of data lies", D("normalCurve",{shade:"within3",label:"99.7% within 3 SD"}));
+  qa("s_distributions","A continuous random variable is best modelled by the", D("normalCurve",{label:"normal distribution"}));
+  qa("s_distributions","For X ~ N(50, 5²), about 95% of values lie between", D("normalCurve",{shade:"within2",label:"95% within 2 SD"}));
+  qa("s_distributions","X ~ N(50, 5²). The value 50 is the", D("normalCurve",{label:"mean μ = 50"}));
+
+  // ---------- MOMENTS (beam) ----------
+  qa("m_moments","A 5 N force 4 m from a pivot is balanced by a 10 N force", D("beam",{pivot:0.5,forces:[{at:0.18,label:"5 N",down:true},{at:0.82,label:"10 N",down:true}],beamLabel:"balance the moments"}));
+  qa("m_moments","A uniform 4 m beam (weight 40 N at its centre) rests on a sup", D("beam",{pivot:0.08,forces:[{at:0.5,label:"40 N",down:true}],beamLabel:"4 m beam, support at end"}));
+  qa("m_moments","A uniform 6 m plank weighs 200 N, supported at both ends", D("beam",{supports:[{at:0.05,label:"R₁"},{at:0.95,label:"R₂"}],forces:[{at:0.5,label:"200 N",down:true}],beamLabel:"6 m plank"}));
+  qa("m_moments","A 3 m light rod has a 10 N weight at one end", D("beam",{pivot:0.33,forces:[{at:0.0,label:"10 N",down:true}],beamLabel:"3 m rod, pivot 1 m from end"}));
+  qa("m_moments","A 6 N force at 0.5 m and a 3 N force at distance d balance", D("beam",{pivot:0.5,forces:[{at:0.35,label:"6 N",down:true},{at:0.78,label:"3 N",down:true}],beamLabel:"balance"}));
+  qa("m_moments","A 6 N force at 0.5 m balances an unknown force at 1 m", D("beam",{pivot:0.5,forces:[{at:0.35,label:"6 N",down:true},{at:0.85,label:"? N",down:true}],beamLabel:"balance"}));
+  qa("m_moments","A uniform 2 m beam weighs 30 N", D("beam",{pivot:0.5,forces:[{at:0.5,label:"30 N",down:true}],beamLabel:"2 m uniform beam"}));
+  qa("m_moments","A uniform beam 4 m long, weight 40 N, rests on a central piv", D("beam",{pivot:0.5,forces:[{at:0.5,label:"40 N",down:true}],beamLabel:"4 m beam, central pivot"}));
+
+  console.log("[alevel_diagrams2] normalCurve + beam diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — A-LEVEL PHYSICS DIAGRAM PASS (OCR A, ocr_alevel)
+   Attaches diagrams to questions where they aid understanding,
+   using existing generators. Never reveals the answer.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.ocr_alevel) return;
+  const T=C.ocr_alevel.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cb(tk,prefix,spec){ const t=T[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+
+  // ---------- VECTORS (right-triangle components; vector addition) ----------
+  qa("m2_vectors","A force of 50 N acts at 60° above the horizontal. The vertical", D("rightTriangle",{labels:{b:"horiz",h:"vert ?",hyp:"50 N"},angleLabel:"60°"}));
+  qa("m2_vectors","A 50 N force acts at 60° above the horizontal. The horizontal", D("rightTriangle",{labels:{b:"horiz ?",h:"vert",hyp:"50 N"},angleLabel:"60°"}));
+  qa("m2_vectors","Two forces, 6 N east and 8 N north", D("rightTriangle",{labels:{b:"6 N",h:"8 N",hyp:"?"}}));
+  qa("m2_vectors","Two forces of 12 N and 5 N act at right angles", D("rightTriangle",{labels:{b:"12 N",h:"5 N",hyp:"?"}}));
+  qa("m2_vectors","A projectile is launched at 20 m/s at 30° above the horizontal", D("rightTriangle",{labels:{b:"horiz",h:"vert ?",hyp:"20 m/s"},angleLabel:"30°"}));
+  qa("m2_vectors","The same projectile (20 m/s at 30°) has a horizontal velocity", D("rightTriangle",{labels:{b:"horiz ?",h:"vert",hyp:"20 m/s"},angleLabel:"30°"}));
+
+  // ---------- MOTION (v-t graphs, force-time) ----------
+  qa("m3_motion","A car accelerates uniformly from rest. After 8 s it is travell", D("graphSegments",{segments:[[0,0,8,16]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:10,ymax:18}));
+  qa("m3_motion","A cyclist travelling at 12 m/s decelerates uniformly to rest o", D("graphSegments",{segments:[[0,12,6,0]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:8,ymax:14}));
+  qa("m3_motion","An object moving at 5.0 m/s accelerates at 2.0 m/s² for 6.0 s", D("graphSegments",{segments:[[0,5,6,17]],xlabel:"time (s)",ylabel:"velocity (m/s)",xmax:8,ymax:19}));
+  qa("m3_motion","A skydiver reaches terminal velocity", D("graphCurve",{type:"exp_rise",xmax:8,ymax:8,xlabel:"time",ylabel:"velocity",label:"approaching terminal velocity"}));
+
+  // ---------- MOMENTS (beam) ----------
+  qa("m3_moments","A uniform beam is balanced on a pivot. A 40 N weight sits 0.30", D("beam",{pivot:0.5,forces:[{at:0.2,label:"40 N",down:true},{at:0.8,label:"?",down:true}],beamLabel:"balanced beam"}));
+  qa("m3_moments","A uniform 2.0 m beam of weight 40 N rests on a pivot 0.50 m fr", D("beam",{pivot:0.25,forces:[{at:0.5,label:"40 N",down:true}],beamLabel:"2 m beam"}));
+  qa("m3_moments","A see-saw has a 300 N child 1.2 m left of the pivot", D("beam",{pivot:0.5,forces:[{at:0.25,label:"300 N",down:true},{at:0.78,label:"?",down:true}],beamLabel:"see-saw"}));
+  qa("m3_moments","A worker uses a 1.5 m bar to lever a rock", D("beam",{pivot:0.85,forces:[{at:0.0,label:"200 N",down:true}],beamLabel:"lever"}));
+  qa("m3_moments","A couple consists of two forces of 8 N acting in opposite dire", D("beam",{pivot:0.5,forces:[{at:0.2,label:"8 N",dir:"down"},{at:0.8,label:"8 N",dir:"up"}],beamLabel:"couple"}));
+
+  // ---------- CIRCUITS (circuit diagram, filament I-V) ----------
+  qa("m4_circuits","Two resistors of 4 Ω and 6 Ω are connected in series", D("circuit",{}));
+  qa("m4_circuits","Three 9.0 Ω resistors are connected in parallel", D("circuit",{}));
+  qa("m4_circuits","A filament lamp is operated at higher and higher voltages", D("graphCurve",{type:"filament",xmax:8,ymax:8,xlabel:"V",ylabel:"I",label:"filament lamp I–V"}));
+  qa("m4_circuits","A component conducts current freely one way but blocks it the", D("circuit",{}));
+
+  // ---------- WAVES (wave diagrams, refraction) ----------
+  qa("m4_waves","A wave travels at 1500 m/s with a frequency of 30 kHz", D("wave",{cycles:3,label:"wave"}));
+  qa("m4_waves","Light travels at 3.0×10⁸ m/s in a vacuum and 2.0×10⁸ m/s in a", D("refraction",{}));
+  qa("m4_waves","A glass has a refractive index of 1.5. Using sin C = 1/n", D("refraction",{}));
+  qa("m4_waves","On a stationary wave, the distance between adjacent nodes is 0", D("wave",{cycles:2,label:"stationary wave"}));
+  qa("m4_waves","A sound wave of period 2.0 ms travels at 340 m/s", D("wave",{cycles:3,label:"sound wave"}));
+
+  // ---------- SHM (oscillation as a wave) ----------
+  qa("m5_circular_shm","A mass on a spring oscillates in SHM. At the midpoint", D("wave",{cycles:2,label:"SHM displacement"}));
+  qa("m5_circular_shm","An object in SHM has amplitude 0.05 m and angular frequency 10", D("wave",{cycles:2,amplitude:0.7,label:"SHM"}));
+  qa("m5_circular_shm","A mass on a spring has amplitude 0.10 m and angular frequency", D("wave",{cycles:2,amplitude:0.8,label:"SHM"}));
+
+  // ---------- MATERIALS (stress-strain, Hooke's law) ----------
+  qa("m3_materials","A spring obeys Hooke's law with a spring constant of 30 N/m", D("graphLinear",{slope:30,intercept:0,xlabel:"extension",ylabel:"force",xmax:5,ymax:160}));
+  qa("m3_materials","A force of 12 N stretches a spring by 0.04 m within its line", D("graphLinear",{slope:1,intercept:0,xlabel:"extension",ylabel:"force",xmax:5,ymax:8}));
+
+  // ---------- FIELDS (radioactive decay curve, capacitor discharge) ----------
+  qa("m6_fields","A capacitor of 500 μF discharges through a 2.0 kΩ resistor", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time",ylabel:"charge",label:"capacitor discharge"}));
+  qa("m6_fields","A 220 μF capacitor discharges through a 10 kΩ resistor", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time",ylabel:"charge",label:"discharge"}));
+
+  // ---------- NUCLEAR (radioactive decay curve) ----------
+  qa("m6_nuclear","A source of half-life 8 days starts with activity 6400 Bq", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time",ylabel:"activity",label:"radioactive decay"}));
+  qa("m6_nuclear","A source of decay constant 1.2×10⁻⁴ s⁻¹ contains 5.0×10²⁰ nu", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time",ylabel:"N",label:"decay"}));
+
+  console.log("[physics_diagrams] A-Level Physics diagrams attached");
+})();
+
+</script>
+<script>
+/* A-Level Physics — attach specialised generators (energy levels,
+   field lines, binding energy, gas laws). */
+(function(){
+  const C=window.COURSES; if(!C||!C.ocr_alevel) return;
+  const T=C.ocr_alevel.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cb(tk,prefix,spec){ const t=T[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+
+  // ---------- QUANTUM (energy levels, photoelectric) ----------
+  qa("m4_quantum","A photon of light is shone on a metal but no electrons are e", D("energyLevels",{transition:[0,2],photonLabel:"photon energy < work function"}));
+  qa("m4_quantum","The photoelectric effect could not be explained by the wave", D("energyLevels",{transition:[2,0],photonLabel:"one photon, one electron"}));
+  qa("m4_quantum","Increasing the intensity of light above the threshold freque", D("energyLevels",{transition:[2,0]}));
+
+  // ---------- THERMAL (gas laws) ----------
+  qa("m5_thermal","A fixed mass of ideal gas at constant temperature has its vo", D("gasLaw",{law:"boyle"}));
+  qa("m5_thermal","A gas of volume 0.020 m³ at 1.0×10⁵ Pa and 300 K is heated t", D("gasLaw",{law:"pressureTemp"}));
+  qa("m5_thermal","2.0 mol of ideal gas at 320 K occupies what volume at 1.0×10", D("gasLaw",{law:"charles"}));
+  qa("m5_thermal","The mean kinetic energy of gas molecules is proportional to", D("gasLaw",{law:"pressureTemp",label:"KE ∝ T"}));
+
+  // ---------- FIELDS (parallel plates, charge field lines) ----------
+  qa("m6_fields","Two parallel plates 0.020 m apart have a p.d. of 600 V acros", D("fieldLines",{mode:"uniform"}));
+  qa("m6_fields","Two parallel plates 5.0 mm apart have a 200 V p.d.", D("fieldLines",{mode:"uniform"}));
+  qa("m6_fields","A charge of 2.0×10⁻⁶ C experiences a force of 0.10 N in an e", D("fieldLines",{mode:"radial",charge:"+"}));
+
+  // ---------- GRAVITATION (radial field toward mass) ----------
+  qa("m5_gravitation","Gravitational field lines around a planet point inward", D("fieldLines",{mode:"radial",mass:true}));
+  qa("m5_gravitation","A planet has a surface gravitational field strength of 6.0 N", D("fieldLines",{mode:"radial",mass:true}));
+
+  // ---------- NUCLEAR (binding energy curve) ----------
+  qa("m6_nuclear","The peak of the binding-energy-per-nucleon curve occurs near", D("bindingEnergy",{}));
+  qa("m6_nuclear","A nuclear reaction has a mass defect of 3.0×10⁻²⁸ kg", D("bindingEnergy",{}));
+
+  // ---------- FLASHCARDS ----------
+  cb("m4_quantum","Define the work function", D("energyLevels",{transition:[2,0],photonLabel:"photon → electron"}));
+  cb("m4_quantum","State Einstein's photoelectric equation", D("energyLevels",{transition:[2,0]}));
+  cb("m6_nuclear","Describe the binding energy per nucleon curve", D("bindingEnergy",{}));
+  cb("m6_nuclear","Sketch the binding energy per nucleon", D("bindingEnergy",{}));
+  cb("m6_fields","Describe a uniform electric field", D("fieldLines",{mode:"uniform"}));
+  cb("m6_fields","Define a uniform field", D("fieldLines",{mode:"uniform"}));
+  cb("m5_gravitation","Define a radial field", D("fieldLines",{mode:"radial",mass:true}));
+  cb("m5_gravitation","Define a gravitational field", D("fieldLines",{mode:"radial",mass:true}));
+  cb("m5_thermal","Define an ideal gas", D("gasLaw",{law:"boyle"}));
+  cb("m5_thermal","State the assumptions of the kinetic theory", D("gasLaw",{law:"boyle"}));
+
+  console.log("[phys_diagrams2] specialised physics diagrams attached");
 })();
 
 </script>
