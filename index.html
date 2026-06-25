@@ -16,6 +16,27 @@
     --red:#ff5d6c; --green:#46e08a; --radius:6px;
     --mono:'JetBrains Mono',monospace; --sans:'Space Grotesk',system-ui,sans-serif;
   }
+  /* ---- light theme ---- */
+  [data-theme="light"]{
+    --bg:#f4f7fa; --panel:#ffffff; --panel-2:#eef2f7; --line:#cdd8e3;
+    --ink:#1d2733; --ink-dim:#5a6b7d;
+    --phosphor:#0f9b86; --phosphor-dim:#0b6e60; --amber:#b8860b;
+    --red:#d63a48; --green:#1f9e5a;
+  }
+  /* in light mode, let diagram panels sit on a light card so the dark SVG fill doesn't clash */
+  [data-theme="light"] .fx-svg .fx-bg{ fill:#f7fafc; stroke:#cdd8e3; }
+  [data-theme="light"] .fx-svg{ background:transparent; }
+  /* theme toggle button */
+  .theme-toggle{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);
+    font-family:var(--mono);font-size:12px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .theme-toggle:hover{border-color:var(--phosphor)}
+  /* light-mode overrides for panels that use hard-coded dark backgrounds */
+  [data-theme="light"] header{ background:rgba(255,255,255,.9); }
+  [data-theme="light"] .cartridge{ background:linear-gradient(135deg,#ffffff,#eef2f7); }
+  [data-theme="light"] .brand-name{ background:linear-gradient(92deg,#15324a,#0f9b86); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  [data-theme="light"] body{ background-image:
+      radial-gradient(circle at 12% 10%, rgba(15,155,134,.06), transparent 40%),
+      radial-gradient(circle at 88% 0%, rgba(244,183,64,.05), transparent 40%); }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
@@ -189,6 +210,25 @@
   .modal input{width:100%;font-family:var(--mono);font-size:15px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:var(--radius);color:var(--ink);padding:11px 14px;margin-bottom:18px}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+/* ---- onboarding wizard ---- */
+.modal.wizard{max-width:480px}
+.wiz-steps{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
+.wiz-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
+.wiz-dot.active{background:var(--cyan,#39e0c4);color:#06231d;border-color:var(--cyan,#39e0c4);font-weight:700}
+.wiz-dot.done{background:rgba(57,224,196,.18);color:var(--cyan,#39e0c4);border-color:var(--cyan,#39e0c4)}
+.wiz-choices{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.wiz-choices-scroll{max-height:280px;overflow-y:auto;padding-right:4px}
+.wiz-choice{font-family:var(--mono);font-size:14px;text-align:left;background:var(--panel-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:all .12s}
+.wiz-choice:hover{border-color:var(--cyan,#39e0c4)}
+.wiz-choice.selected{border-color:var(--cyan,#39e0c4);background:rgba(57,224,196,.12);color:var(--cyan,#39e0c4);font-weight:600}
+/* ---- clearer top selectors ---- */
+.controls{position:relative}
+.controls-hint{width:100%;font-family:var(--mono);font-size:12px;color:var(--cyan,#39e0c4);
+  letter-spacing:.04em;margin:-4px 0 10px 0;display:flex;align-items:center;gap:7px}
+.controls .field select{border-color:var(--cyan,#39e0c4);box-shadow:0 0 0 1px rgba(57,224,196,.15)}
+.controls .field label{color:var(--cyan,#39e0c4);font-weight:600}
   .modal input.shake{border-color:var(--amber);animation:fxshake .35s}
   @keyframes fxshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
@@ -223,7 +263,7 @@
     </svg>
     <span class="brand-name">Fluxor</span><small>Revision Console</small>
   </div>
-  <div class="status"><span class="who" id="whoLabel">guest</span><span id="saveState" class="saved">all saved</span></div>
+  <div class="status"><button class="theme-toggle" id="themeToggle" title="Switch between light and dark mode" aria-label="Toggle light or dark mode"><span id="themeIcon">☾</span><span id="themeLabel">Dark</span></button><span class="who" id="whoLabel">guest</span><span id="saveState" class="saved">all saved</span></div>
 </header>
 
 <main>
@@ -255,6 +295,7 @@
   <div class="content">
 
   <div class="controls">
+    <div class="controls-hint">▸ Choose your Level, Subject &amp; Topic here — then pick Flashcards or Exam questions</div>
     <div class="field"><label for="levelSel">Level</label><select id="levelSel"></select></div>
     <div class="field"><label for="subjectSel">Subject</label><select id="subjectSel"></select></div>
     <div class="field"><label for="topicSel">Topic</label><select id="topicSel"></select></div>
@@ -322,11 +363,47 @@
 
 <footer>Fluxor · free to use · your progress lives in the file you download, not on any server</footer>
 
-<div class="modal-bg" id="nameModal"><div class="modal">
-  <h3 id="nameModalTitle">Welcome to Fluxor</h3>
-  <p id="nameModalText">Enter a name to get started. It's stored only in the progress file you download, so you recognise it later — no account, no email.</p>
-  <input type="text" id="nameInput" placeholder="e.g. Sam" maxlength="24">
-  <div class="modal-actions"><button class="btn-ghost btn" id="nameCancel">Cancel</button><button class="btn-primary btn" id="nameSave">Start revising</button></div>
+<div class="modal-bg" id="nameModal"><div class="modal wizard">
+  <div class="wiz-steps" id="wizSteps" aria-hidden="true">
+    <span class="wiz-dot active" data-step="0">1</span>
+    <span class="wiz-dot" data-step="1">2</span>
+    <span class="wiz-dot" data-step="2">3</span>
+    <span class="wiz-dot" data-step="3">4</span>
+  </div>
+
+  <!-- Step 0: name -->
+  <div class="wiz-panel" data-panel="0">
+    <h3 id="nameModalTitle">Welcome to Fluxor</h3>
+    <p id="nameModalText">Enter a name to get started. It's stored only in the progress file you download, so you recognise it later — no account, no email.</p>
+    <input type="text" id="nameInput" placeholder="e.g. Sam" maxlength="24">
+  </div>
+
+  <!-- Step 1: level -->
+  <div class="wiz-panel" data-panel="1" style="display:none">
+    <h3>Choose your level</h3>
+    <p>Which course are you studying for?</p>
+    <div class="wiz-choices" id="wizLevels"></div>
+  </div>
+
+  <!-- Step 2: subject -->
+  <div class="wiz-panel" data-panel="2" style="display:none">
+    <h3>Choose your subject</h3>
+    <p id="wizSubjectText">Pick a subject.</p>
+    <div class="wiz-choices" id="wizSubjects"></div>
+  </div>
+
+  <!-- Step 3: topic -->
+  <div class="wiz-panel" data-panel="3" style="display:none">
+    <h3>Choose a topic to start</h3>
+    <p id="wizTopicText">You can change this any time from the menu at the top.</p>
+    <div class="wiz-choices wiz-choices-scroll" id="wizTopics"></div>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn-ghost btn" id="nameCancel">Cancel</button>
+    <button class="btn-ghost btn" id="wizBack" style="display:none">Back</button>
+    <button class="btn-primary btn" id="nameSave">Next</button>
+  </div>
 </div></div>
 
 <div class="modal-bg" id="closeModal"><div class="modal">
@@ -1161,7 +1238,7 @@ ocr_alevel: {
   // Generic wrapper: a viewBox-scaled, responsive SVG with a faint frame.
   function wrap(w, h, inner, label){
     return `<svg class="fx-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label||"diagram")}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`
-      + `<rect x="0.5" y="0.5" width="${w-1}" height="${h-1}" rx="8" fill="${PANEL}" stroke="${LINE}"/>`
+      + `<rect class="fx-bg" x="0.5" y="0.5" width="${w-1}" height="${h-1}" rx="8" fill="${PANEL}" stroke="${LINE}"/>`
       + inner + `</svg>`;
   }
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -1925,11 +2002,103 @@ ocr_alevel: {
     return wrap(W,H,s,"angles");
   }
 
+  // Bar chart. o:{ bars:[{label,value,color?}], ylabel, ymax }
+  function barChart(o){
+    o=o||{}; const W=o.w||300, H=o.h||220, padL=38, padB=34, padT=18, padR=14;
+    const bars=o.bars||[{label:"A",value:3},{label:"B",value:5},{label:"C",value:2}];
+    const ymax=o.ymax || Math.ceil(Math.max(...bars.map(b=>b.value))*1.15)||5;
+    const plotW=W-padL-padR, plotH=H-padB-padT, base=H-padB;
+    const px=x=>padL+x, py=v=>base-(v/ymax)*plotH;
+    let s=defs();
+    // axes
+    s+=`<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${base}" stroke="${INK}" stroke-width="1.4"/>`;
+    s+=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="${INK}" stroke-width="1.4"/>`;
+    // y gridlines/labels
+    const step = ymax<=5?1 : (ymax<=10?2 : Math.ceil(ymax/5));
+    for(let v=0; v<=ymax; v+=step){ const y=py(v); s+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${LINE}" stroke-width="0.5"/>`; s+=txt(padL-6,y+4,String(v),{anchor:"end",fill:DIM,size:10}); }
+    if(o.ylabel) s+=txt(12,padT+plotH/2,o.ylabel,{anchor:"middle",fill:DIM,size:10});
+    // bars
+    const n=bars.length, gap=plotW/n*0.25, bw=plotW/n - gap;
+    const cols=[CYAN,AMBER,GREEN,RED,"#9a7bd0","#5aa9e6"];
+    bars.forEach((b,i)=>{ const x=padL+ i*(plotW/n) + gap/2; const h=(b.value/ymax)*plotH; const col=b.color||cols[i%cols.length];
+      s+=`<rect x="${x.toFixed(1)}" y="${(base-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" fill-opacity="0.55" stroke="${col}" stroke-width="1.5"/>`;
+      s+=txt(x+bw/2, base+14, b.label, {anchor:"middle",fill:INK,size:11});
+    });
+    return wrap(W,H,s,o.alt||"bar chart");
+  }
+
+  // Pictogram. o:{ rows:[{label,count}], per, symbol? }
+  function pictogram(o){
+    o=o||{}; const W=o.w||320, H=o.h||30+ (o.rows||[]).length*30;
+    const rows=o.rows||[{label:"Mon",count:3},{label:"Tue",count:2.5}];
+    const per=o.per||1, sym=o.symbol||"●", labW=64;
+    let s=defs();
+    rows.forEach((r,i)=>{ const y=24+i*30;
+      s+=txt(8, y+4, r.label, {fill:INK,size:12});
+      const n=r.count; const full=Math.floor(n); const frac=n-full;
+      let x=labW;
+      for(let k=0;k<full;k++){ s+=txt(x, y+6, sym, {fill:CYAN,size:18}); x+=22; }
+      if(frac>0){ // half/partial symbol via clip-free approach: a dimmer partial
+        s+=`<g><clipPath id="pc${i}"><rect x="${x-9}" y="${y-12}" width="${(18*frac).toFixed(1)}" height="22"/></clipPath><text x="${x}" y="${y+6}" font-size="18" fill="${CYAN}" clip-path="url(#pc${i})">${sym}</text><text x="${x}" y="${y+6}" font-size="18" fill="${LINE}">${sym}</text></g>`;
+      }
+    });
+    // key
+    s+=txt(8, H-6, "Key: "+sym+" = "+per, {fill:DIM,size:10});
+    return wrap(W,H,s,o.alt||"pictogram");
+  }
+
+  // Symmetry / reflection. o:{ shape, mode:"lines"|"reflect", lines?, mirror? }
+  function symmetry(o){
+    o=o||{}; const W=o.w||260, H=o.h||220, cx=W/2, cy=H/2;
+    let s=defs();
+    const shape=o.shape||"square";
+    function poly(pts,col){ return `<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${col||CYAN}" fill-opacity="0.12" stroke="${col||CYAN}" stroke-width="2"/>`; }
+    const R=58;
+    function regPts(n,rot,c){ c=c||[cx,cy]; const out=[]; for(let i=0;i<n;i++){ const a=(rot||-90)*Math.PI/180 + i*2*Math.PI/n; out.push([c[0]+R*Math.cos(a), c[1]+R*Math.sin(a)]); } return out; }
+    let pts;
+    if(shape==="square") pts=[[cx-R,cy-R],[cx+R,cy-R],[cx+R,cy+R],[cx-R,cy+R]];
+    else if(shape==="rectangle") pts=[[cx-R*1.3,cy-R*0.7],[cx+R*1.3,cy-R*0.7],[cx+R*1.3,cy+R*0.7],[cx-R*1.3,cy+R*0.7]];
+    else if(shape==="triangle") pts=regPts(3,-90);
+    else if(shape==="pentagon") pts=regPts(5,-90);
+    else if(shape==="hexagon") pts=regPts(6,-90);
+    else pts=[[cx-R,cy-R],[cx+R,cy-R],[cx+R,cy+R],[cx-R,cy+R]];
+
+    if((o.mode||"lines")==="reflect"){
+      // shape on the left, mirror line vertical down the centre, reflected image dashed on right
+      const mirror=o.mirror||"vertical";
+      // draw mirror line
+      if(mirror==="vertical"){ s+=`<line x1="${cx}" y1="14" x2="${cx}" y2="${H-14}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="5 4"/>`; }
+      else { s+=`<line x1="14" y1="${cy}" x2="${W-14}" y2="${cy}" stroke="${AMBER}" stroke-width="1.6" stroke-dasharray="5 4"/>`; }
+      // place a simple flag shape on one side and its reflection
+      const off=46;
+      const obj=[[cx-off-30,cy-30],[cx-off-30,cy+30],[cx-off,cy]];
+      s+=poly(obj,CYAN);
+      // reflected (mirror in the line)
+      const refl = mirror==="vertical" ? obj.map(p=>[2*cx-p[0],p[1]]) : obj.map(p=>[p[0],2*cy-p[1]]);
+      s+=`<polygon points="${refl.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${DIM}" stroke-width="1.6" stroke-dasharray="4 3"/>`;
+      s+=txt(cx, H-4, o.label||"reflect in the dashed mirror line", {anchor:"middle",fill:DIM,size:10});
+      return wrap(W,H,s,o.alt||"reflection");
+    }
+    // lines-of-symmetry mode: draw the shape and (optionally) its lines of symmetry
+    s+=poly(pts);
+    if(o.lines!==false){
+      const cols=AMBER;
+      if(shape==="square"){ s+=symLine(cx-R,cy,cx+R,cy)+symLine(cx,cy-R,cx,cy+R)+symLine(cx-R,cy-R,cx+R,cy+R)+symLine(cx-R,cy+R,cx+R,cy-R); }
+      else if(shape==="rectangle"){ s+=symLine(cx-R*1.3,cy,cx+R*1.3,cy)+symLine(cx,cy-R*0.7,cx,cy+R*0.7); }
+      else if(shape==="triangle"){ pts.forEach(v=>{ const mid=midOpp(v,pts); s+=symLine(v[0],v[1],mid[0],mid[1]); }); }
+      else if(shape==="pentagon"){ pts.forEach(v=>{ s+=symLine(v[0],v[1],cx,cy); }); } // 5 vertex-to-centre (approx)
+      else if(shape==="hexagon"){ s+=symLine(cx-R,cy,cx+R,cy)+symLine(cx,cy-R,cx,cy+R); for(let k=0;k<pts.length;k+=1){} }
+    }
+    function symLine(x1,y1,x2,y2){ return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${AMBER}" stroke-width="1.3" stroke-dasharray="4 3"/>`; }
+    function midOpp(v,P){ const others=P.filter(p=>p!==v); return [(others[0][0]+others[1][0])/2,(others[0][1]+others[1][1])/2]; }
+    return wrap(W,H,s,o.alt||"lines of symmetry");
+  }
+
   window.DIAGRAMS = {
     graphLinear, graphCurve, graphSegments, wave, refraction, reflection,
     freeBody, barMagnet, wireField, circuit,
     rightTriangle, pieChart, scatter, rectShape, parabola, circle,
-    reactionProfile, dissociationCurve, enzymeRate, circleTheorem, vector, angles
+    reactionProfile, dissociationCurve, enzymeRate, circleTheorem, vector, angles, barChart, pictogram, symmetry
   };
   // Render helper used by the app: accepts a spec {d, o} and returns SVG (or "")
   window.renderDiagram = function(spec){
@@ -8171,7 +8340,7 @@ ocr_alevel: {
           ["What units are used for area?", "Square units, e.g. cm² or m²."],
         ],
         quiz: [
-          ["The area of a rectangle 8 cm by 3 cm is:", ["24 cm²","11 cm²","22 cm²","16 cm²"], 0, "8 × 3 = <b>24 cm²</b>.", D("rectShape",{w:8,h:3,label:"8 × 3"})],
+          ["The area of a rectangle 8 cm by 3 cm is:", ["24 cm²","11 cm²","22 cm²","16 cm²"], 0, "8 × 3 = <b>24 cm²</b>.", D("rectShape",{wLabel:"8 cm",hLabel:"3 cm"})],
           ["The perimeter of a square of side 6 cm is:", ["24 cm","36 cm","12 cm","18 cm"], 0, "4 × 6 = <b>24 cm</b>."],
           ["The area of a triangle with base 10 cm, height 4 cm is:", ["20 cm²","40 cm²","14 cm²","24 cm²"], 0, "½ × 10 × 4 = <b>20 cm²</b>."],
           ["The perimeter of a rectangle 5 cm by 2 cm is:", ["14 cm","10 cm","7 cm","20 cm"], 0, "2(5 + 2) = <b>14 cm</b>."],
@@ -8753,7 +8922,7 @@ ocr_alevel: {
   ]);
   add("y7_perimeter_area",[
     ["The area of a triangle with base 6 cm and height 8 cm is:", ["24 cm²","48 cm²","14 cm²","28 cm²"], 0, "½ × 6 × 8 = <b>24 cm²</b>.", D("rightTriangle",{labels:{b:"6",h:"8"}})],
-    ["The perimeter of a rectangle 9 cm by 4 cm is:", ["26 cm","36 cm","13 cm","22 cm"], 0, "2(9 + 4) = <b>26 cm</b>.", D("rectShape",{w:9,h:4,label:"9 × 4"})],
+    ["The perimeter of a rectangle 9 cm by 4 cm is:", ["26 cm","36 cm","13 cm","22 cm"], 0, "2(9 + 4) = <b>26 cm</b>.", D("rectShape",{wLabel:"9 cm",hLabel:"4 cm"})],
     ["A square has area 36 cm². Its side length is:", ["6 cm","9 cm","18 cm","36 cm"], 0, "√36 = <b>6 cm</b>."],
     ["The area of a parallelogram base 5 cm, height 6 cm is:", ["30 cm²","11 cm²","30 cm","15 cm²"], 0, "5 × 6 = <b>30 cm²</b>."],
     ["The perimeter of an equilateral triangle of side 7 cm is:", ["21 cm","14 cm","49 cm","7 cm"], 0, "3 × 7 = <b>21 cm</b>."],
@@ -8931,6 +9100,249 @@ ocr_alevel: {
   ]);
 
   console.log("[ks3_expand] KS3 Maths expanded with diagrams");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — KS3 MATHS DIAGRAM PASS
+   Attaches diagrams to geometry & graph questions that lack them.
+   Matches each diagram to the question; never reveals the answer.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C||!C.ks3_maths){console.warn("KS3 diagram pass skipped");return;}
+  const T=C.ks3_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  // Attach a diagram to the FIRST quiz question whose text starts with `prefix`
+  // and which doesn't already have one.
+  function attach(topicKey, prefix, spec){
+    const t=T[topicKey]; if(!t) return;
+    const q=t.quiz.find(q=>String(q[0]).startsWith(prefix) && !q[4]);
+    if(q) q[4]=spec; 
+  }
+
+  // ---------- Y7 PERIMETER & AREA ----------
+  attach("y7_perimeter_area","The perimeter of a square of side 6", D("rectShape",{wLabel:"6 cm",hLabel:"6 cm",w:200,h:200,alt:"square side 6 cm"}));
+  attach("y7_perimeter_area","The area of a triangle with base 10", D("rightTriangle",{labels:{b:"10",h:"4"},alt:"triangle base 10 height 4"}));
+  attach("y7_perimeter_area","The perimeter of a rectangle 5 cm by 2", D("rectShape",{wLabel:"5 cm",hLabel:"2 cm",alt:"rectangle 5 by 2"}));
+  attach("y7_perimeter_area","The area of a parallelogram base 7", D("rectShape",{wLabel:"base 7 cm",hLabel:"h 3 cm",alt:"parallelogram"}));
+  attach("y7_perimeter_area","The area of a square of side 5", D("rectShape",{wLabel:"5 cm",hLabel:"5 cm",w:200,h:200,alt:"square side 5"}));
+  attach("y7_perimeter_area","A rectangle has area 24 cm² and width 4", D("rectShape",{wLabel:"? ",hLabel:"4 cm",alt:"rectangle width 4, area 24"}));
+  attach("y7_perimeter_area","The perimeter of a rectangle 9 cm by 4", D("rectShape",{wLabel:"9 cm",hLabel:"4 cm",alt:"rectangle 9 by 4"}));
+  attach("y7_perimeter_area","A rectangle has area 30 cm² and length 6", D("rectShape",{wLabel:"6 cm",hLabel:"? ",alt:"rectangle length 6, area 30"}));
+
+  // ---------- Y7 ANGLES & POLYGONS ----------
+  attach("y7_angles_polygons","Angles around a point: three are 100", D("angles",{mode:"point",given:[100,90,80]}));
+  attach("y7_angles_polygons","Angles around a point: 150", D("angles",{mode:"point",given:[150,90]}));
+  attach("y7_angles_polygons","Angles on a straight line: one is 120", D("angles",{mode:"line",split:120,known:"120°",unknown:"?"}));
+
+  // ---------- Y8 COORDINATES & GRAPHS ----------
+  attach("y8_coordinates_graphs","The gradient of y = 3x + 1", D("graphLinear",{slope:3,intercept:1,xlabel:"x",ylabel:"y",xmax:5,ymax:12}));
+  attach("y8_coordinates_graphs","Where does y = 2x + 5 cross the y-axis", D("graphLinear",{slope:2,intercept:5,xlabel:"x",ylabel:"y",xmax:5,ymax:14}));
+  attach("y8_coordinates_graphs","The gradient of y = 4x − 2", D("graphLinear",{slope:4,intercept:-2,xlabel:"x",ylabel:"y",xmax:5,ymax:12}));
+
+  // ---------- Y8 AREA, VOLUME & DENSITY ----------
+  attach("y8_area_volume_density","The area of a trapezium with parallel sides 4", D("rectShape",{wLabel:"a=4, b=6",hLabel:"h 2",alt:"trapezium"}));
+  attach("y8_area_volume_density","The area of a circle radius 5", D("circle",{rLabel:"r = 5"}));
+  attach("y8_area_volume_density","The area of a circle radius 3", D("circle",{rLabel:"r = 3"}));
+
+  // ---------- Y8 ANGLES IN PARALLEL LINES & POLYGONS ----------
+  attach("y8_angles_parallel_polygons","Co-interior angles: one is 115", D("angles",{mode:"parallel",known:115,knownLabel:"115°"}));
+
+  // ---------- Y8 CIRCLES ----------
+  attach("y8_circles","The circumference of a circle diameter 10", D("circle",{rLabel:"d = 10"}));
+  attach("y8_circles","The area of a circle radius 4", D("circle",{rLabel:"r = 4"}));
+  attach("y8_circles","The area of a circle diameter 10", D("circle",{rLabel:"d = 10"}));
+  attach("y8_circles","The circumference of a circle radius 7", D("circle",{rLabel:"r = 7"}));
+
+  // ---------- Y8 INTERPRET & REPRESENT DATA (pie charts) ----------
+  attach("y8_interpret_data","A category is 20% of a pie chart", D("pieChart",{slices:[{label:"this",value:20},{label:"rest",value:80}],alt:"pie chart with a 20% slice"}));
+  attach("y8_interpret_data","A category with frequency 15 out of 60", D("pieChart",{slices:[{label:"this",value:15},{label:"rest",value:45}],alt:"pie chart 15 of 60"}));
+
+  // ---------- Y8 GRAPHS & CHARTS (scatter) ----------
+  attach("y8_graphs_charts","Hours studied vs test score usually shows", D("scatter",{points:[[1,2],[2,3],[3,4],[4,5.5],[5,6.5]],fit:"pos",xlabel:"hours",ylabel:"score",xmax:6,ymax:8}));
+  attach("y8_graphs_charts","Outdoor temperature vs ice cream sales usually shows", D("scatter",{points:[[1,2],[2,3.5],[3,4],[4,5.5],[5,7]],fit:"pos",xlabel:"temp",ylabel:"sales",xmax:6,ymax:8}));
+
+  console.log("[ks3_diagrams] diagram pass applied to KS3 geometry & graph questions");
+})();
+
+</script>
+<script>
+/* KS3 diagram pass 2 — bar charts/pictograms for Graphing data,
+   and symmetry/reflection diagrams for Symmetry & reflection. */
+(function(){
+  const C=window.COURSES; if(!C||!C.ks3_maths) return;
+  const T=C.ks3_maths.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function attach(k,prefix,spec){ const t=T[k]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+
+  // ---------- Y7 GRAPHING DATA ----------
+  attach("y7_graphing_data","A bar chart is best for", D("barChart",{bars:[{label:"Walk",value:8},{label:"Bus",value:5},{label:"Car",value:3}],ylabel:"pupils"}));
+  attach("y7_graphing_data","In a pictogram, if 1 symbol = 5 people", D("pictogram",{rows:[{label:"Y7",count:4},{label:"Y8",count:2}],per:5,symbol:"●"}));
+  attach("y7_graphing_data","A bar twice as tall as another", D("barChart",{bars:[{label:"A",value:6},{label:"B",value:3}],ylabel:"frequency"}));
+  attach("y7_graphing_data","If a pictogram uses half a symbol and 1 symbol = 10", D("pictogram",{rows:[{label:"A",count:2.5}],per:10,symbol:"●"}));
+  attach("y7_graphing_data","Which chart would best show how a class travels", D("barChart",{bars:[{label:"Walk",value:7},{label:"Bus",value:6},{label:"Car",value:4}],ylabel:"pupils"}));
+  attach("y7_graphing_data","A pictogram uses 1 symbol = 4 cars", D("pictogram",{rows:[{label:"Row",count:2.5}],per:4,symbol:"●"}));
+  attach("y7_graphing_data","A dual bar chart is useful for", D("barChart",{bars:[{label:"A",value:5,color:"#39e0c4"},{label:"B",value:7,color:"#f4b740"}],ylabel:"value"}));
+
+  // ---------- Y8 SYMMETRY & REFLECTION ----------
+  attach("y8_symmetry_reflection","How many lines of symmetry does a square", D("symmetry",{shape:"square",mode:"lines",lines:false}));
+  attach("y8_symmetry_reflection","A regular hexagon has how many lines of symmetry", D("symmetry",{shape:"hexagon",mode:"lines",lines:false}));
+  attach("y8_symmetry_reflection","How many lines of symmetry does a rectangle", D("symmetry",{shape:"rectangle",mode:"lines",lines:false}));
+  attach("y8_symmetry_reflection","An equilateral triangle has rotational symmetry", D("symmetry",{shape:"triangle",mode:"lines",lines:false}));
+  attach("y8_symmetry_reflection","Reflecting (3, 2) in the y-axis", D("symmetry",{mode:"reflect",mirror:"vertical",label:"reflect in the y-axis"}));
+  attach("y8_symmetry_reflection","Reflecting (4, 1) in the x-axis", D("symmetry",{mode:"reflect",mirror:"horizontal",label:"reflect in the x-axis"}));
+  attach("y8_symmetry_reflection","Reflecting (5, 3) in the y-axis", D("symmetry",{mode:"reflect",mirror:"vertical",label:"reflect in the y-axis"}));
+  attach("y8_symmetry_reflection","Reflecting (2, 6) in the x-axis", D("symmetry",{mode:"reflect",mirror:"horizontal",label:"reflect in the x-axis"}));
+  attach("y8_symmetry_reflection","A regular pentagon has how many lines of symmetry", D("symmetry",{shape:"pentagon",mode:"lines",lines:false}));
+
+  console.log("[ks3_diagrams2] bar/pictogram/symmetry diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — MATHS FLASHCARD DIAGRAMS
+   Adds an illustrative diagram to the BACK (answer side) of
+   concept flashcards, using existing generators only.
+   Card format: [question, answer, frontDiagram?, backDiagram?]
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const D=(d,o)=>({d,o:o||{}});
+  // Set the back diagram (index 3) of the first card whose question starts with `prefix`.
+  function back(courseKey, topicKey, prefix, spec){
+    const co=C[courseKey]; if(!co) return; const t=co.topics[topicKey]; if(!t) return;
+    const card=t.cards.find(c=>String(c[0]).startsWith(prefix));
+    if(card){ while(card.length<4) card.push(undefined); card[3]=spec; }
+  }
+  // Apply the same set of card diagrams to several courses that share topic keys.
+  function applyShared(courseKeys, topicKey, list){
+    courseKeys.forEach(ck=> list.forEach(([prefix,spec])=> back(ck,topicKey,prefix,spec)) );
+  }
+
+  const GCSE=["edexcel_foundation","edexcel_higher"];
+
+  // ---------- Angles (GCSE F+H) ----------
+  applyShared(GCSE,"geo_angles",[
+    ["What do angles on a straight line", D("angles",{mode:"line",split:120,known:"a",unknown:"b"})],
+    ["What do angles around a point", D("angles",{mode:"point",given:[120,90,80]})],
+    ["What do the interior angles of a triangle", D("angles",{mode:"triangle",a:60,b:55,aLabel:"a",bLabel:"b",cLabel:"c"})],
+    ["What are alternate angles", D("angles",{mode:"parallel",known:70,knownLabel:"a",unknownLabel:"a"})],
+    ["What are corresponding angles", D("angles",{mode:"parallel",known:70,knownLabel:"a",unknownLabel:"a"})],
+  ]);
+  // ---------- Area & perimeter (GCSE F+H) ----------
+  applyShared(GCSE,"geo_area_perimeter",[
+    ["How do you find the area of a rectangle", D("rectShape",{wLabel:"length",hLabel:"width"})],
+    ["How do you find the area of a triangle", D("rightTriangle",{labels:{b:"base",h:"height"}})],
+    ["How do you find the area of a circle", D("circle",{rLabel:"r"})],
+    ["How do you find the circumference of a circle", D("circle",{rLabel:"r"})],
+  ]);
+  // ---------- Pythagoras (GCSE F+H) ----------
+  applyShared(GCSE,"geo_pythagoras",[
+    ["State Pythagoras", D("rightTriangle",{labels:{b:"a",h:"b",hyp:"c"}})],
+    ["Which side is the hypotenuse", D("rightTriangle",{labels:{b:"a",h:"b",hyp:"hyp"}})],
+  ]);
+  // ---------- Coordinates (GCSE F+H) ----------
+  applyShared(GCSE,"geo_coordinates",[
+    ["How do you find the length of a line segment", D("rightTriangle",{labels:{b:"Δx",h:"Δy",hyp:"d"}})],
+  ]);
+  // ---------- Straight-line graphs (GCSE F+H) ----------
+  applyShared(GCSE,"alg_graphs",[
+    ["What does y = mx + c represent", D("graphLinear",{slope:2,intercept:3,xlabel:"x",ylabel:"y",xmax:5,ymax:14})],
+    ["What is the gradient of a horizontal line", D("graphLinear",{slope:0,intercept:4,xlabel:"x",ylabel:"y",xmax:5,ymax:8})],
+    ["What does a negative gradient look like", D("graphLinear",{slope:-1.5,intercept:9,xlabel:"x",ylabel:"y",xmax:5,ymax:10})],
+  ]);
+  // ---------- Quadratics (Higher only) ----------
+  back("edexcel_higher","alg_quadratics_h","What does the graph of a quadratic look like", D("parabola",{a:1,roots:[-2,2],range:6,xlabel:"x",ylabel:"y",label:"y = x²"}));
+  back("edexcel_higher","alg_quadratics_h","What are the roots of a quadratic on a graph", D("parabola",{a:1,roots:[-3,1],range:6,xlabel:"x",ylabel:"y"}));
+
+  // ---------- KS3 ----------
+  back("ks3_maths","y7_angles_polygons","What do angles on a straight line", D("angles",{mode:"line",split:120,known:"a",unknown:"b"}));
+  back("ks3_maths","y7_angles_polygons","What do angles around a point", D("angles",{mode:"point",given:[120,90,80]}));
+  back("ks3_maths","y7_angles_polygons","What do angles in a triangle", D("angles",{mode:"triangle",a:60,b:55,aLabel:"a",bLabel:"b",cLabel:"c"}));
+  back("ks3_maths","y7_perimeter_area","Area of a rectangle", D("rectShape",{wLabel:"length",hLabel:"width"}));
+  back("ks3_maths","y7_perimeter_area","Area of a triangle", D("rightTriangle",{labels:{b:"base",h:"height"}}));
+  back("ks3_maths","y8_circles","What is the radius", D("circle",{rLabel:"r"}));
+  back("ks3_maths","y8_circles","What is the diameter", D("circle",{rLabel:"d"}));
+  back("ks3_maths","y8_circles","What is the area of a circle", D("circle",{rLabel:"r"}));
+  back("ks3_maths","y8_coordinates_graphs","What does y = mx + c represent", D("graphLinear",{slope:2,intercept:3,xlabel:"x",ylabel:"y",xmax:5,ymax:14}));
+  back("ks3_maths","y8_angles_parallel_polygons","What are corresponding angles", D("angles",{mode:"parallel",known:70,knownLabel:"a",unknownLabel:"a"}));
+  back("ks3_maths","y8_angles_parallel_polygons","What are alternate angles", D("angles",{mode:"parallel",known:70,knownLabel:"a",unknownLabel:"a"}));
+  back("ks3_maths","y8_graphs_charts","What is positive correlation", D("scatter",{points:[[1,2],[2,3],[3,4],[4,5.5],[5,6.5]],fit:"pos",xlabel:"x",ylabel:"y",xmax:6,ymax:8}));
+  back("ks3_maths","y8_graphs_charts","What is negative correlation", D("scatter",{points:[[1,7],[2,6],[3,4.5],[4,3],[5,2]],fit:"neg",xlabel:"x",ylabel:"y",xmax:6,ymax:8}));
+  back("ks3_maths","y8_symmetry_reflection","What happens in a reflection", D("symmetry",{mode:"reflect",mirror:"vertical"}));
+
+  // ---------- A-Level Maths ----------
+  back("edexcel_alevel_maths","p_coordinate_geometry","State the equation of a circle", D("circle",{rLabel:"r"}));
+  back("edexcel_alevel_maths","p_trigonometry","Area of a triangle using two sides", D("rightTriangle",{labels:{b:"b",h:"a",hyp:"c"},angleLabel:"C"}));
+  back("edexcel_alevel_maths","p_differentiation","How do you find a stationary point", D("parabola",{a:1,h:0,k:0,range:6,xlabel:"x",ylabel:"y",label:"min"}));
+
+  console.log("[maths_card_diagrams] flashcard diagrams added to maths courses");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — SCIENCE DIAGRAM PASS
+   Adds illustrative diagrams to physics/chemistry/biology
+   questions and flashcards using existing generators.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const D=(d,o)=>({d,o:o||{}});
+  function qAttach(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cardBack(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+  // GCSE physics appears in both combined_physics and aqa_gcse
+  const PHYS=["combined_physics","aqa_gcse"];
+  function physQ(tk,prefix,spec){ PHYS.forEach(ck=>qAttach(ck,tk,prefix,spec)); }
+  function physCard(tk,prefix,spec){ PHYS.forEach(ck=>cardBack(ck,tk,prefix,spec)); }
+
+  // ---------- WAVES (GCSE) ----------
+  physQ("waves","Sound is described as a wave in which air particles vibrat", D("wave",{cycles:3,label:"wave"}));
+  physQ("waves","A wave on a rope completes 30 oscillations", D("wave",{cycles:2,label:"transverse wave"}));
+  physCard("waves","Define a longitudinal wave", D("wave",{cycles:3,label:"wave"}));
+  physCard("waves","Define wavelength", D("wave",{cycles:2,label:"λ"}));
+  physCard("waves","Define amplitude", D("wave",{cycles:2,amplitude:0.8,label:"amplitude"}));
+  physCard("waves","Define frequency", D("wave",{cycles:3}));
+  physCard("waves","Define wave speed", D("wave",{cycles:2}));
+
+  // ---------- MAGNETISM (GCSE) ----------
+  physQ("magnetism","A wire carries a current of 4 A through a magnetic field", D("wireField",{}));
+  physCard("magnetism","Describe the magnetic field around a current-carrying wire", D("wireField",{}));
+  physCard("magnetism","What is the shape of the field around a bar magnet", D("barMagnet",{}));
+
+  // ---------- FORCES (GCSE) ----------
+  physQ("forces","A box on a slope stays still", D("freeBody",{boxLabel:"box",forces:[{dir:"down",label:"W",color:"#f4b740"},{dir:"up",label:"R",color:"#39e0c4"}]}));
+  physQ("forces","A force of 30 N acts at a perpendicular distance of 0.2 m", D("freeBody",{boxLabel:"pivot",forces:[{dir:"down",label:"30 N",color:"#f4b740"}]}));
+  physCard("forces","What is a free body force diagram", D("freeBody",{boxLabel:"object",forces:[{dir:"up",label:"R",color:"#39e0c4"},{dir:"down",label:"W",color:"#f4b740"},{dir:"right",label:"F",color:"#39e0c4"},{dir:"left",label:"friction",color:"#ff5d6c"}]}));
+
+  // ---------- A-LEVEL PHYSICS ----------
+  qAttach("ocr_alevel","m4_waves","A transverse wave", D("wave",{cycles:2,label:"transverse"}));
+  cardBack("ocr_alevel","m4_waves","Define a transverse wave", D("wave",{cycles:2,label:"transverse"}));
+
+  // ---------- CHEMISTRY: ENERGY CHANGES (exo/endothermic profiles) ----------
+  ["aqa_chemistry","combined_chemistry"].forEach(ck=>{
+    cardBack(ck,"energy_changes","Define an exothermic reaction", D("reactionProfile",{endo:false,label:"exothermic"}));
+    cardBack(ck,"energy_changes","Define an endothermic reaction", D("reactionProfile",{endo:true,label:"endothermic"}));
+    cardBack(ck,"energy_changes","Define a reaction profile", D("reactionProfile",{endo:false}));
+    cardBack(ck,"energy_changes","What is activation energy", D("reactionProfile",{endo:false,label:"Eₐ"}));
+    cardBack(ck,"energy_changes","State how a catalyst appears on a reaction profile", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+    qAttach(ck,"energy_changes","An instant cold pack goes cold", D("reactionProfile",{endo:true,label:"endothermic"}));
+    qAttach(ck,"energy_changes","On an exothermic reaction profile", D("reactionProfile",{endo:false,label:"exothermic"}));
+    qAttach(ck,"energy_changes","Adding a catalyst to a reaction changes the reaction pro", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+  });
+
+  // ---------- CHEMISTRY: RATES (catalyst lowers Ea) ----------
+  ["aqa_chemistry","combined_chemistry"].forEach(ck=>{
+    cardBack(ck,"rates","Define a catalyst", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+    cardBack(ck,"rates","Define the activation energy on collision", D("reactionProfile",{endo:false,label:"Eₐ"}));
+    qAttach(ck,"rates","A catalyst speeds up a reaction by", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+  });
+
+  // ---------- A-LEVEL BIOLOGY: ENZYMES (already has some; add to cards) ----------
+
+  console.log("[sci_diagrams] science diagram pass applied");
 })();
 
 </script>
@@ -9674,6 +10086,7 @@ function applyLoadedState(data){
     state.progress[k]={ known:Array.isArray(v.known)?v.known:[], review:Array.isArray(v.review)?v.review:[], quiz:(v.quiz&&typeof v.quiz==="object")?v.quiz:{} };
   });
   if(data.rewards && typeof data.rewards==="object") state.rewards=data.rewards;
+  if(data.theme==="light"||data.theme==="dark"){ state.theme=data.theme; applyTheme(state.theme); }
   if(window.Rewards) window.Rewards.ensureRewards();
   unsaved=false; resetCardView(); render();
 }
@@ -9698,26 +10111,106 @@ $("fileInput").addEventListener("change",e=>{
   reader.readAsText(file);
 });
 
+// ---- onboarding wizard: name -> level -> subject -> topic ----
+let wizStep=0, wizForce=false, wizMax=3;
+let wizSel={ level:null, course:null, topic:null };
+
+function wizShowStep(n){
+  wizStep=n;
+  for(let p=0;p<=3;p++){ const el=document.querySelector('.wiz-panel[data-panel="'+p+'"]'); if(el) el.style.display = (p===n)?"":"none"; }
+  document.querySelectorAll(".wiz-dot").forEach(d=>{ const st=+d.dataset.step; d.classList.toggle("active",st===n); d.classList.toggle("done",st<n); });
+  $("wizBack").style.display = (n>0)?"":"none";
+  $("nameSave").textContent = (wizMax===0) ? "Save name" : ((n===wizMax)?"Start revising":"Next");
+  if(n===0) setTimeout(()=>$("nameInput").focus(),50);
+  if(n===1) wizRenderLevels();
+  if(n===2) wizRenderSubjects();
+  if(n===3) wizRenderTopics();
+}
+
+function wizRenderLevels(){
+  const box=$("wizLevels"); box.innerHTML="";
+  Object.keys(LEVELS).forEach(lvl=>{
+    const b=document.createElement("button"); b.className="wiz-choice"+(wizSel.level===lvl?" selected":""); b.textContent=lvl;
+    b.onclick=()=>{ wizSel.level=lvl; wizSel.course=null; wizSel.topic=null; wizRenderLevels(); };
+    box.appendChild(b);
+  });
+}
+function wizRenderSubjects(){
+  const box=$("wizSubjects"); box.innerHTML="";
+  if(!wizSel.level) wizSel.level=Object.keys(LEVELS)[0];
+  $("wizSubjectText").textContent = "Subjects available at "+wizSel.level+" level:";
+  LEVELS[wizSel.level].forEach(sub=>{
+    const b=document.createElement("button"); b.className="wiz-choice"+(wizSel.course===sub.key?" selected":""); b.textContent=sub.subject;
+    b.onclick=()=>{ wizSel.course=sub.key; wizSel.topic=null; wizRenderSubjects(); };
+    box.appendChild(b);
+  });
+}
+function wizRenderTopics(){
+  const box=$("wizTopics"); box.innerHTML="";
+  if(!wizSel.course) wizSel.course=LEVELS[wizSel.level][0].key;
+  Object.entries(COURSES[wizSel.course].topics).forEach(([id,t])=>{
+    const b=document.createElement("button"); b.className="wiz-choice"+(wizSel.topic===id?" selected":""); b.textContent=t.name;
+    b.onclick=()=>{ wizSel.topic=id; wizRenderTopics(); };
+    box.appendChild(b);
+  });
+}
+
 function openName(force){
   const modal=$("nameModal");
+  wizForce=!!force;
+  wizMax = force ? 3 : 0;                 // change-name reopen shows only the name step
+  wizSel={ level:curLevel, course:curCourse, topic:curTopic };
   $("nameInput").value = (state.name && state.name!=="guest") ? state.name : "";
-  // in forced mode (first visit) the dialog can't be dismissed without a name
   $("nameCancel").style.display = force ? "none" : "";
   $("nameModalTitle").textContent = force ? "Welcome to Fluxor" : "Change your name";
   $("nameModalText").textContent = force
     ? "Enter a name to get started. It's stored only in the progress file you download, so you recognise it later — no account, no email."
     : "This name is stored in your progress file so you recognise it later. No account, no email.";
-  $("nameSave").textContent = force ? "Start revising" : "Save name";
+  $("wizSteps").style.display = force ? "" : "none";
   modal.dataset.force = force ? "1" : "";
-  modal.classList.add("show"); setTimeout(()=>$("nameInput").focus(),50);
+  modal.classList.add("show");
+  wizShowStep(0);
 }
 $("nameBtn").addEventListener("click",()=>openName(false));
+// ---- light / dark theme ----
+function applyTheme(theme){
+  const light = theme==="light";
+  document.documentElement.setAttribute("data-theme", light?"light":"dark");
+  const icon=$("themeIcon"), label=$("themeLabel");
+  if(icon) icon.textContent = light ? "☀" : "☾";
+  if(label) label.textContent = light ? "Light" : "Dark";
+}
+function setTheme(theme){ state.theme=theme; applyTheme(theme); markUnsaved(); }
+$("themeToggle").addEventListener("click",()=>{
+  const next = (state.theme==="light") ? "dark" : "light";
+  setTheme(next);
+});
+// apply any saved theme on load (default dark)
+applyTheme(state.theme==="light" ? "light" : "dark");
+$("wizBack").addEventListener("click",()=>{ if(wizStep>0) wizShowStep(wizStep-1); });
 $("nameCancel").addEventListener("click",()=>{ if($("nameModal").dataset.force!=="1") $("nameModal").classList.remove("show"); });
+
+function wizFinish(){
+  // apply the chosen level/subject/topic into the live selectors
+  if(wizSel.level && LEVELS[wizSel.level]){ curLevel=wizSel.level; levelSel.value=curLevel; populateSubjects(); }
+  if(wizSel.course && COURSES[wizSel.course]){ curCourse=wizSel.course; subjectSel.value=curCourse; populateTopics(); }
+  if(wizSel.topic && COURSES[curCourse].topics[wizSel.topic]){ curTopic=wizSel.topic; topicSel.value=curTopic; }
+  resetCardView(); render();
+  $("nameModal").classList.remove("show");
+}
+
 $("nameSave").addEventListener("click",()=>{
-  const v=$("nameInput").value.trim();
-  const force=$("nameModal").dataset.force==="1";
-  if(!v){ if(force){ $("nameInput").focus(); $("nameInput").classList.add("shake"); setTimeout(()=>$("nameInput").classList.remove("shake"),400); return; } $("nameModal").classList.remove("show"); return; }
-  state.name=v; markUnsaved(); $("nameModal").classList.remove("show");
+  // Step 0 always validates the name first.
+  if(wizStep===0){
+    const v=$("nameInput").value.trim();
+    if(!v){ $("nameInput").focus(); $("nameInput").classList.add("shake"); setTimeout(()=>$("nameInput").classList.remove("shake"),400); return; }
+    state.name=v; markUnsaved();
+    if(wizMax===0){ $("nameModal").classList.remove("show"); return; }   // change-name mode: done
+    wizShowStep(1); return;
+  }
+  // Steps 1-2: advance; step 3: finish.
+  if(wizStep<wizMax){ wizShowStep(wizStep+1); return; }
+  wizFinish();
 });
 $("nameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") $("nameSave").click(); });
 
