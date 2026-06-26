@@ -8094,7 +8094,7 @@ ocr_alevel: {
   ]);
   add("s_probability",[
     ["A fair coin is tossed 3 times. P(exactly 3 heads) is:", ["1/8","1/2","3/8","1/3"], 0, "(½)³ = <b>1/8</b>."],
-    ["Events A and B are independent with P(A)=0.4, P(B)=0.25. P(A∩B) is:", ["0.1","0.65","0.15","0.65"], 0, "0.4 × 0.25 = <b>0.1</b>."],
+    ["Events A and B are independent with P(A)=0.4, P(B)=0.25. P(A∩B) is:", ["0.1","0.65","0.15","0.5"], 0, "0.4 × 0.25 = <b>0.1</b>."],
     ["P(A)=0.3, P(B)=0.5, P(A∩B)=0.1. P(A∪B) is:", ["0.7","0.8","0.9","0.6"], 0, "0.3 + 0.5 − 0.1 = <b>0.7</b>."],
     ["Two dice are rolled. P(both show 6) is:", ["1/36","1/6","2/12","1/12"], 0, "1/6 × 1/6 = <b>1/36</b>."],
   ]);
@@ -9947,6 +9947,623 @@ ocr_alevel: {
 </script>
 <script>
 /* ============================================================
+   FLUXOR — CHEMISTRY DIAGRAM PASS
+   Reaction profiles (exo/endo/catalyst) and rate-vs-time curves.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cb(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+  const GCSE=["aqa_chemistry","combined_chemistry"];
+
+  // ---------- GCSE ENERGY CHANGES (reaction profiles) ----------
+  GCSE.forEach(ck=>{
+    qa(ck,"energy_changes","When a reaction is carried out, the temperature of the mix", D("reactionProfile",{endo:false,label:"exothermic"}));
+    qa(ck,"energy_changes","A reaction releases 200 kJ to the surroundings. On a react", D("reactionProfile",{endo:false,label:"exothermic"}));
+    qa(ck,"energy_changes","A reaction needs 1200 kJ to break bonds and releases 1000", D("reactionProfile",{endo:true,label:"endothermic"}));
+    qa(ck,"energy_changes","In a reaction, 1500 kJ is needed to break bonds and 1800", D("reactionProfile",{endo:false,label:"net exothermic"}));
+    qa(ck,"energy_changes","Breaking bonds needs 800 kJ; forming bonds releases 950 kJ", D("reactionProfile",{endo:false,label:"net exothermic"}));
+    // cards
+    cb(ck,"energy_changes","What does bond breaking require, and bond making", D("reactionProfile",{endo:false,label:"break = endo, make = exo"}));
+    cb(ck,"rates","How do you measure rate of reaction", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"product",label:"product vs time"}));
+    cb(ck,"rates","State how to follow a reaction that produces a gas", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"gas volume",label:"gas collected vs time"}));
+  });
+
+  // ---------- GCSE RATES (gas volume vs time curves; catalyst profile) ----------
+  GCSE.forEach(ck=>{
+    qa(ck,"rates","A reaction produces 48 cm³ of gas in 12 s at a steady rate", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"volume of gas",label:"rate slows as reactant used"}));
+    qa(ck,"rates","A reaction produces 60 cm³ of gas in 30 s, then stops", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"volume of gas",label:"levels off when finished"}));
+    qa(ck,"rates","On a graph of gas volume against time, the rate is fastest", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"volume of gas",label:"gradient = rate"}));
+    qa(ck,"rates","A reaction loses 0.8 g of mass in 40 s as CO₂ escapes", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"mass lost",label:"mass-loss curve"}));
+    cb(ck,"rates","Define a catalyst", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+  });
+
+  // ---------- A-LEVEL ENERGETICS / RATES / EQUILIBRIA ----------
+  qa("ocr_alevel_chemistry","m3_energetics_rates_equilibria","A catalyst increases the rate of reaction by", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+  qa("ocr_alevel_chemistry","m3_energetics_rates_equilibria","A reaction needs 1650 kJ to break bonds and releases 1850", D("reactionProfile",{endo:false,label:"net exothermic"}));
+  qa("ocr_alevel_chemistry","m3_energetics_rates_equilibria","Powdering a solid reactant increases the rate because it i", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"product",label:"faster initial rate"}));
+  cb("ocr_alevel_chemistry","m3_energetics_rates_equilibria","Define activation energy", D("reactionProfile",{endo:false,label:"Eₐ"}));
+  cb("ocr_alevel_chemistry","m3_energetics_rates_equilibria","Describe how a catalyst", D("reactionProfile",{endo:false,label:"catalyst lowers Eₐ"}));
+
+  // ---------- A-LEVEL RATES/pH (rate-concentration via gasLaw-style not ideal; use sqrt curve for concentration-time) ----------
+  qa("ocr_alevel_chemistry","m5_rates_equilibria_ph","A reaction is first order overall. The units of its rate c", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time",ylabel:"[reactant]",label:"first order: exponential decay"}));
+
+  console.log("[chem_diagrams] chemistry diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — BIOLOGY DIAGRAM PASS
+   Enzyme rate curves, oxygen-dissociation curves, and
+   rate-vs-factor saturation curves (photosynthesis).
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cb(ck,tk,prefix,spec){ const co=C[ck]; if(!co)return; const t=co.topics[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+  const GCSE=["aqa_biology","combined_biology"];
+
+  // ---------- GCSE BIOENERGETICS (photosynthesis rate vs light/limiting factors) ----------
+  GCSE.forEach(ck=>{
+    qa(ck,"bioenergetics","A pondweed in light produces 30 bubbles of oxygen per minu", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate of photosynthesis",label:"rate vs light"}));
+    qa(ck,"bioenergetics","At very high light intensity, increasing light further has", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate",label:"another factor now limits"}));
+    qa(ck,"bioenergetics","Pondweed gives 40 bubbles/min with a lamp 10 cm away", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate",label:"inverse-square with distance"}));
+    qa(ck,"bioenergetics","A pondweed in light produces 30 bubbles", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate"}));
+  });
+
+  // ---------- A-LEVEL ENZYMES ----------
+  qa("ocr_alevel_biology","m2_enzymes","An enzyme-controlled reaction speeds up as substrate conce", D("enzymeRate",{type:"substrate",xlabel:"substrate concentration",ylabel:"rate of reaction",label:"saturation"}));
+  qa("ocr_alevel_biology","m2_enzymes","A reaction rate falls sharply above 45 °C and does not rec", D("enzymeRate",{type:"temperature",xlabel:"temperature",ylabel:"rate of reaction",label:"optimum then denatures"}));
+  qa("ocr_alevel_biology","m2_enzymes","An enzyme works best at pH 7 and stops working at pH 3", D("enzymeRate",{type:"temperature",xlabel:"pH",ylabel:"rate of reaction",label:"optimum pH"}));
+  qa("ocr_alevel_biology","m2_enzymes","Increasing substrate concentration restores the rate of a", D("enzymeRate",{type:"substrate",xlabel:"substrate concentration",ylabel:"rate",label:"competitive inhibition raised by substrate"}));
+  qa("ocr_alevel_biology","m2_enzymes","A reaction is monitored: 20 cm³ of gas is produced in 40 s", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"time",ylabel:"product",label:"rate slows over time"}));
+  // cards
+  cb("ocr_alevel_biology","m2_enzymes","Explain the effect of pH on enzyme activity", D("enzymeRate",{type:"temperature",xlabel:"pH",ylabel:"rate",label:"optimum pH"}));
+  cb("ocr_alevel_biology","m2_enzymes","State how enzyme concentration affects rate", D("enzymeRate",{type:"substrate",xlabel:"enzyme concentration",ylabel:"rate",label:"rate ∝ enzyme (excess substrate)"}));
+
+  // ---------- A-LEVEL EXCHANGE/TRANSPORT (oxygen dissociation) ----------
+  qa("ocr_alevel_biology","m3_exchange_transport","In actively respiring tissue, more CO₂ lowers blood pH and", D("dissociationCurve",{label:"Bohr shift"}));
+  qa("ocr_alevel_biology","m3_exchange_transport","Most carbon dioxide is carried in the blood in the form of", D("dissociationCurve",{}));
+  qa("ocr_alevel_biology","m3_exchange_transport","Fetal haemoglobin has a higher affinity for oxygen than ad", D("dissociationCurve",{fetal:true,label:"fetal vs adult Hb"}));
+  cb("ocr_alevel_biology","m3_exchange_transport","Explain the role of haemoglobin's cooperative binding", D("dissociationCurve",{}));
+
+  // ---------- A-LEVEL PHOTOSYNTHESIS/RESPIRATION (limiting factors) ----------
+  qa("ocr_alevel_biology","m5_photosynthesis_respiration","At low light intensity, increasing CO₂ has little effect o", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate of photosynthesis",label:"limiting factors"}));
+  qa("ocr_alevel_biology","m5_photosynthesis_respiration","A plant is moved from light to darkness. Levels of GP rise", D("enzymeRate",{type:"substrate",xlabel:"light intensity",ylabel:"rate",label:"light-dependent rate"}));
+
+  console.log("[bio_diagrams] biology diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
+   FLUXOR — DE-DUPLICATION PASS
+   Removes exact-duplicate quiz questions within a topic
+   (identical stem AND identical correct-answer text).
+   Keeps the first occurrence. Runs after all content loaded.
+   ============================================================ */
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const strip=s=>String(s).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+  let removed=0;
+  Object.values(C).forEach(co=>Object.values(co.topics).forEach(t=>{
+    if(!Array.isArray(t.quiz)) return;
+    const seen={}; const kept=[];
+    t.quiz.forEach(q=>{
+      const stem=strip(q[0]);
+      const ans=strip(q[1] && q[1][q[2]]);
+      const key=stem+'||'+ans;
+      if(seen[key]){ removed++; return; }       // skip exact duplicate
+      seen[key]=true; kept.push(q);
+    });
+    t.quiz=kept;
+  }));
+  if(removed) console.log('[dedupe] removed '+removed+' exact-duplicate quiz questions');
+})();
+
+</script>
+<script>
+window.COURSES.aqa_alevel_pe = {
+  name: "A-Level PE (AQA)",
+  topics: {
+
+    cardio_respiratory: {
+      name: "1 · Cardiovascular & Respiratory Systems",
+      cards: [
+        ["Describe the conduction system of the heart.", "The <b>SA node</b> (pacemaker) fires an impulse → spreads across the atria → <b>AV node</b> delays it → <b>bundle of His</b> → <b>Purkinje fibres</b> spread it through the ventricle walls, causing contraction."],
+        ["Define cardiac output (Q).", "The volume of blood pumped out of the left ventricle <b>per minute</b>. Q = heart rate × stroke volume."],
+        ["Define stroke volume.", "The volume of blood pumped out of the left ventricle <b>per beat</b>. It rises with training as the heart becomes stronger."],
+        ["Explain the Frank–Starling mechanism.", "Greater <b>venous return</b> stretches the ventricle walls more, increasing the force of contraction and so increasing stroke volume."],
+        ["Define cardiovascular drift.", "During prolonged exercise at a steady intensity, <b>heart rate gradually rises</b> while stroke volume falls, due to fluid loss from sweating reducing plasma volume."],
+        ["Explain the redistribution of blood flow during exercise (the vascular shunt).", "Blood is diverted to working muscles via <b>vasodilation</b> of their arterioles and <b>vasoconstriction</b> to the gut/organs, controlled by the vasomotor centre and pre-capillary sphincters."],
+        ["Describe the role of the respiratory centre in controlling breathing.", "The <b>medulla oblongata</b> adjusts breathing rate/depth using input from chemoreceptors (CO₂, pH, O₂), baroreceptors and proprioceptors."],
+        ["Explain gaseous exchange at the alveoli.", "Oxygen diffuses from a high partial pressure in the alveoli to a lower one in the blood; CO₂ diffuses the other way — driven by <b>partial pressure gradients</b>."],
+        ["Define the oxyhaemoglobin dissociation curve.", "An S-shaped curve showing the % saturation of haemoglobin at different oxygen partial pressures."],
+        ["Explain the Bohr shift.", "During exercise, increased CO₂, temperature and lower pH shift the dissociation curve <b>right</b>, so haemoglobin releases oxygen more readily to the muscles."],
+        ["Define venous return.", "The volume of blood returning to the heart via the veins. Aided by the <b>skeletal muscle pump</b>, respiratory pump, valves and smooth muscle in vein walls."],
+        ["Define a-vO₂ difference.", "The difference in oxygen content between arterial and venous blood — it <b>increases</b> with training as muscles extract more oxygen."],
+        ["Describe the short-term effects of exercise on the cardiovascular system.", "Increased heart rate, stroke volume and cardiac output; vascular shunting redirects blood to muscles; blood pressure rises."],
+        ["Describe the long-term effects of aerobic training on the heart.", "<b>Cardiac hypertrophy</b> (thicker, stronger ventricle walls), bradycardia (lower resting HR), increased resting stroke volume and capillarisation."],
+        ["Define bradycardia.", "A resting heart rate <b>below 60 bpm</b>, common in endurance athletes due to a stronger, more efficient heart."]
+      ],
+      quiz: [
+        ["Which structure is known as the heart's pacemaker?", ["AV node", "SA node", "Bundle of His", "Purkinje fibres"], 1, "The <b>SA node</b> in the right atrium initiates each heartbeat."],
+        ["Cardiac output is calculated as:", ["HR + SV", "HR × SV", "SV ÷ HR", "HR − SV"], 1, "Cardiac output Q = heart rate × stroke volume."],
+        ["A resting heart rate below 60 bpm in a trained athlete is called:", ["Tachycardia", "Bradycardia", "Cardiac drift", "Hypertrophy"], 1, "<b>Bradycardia</b> results from a stronger, more efficient heart."],
+        ["The Frank–Starling mechanism links stroke volume to:", ["Breathing rate", "Venous return", "Blood pH", "Lactate level"], 1, "Greater venous return stretches the ventricles, increasing contraction force."],
+        ["During exercise, blood is redirected to muscles by:", ["Vasoconstriction of muscle arterioles", "Vasodilation of muscle arterioles", "Reduced cardiac output", "Lower venous return"], 1, "Muscle arterioles vasodilate while organ arterioles vasoconstrict — the vascular shunt."],
+        ["The Bohr shift means haemoglobin releases oxygen more readily when:", ["pH rises", "CO₂ and temperature rise", "Blood cools", "At rest"], 1, "Higher CO₂/temperature and lower pH shift the curve right, aiding oxygen release."],
+        ["Cardiovascular drift describes:", ["HR falling during rest", "HR rising while SV falls in prolonged exercise", "SV rising during sprints", "BP falling after training"], 1, "Fluid loss reduces plasma volume, so HR climbs to maintain cardiac output."],
+        ["Which controls breathing rate?", ["SA node", "Medulla oblongata", "Left ventricle", "Aorta"], 1, "The respiratory centre in the <b>medulla oblongata</b> regulates breathing."],
+        ["Cardiac hypertrophy from endurance training refers to:", ["Faster resting HR", "Thicker, stronger ventricle walls", "Smaller heart", "Reduced stroke volume"], 1, "The heart muscle grows stronger, raising stroke volume."],
+        ["Gaseous exchange at the alveoli occurs by:", ["Active transport", "Diffusion down partial pressure gradients", "Osmosis", "Filtration"], 1, "Gases diffuse from high to low partial pressure."],
+        ["The skeletal muscle pump aids:", ["Breathing", "Venous return", "Digestion", "Heart rate"], 1, "Contracting muscles squeeze veins, pushing blood back to the heart."],
+        ["A widening a-vO₂ difference after training shows:", ["Less oxygen used", "Muscles extracting more oxygen", "Lower cardiac output", "Reduced capillaries"], 1, "Trained muscles extract more oxygen from each unit of blood."]
+      ]
+    },
+
+    energy_systems: {
+      name: "2 · Energy Systems & Recovery",
+      cards: [
+        ["Name the three energy systems.", "The <b>ATP–PC (alactic) system</b>, the <b>glycolytic (lactic) system</b>, and the <b>aerobic system</b>."],
+        ["Describe the ATP–PC system.", "Phosphocreatine is broken down to resynthesise ATP. Very fast, anaerobic, no fatiguing by-products, but lasts only <b>~8–10 seconds</b>."],
+        ["Describe the glycolytic (anaerobic) system.", "Glucose/glycogen is broken down to pyruvate without oxygen, producing ATP and <b>lactic acid</b>. Lasts ~10 seconds to ~2–3 minutes."],
+        ["Describe the aerobic system.", "Glucose and fats are fully broken down <b>with oxygen</b> via glycolysis, the Krebs cycle and the electron transport chain, yielding a large ATP total but slowly."],
+        ["Define the energy continuum.", "The idea that all three energy systems contribute during activity, with the <b>predominant</b> one depending on intensity and duration."],
+        ["Define OBLA.", "<b>Onset of Blood Lactate Accumulation</b> — the point (around 4 mmol/L) where lactate is produced faster than it can be removed."],
+        ["Define EPOC.", "<b>Excess Post-exercise Oxygen Consumption</b> — the elevated oxygen uptake after exercise used to restore the body to its pre-exercise state."],
+        ["Describe the two stages of EPOC.", "The <b>fast (alactacid) component</b> resaturates myoglobin and restores PC stores; the <b>slow (lactacid) component</b> removes lactate and meets raised metabolic demand."],
+        ["Define the oxygen deficit.", "The shortfall between the oxygen required at the start of exercise and the oxygen actually supplied, made up anaerobically."],
+        ["State factors affecting which energy system dominates.", "Exercise <b>intensity and duration</b>, fitness level, and the availability of oxygen and fuels."],
+        ["Explain the role of myoglobin.", "Stores oxygen in muscle and transports it from capillaries to the mitochondria; restored during the fast component of EPOC."],
+        ["Define lactate threshold.", "The exercise intensity at which lactate begins to accumulate rapidly in the blood — trainable to occur at a higher % of VO₂ max."],
+        ["Suggest dietary aids to recovery.", "Rehydration, carbohydrate replacement to refill glycogen stores, and protein for muscle repair."],
+        ["Explain the energy system used in a 100 m sprint.", "Predominantly the <b>ATP–PC system</b> — maximal intensity for under 10 seconds."],
+        ["Explain the energy system used in a marathon.", "Predominantly the <b>aerobic system</b> — low-to-moderate intensity sustained for a long duration."]
+      ],
+      quiz: [
+        ["Which energy system provides ATP fastest but for the shortest time?", ["Aerobic", "ATP–PC", "Glycolytic", "Krebs cycle"], 1, "The ATP–PC system is fastest but lasts only ~8–10 s."],
+        ["The by-product of the anaerobic glycolytic system is:", ["Carbon dioxide only", "Lactic acid", "Phosphocreatine", "Water"], 1, "Anaerobic glycolysis produces lactic acid."],
+        ["The aerobic system fully breaks down fuel using:", ["No oxygen", "Oxygen", "Phosphocreatine", "Lactate"], 1, "The aerobic system requires oxygen."],
+        ["OBLA stands for:", ["Optimal Blood Lactate Amount", "Onset of Blood Lactate Accumulation", "Oxygen Blood Level Average", "Onset of Bicarbonate Loss Activity"], 1, "OBLA marks rapid lactate build-up (~4 mmol/L)."],
+        ["EPOC refers to oxygen consumed:", ["Before exercise", "After exercise to recover", "During the warm-up only", "At rest permanently"], 1, "Excess Post-exercise Oxygen Consumption restores the body."],
+        ["The fast component of EPOC mainly restores:", ["Lactate removal", "PC stores and myoglobin oxygen", "Glycogen only", "Body temperature"], 1, "The alactacid component restores PC and resaturates myoglobin."],
+        ["Which event relies mostly on the ATP–PC system?", ["Marathon", "100 m sprint", "1500 m run", "Cycling tour"], 1, "A sub-10-second maximal effort uses ATP–PC."],
+        ["A marathon is fuelled predominantly by the:", ["ATP–PC system", "Aerobic system", "Lactic system", "Phosphagen system"], 1, "Long, steady efforts are aerobic."],
+        ["The oxygen deficit is made up:", ["Aerobically before exercise", "Anaerobically at the start of exercise", "Only during cool-down", "By the heart alone"], 1, "Early shortfall in oxygen supply is met anaerobically."],
+        ["Raising the lactate threshold through training allows an athlete to:", ["Tire sooner", "Work at a higher intensity before lactate accumulates", "Lower VO₂ max", "Reduce stroke volume"], 1, "A higher threshold delays fatigue."],
+        ["Myoglobin's role is to:", ["Remove lactate", "Store and transport oxygen in muscle", "Break down glycogen", "Buffer acid"], 1, "Myoglobin stores oxygen and shuttles it to mitochondria."],
+        ["The energy continuum means:", ["Only one system works at a time", "All three systems contribute, with one predominant", "Aerobic is never used in sport", "ATP–PC lasts the whole event"], 1, "Systems overlap; intensity and duration set the predominant one."]
+      ]
+    }
+
+  }
+};
+
+</script>
+<script>
+// merge more topics into the A-Level PE course
+(function(){
+  const T = window.COURSES.aqa_alevel_pe.topics;
+
+  T.biomechanics = {
+    name: "3 · Biomechanics",
+    cards: [
+      ["State Newton's first law (inertia) applied to sport.", "A body stays at rest or moving at constant velocity unless acted on by a <b>net external force</b> — e.g. a stationary ball stays still until kicked."],
+      ["State Newton's second law applied to sport.", "The rate of change of momentum is proportional to the force applied and acts in the direction of that force (F = ma) — a harder kick accelerates the ball more."],
+      ["State Newton's third law applied to sport.", "For every action there is an <b>equal and opposite reaction</b> — a sprinter pushes back on the blocks and is driven forward."],
+      ["Define centre of mass.", "The point at which a body's mass is evenly distributed / balanced in all directions; it can lie outside the body (e.g. during a Fosbury flop)."],
+      ["Explain factors affecting stability.", "A <b>lower centre of mass</b>, a <b>larger base of support</b>, the line of gravity falling within the base, and greater mass all increase stability."],
+      ["Define a lever and name its components.", "A rigid bar (bone) turning about a pivot (joint), with an effort (muscle) moving a load (resistance)."],
+      ["Describe a first-class lever with an example.", "Pivot lies <b>between</b> effort and load — e.g. the neck nodding (extension at the atlanto-occipital joint)."],
+      ["Describe a second-class lever with an example.", "Load lies <b>between</b> pivot and effort — e.g. plantar flexion at the ankle when standing on tiptoe. Gives a mechanical advantage."],
+      ["Describe a third-class lever with an example.", "Effort lies <b>between</b> pivot and load — e.g. flexion at the elbow in a biceps curl. Most common in the body; gives a large range/speed of movement."],
+      ["Define mechanical advantage.", "Load arm shorter than effort arm, so a small effort moves a large load — characteristic of <b>second-class</b> levers."],
+      ["Explain projectile motion factors.", "The horizontal distance of a projectile depends on the <b>speed, angle and height of release</b>, plus air resistance and gravity."],
+      ["Define angular momentum.", "The quantity of rotation of a body = moment of inertia × angular velocity. It is <b>conserved</b> when no external torque acts."],
+      ["Explain how a skater spins faster.", "By pulling the arms in, <b>moment of inertia falls</b>, so angular velocity rises to conserve angular momentum."],
+      ["Define the Magnus effect.", "Spin on a ball creates a pressure difference, causing it to <b>swerve</b> — e.g. a curling free kick or topspin in tennis."],
+      ["Define a free body diagram.", "A diagram showing all the external forces (weight, reaction, friction, air resistance) acting on a body at a point in time."]
+    ],
+    quiz: [
+      ["A sprinter driving out of the blocks best illustrates Newton's:", ["First law", "Second law", "Third law", "Law of inertia"], 2, "The action on the blocks produces an equal and opposite reaction driving the sprinter forward."],
+      ["A biceps curl at the elbow is which class of lever?", ["First class", "Second class", "Third class", "Fourth class"], 2, "Effort (biceps) lies between pivot (elbow) and load (hand) — third class."],
+      ["Standing on tiptoe (plantar flexion) uses which lever?", ["First class", "Second class", "Third class", "None"], 1, "Load between pivot and effort — second class, giving mechanical advantage."],
+      ["Stability is increased by:", ["A higher centre of mass", "A lower centre of mass and wider base", "A smaller base", "Less mass"], 1, "Lower centre of mass and wider base of support improve stability."],
+      ["A skater pulls their arms in during a spin. They:", ["Slow down", "Speed up as moment of inertia falls", "Stop rotating", "Lose angular momentum"], 1, "Reducing moment of inertia raises angular velocity (momentum conserved)."],
+      ["Horizontal distance of a projectile depends on speed, height and:", ["Mass only", "Angle of release", "Colour", "Air pressure only"], 1, "Release speed, angle and height determine the flight path."],
+      ["The swerve of a spinning ball is the:", ["Bernoulli drop", "Magnus effect", "Coriolis effect", "Frank–Starling effect"], 1, "Spin creates a pressure difference — the Magnus effect."],
+      ["Newton's second law is summarised as:", ["F = m ÷ a", "F = ma", "F = m + a", "F = a ÷ m"], 1, "Force = mass × acceleration."],
+      ["Mechanical advantage (small effort moves large load) is given by:", ["First-class levers", "Second-class levers", "Third-class levers", "All levers equally"], 1, "Second-class levers have a long effort arm relative to the load arm."],
+      ["Angular momentum is conserved when:", ["A torque acts", "No external torque acts", "The body slows", "Mass increases"], 1, "With no external torque, angular momentum stays constant."],
+      ["A free body diagram shows:", ["Only weight", "All external forces on a body", "Internal forces only", "Muscle names"], 1, "It represents every external force acting at an instant."],
+      ["The centre of mass of a high jumper doing a Fosbury flop can:", ["Never move", "Pass below/outside the body, under the bar", "Only stay central", "Not exist"], 1, "The centre of mass can pass outside the body, even under the bar."]
+    ]
+  };
+
+  T.skill_acquisition = {
+    name: "4 · Skill Acquisition",
+    cards: [
+      ["Define a skill.", "A learned, goal-directed action performed with <b>maximum certainty, efficiency and minimum energy/time</b>."],
+      ["Classify skills on the open–closed continuum.", "<b>Open skills</b> are affected by an unpredictable environment (a pass in football); <b>closed skills</b> are in a stable environment (a free throw)."],
+      ["Define the gross–fine continuum.", "<b>Gross skills</b> use large muscle groups (a rugby tackle); <b>fine skills</b> use small, precise movements (a dart throw)."],
+      ["Describe the cognitive stage of learning.", "The early stage — the learner works out <b>what to do</b>, makes many errors, and needs lots of feedback and demonstration."],
+      ["Describe the associative stage of learning.", "The practice stage — movements become smoother, errors reduce, and the performer begins to use kinaesthetic feedback."],
+      ["Describe the autonomous stage of learning.", "Skills are performed <b>automatically</b> with little conscious thought, freeing attention for tactics."],
+      ["Define positive transfer.", "When learning one skill <b>aids</b> the learning/performance of another — e.g. a tennis serve helping a volleyball serve."],
+      ["Define negative transfer.", "When one skill <b>hinders</b> another — e.g. a badminton wrist action disrupting a tennis stroke."],
+      ["Compare massed and distributed practice.", "<b>Massed</b> practice has little/no rest (good for simple, fit performers); <b>distributed</b> practice includes rest intervals (better for beginners and dangerous/fatiguing skills)."],
+      ["Compare whole and part practice.", "<b>Whole</b> practice teaches the skill in one piece (best for highly organised skills); <b>part</b> practice breaks it into subroutines (best for complex/low-organisation skills)."],
+      ["Define knowledge of results (KR).", "Feedback about the <b>outcome</b> of a movement — e.g. whether the shot scored."],
+      ["Define knowledge of performance (KP).", "Feedback about the <b>quality/technique</b> of the movement, regardless of outcome."],
+      ["Describe operant conditioning.", "Learning by trial and error where correct responses are <b>reinforced</b> (Thorndike's laws of exercise, effect and readiness)."],
+      ["Describe Bandura's observational learning.", "Learning by watching and copying a model via attention, retention, motor reproduction and motivation."],
+      ["Define the schema theory.", "Schmidt's idea that performers store generalised <b>motor programmes</b> adapted using recall and recognition schema (initial conditions, response specs, sensory consequences, response outcomes)."]
+    ],
+    quiz: [
+      ["A free throw in basketball is best classified as a:", ["Open skill", "Closed skill", "Gross-only skill", "Externally paced skill"], 1, "It is performed in a stable, predictable environment — closed."],
+      ["In the cognitive stage of learning, a performer:", ["Performs automatically", "Makes many errors and needs demonstrations", "Uses no feedback", "Has mastered the skill"], 1, "The cognitive (early) stage is error-prone and needs guidance."],
+      ["A tennis serve helping a volleyball serve is an example of:", ["Negative transfer", "Positive transfer", "Zero transfer", "Bilateral transfer"], 1, "One skill aiding another is positive transfer."],
+      ["Distributed practice is most suitable for:", ["Experienced, fit athletes only", "Beginners and fatiguing/dangerous skills", "Simple skills only", "Autonomous performers only"], 1, "Rest intervals suit beginners and demanding skills."],
+      ["Part practice is best for skills that are:", ["Highly organised and ballistic", "Complex and low in organisation", "Simple and continuous", "Already mastered"], 1, "Breaking down complex, low-organisation skills helps learning."],
+      ["Knowledge of results gives feedback about:", ["Technique quality", "The outcome of the movement", "Heart rate", "Muscle fibre type"], 1, "KR concerns the outcome (e.g. did it score)."],
+      ["Knowledge of performance gives feedback about:", ["Only the score", "Movement quality/technique", "Crowd noise", "The result table"], 1, "KP concerns how the movement was executed."],
+      ["The autonomous stage of learning is characterised by:", ["Constant errors", "Automatic execution with spare attention", "Needing demonstrations", "No practice"], 1, "Skills become automatic, freeing attention for tactics."],
+      ["Learning by reinforcing correct trial-and-error responses is:", ["Observational learning", "Operant conditioning", "Insight learning", "Schema theory"], 1, "Operant conditioning reinforces correct responses."],
+      ["Bandura's stages of observational learning include:", ["Attention, retention, motor reproduction, motivation", "Storming, norming, performing", "Cognitive, associative, autonomous", "Input, decision, output"], 0, "Bandura: attention, retention, motor reproduction, motivation."],
+      ["A rugby tackle is best described as a:", ["Fine skill", "Gross skill", "Closed skill", "Self-paced skill"], 1, "It uses large muscle groups — a gross skill."],
+      ["Schmidt proposed which theory of motor learning?", ["Drive reduction", "Schema theory", "Inverted-U", "Social facilitation"], 1, "Schema theory uses generalised motor programmes."]
+    ]
+  };
+
+  console.log("[alevel_pe p2] biomechanics + skill acquisition added");
+})();
+
+</script>
+<script>
+(function(){
+  const T = window.COURSES.aqa_alevel_pe.topics;
+
+  T.sport_psychology = {
+    name: "5 · Sport Psychology",
+    cards: [
+      ["Define personality (trait vs social learning).", "<b>Trait theory</b> says personality is innate and stable; <b>social learning theory</b> says it is learned by observing and imitating others. The <b>interactionist</b> view combines both (B = f(P·E))."],
+      ["Define an attitude and its triad.", "A learned predisposition to respond. The triad: <b>cognitive</b> (beliefs), <b>affective</b> (feelings), <b>behavioural</b> (actions)."],
+      ["Explain cognitive dissonance.", "Creating mental conflict (e.g. new information) to <b>change an attitude</b> by making the current attitude uncomfortable to hold."],
+      ["Define arousal.", "A state of physiological and psychological <b>readiness/activation</b> varying from deep sleep to high excitement."],
+      ["Describe drive theory of arousal.", "Performance increases <b>linearly</b> with arousal — but this favours the dominant response, so experts thrive and novices struggle at high arousal."],
+      ["Describe the inverted-U theory.", "Performance is best at an <b>optimal/moderate</b> level of arousal; too little or too much reduces it. Optimal point varies with skill type and performer."],
+      ["Describe catastrophe theory.", "Like the inverted-U, but if high arousal is combined with high <b>cognitive anxiety</b>, performance drops sharply (a catastrophe) rather than gradually."],
+      ["Distinguish state and trait anxiety.", "<b>State</b> anxiety is the anxiety felt in a specific situation; <b>trait</b> anxiety is a general, enduring tendency to feel anxious."],
+      ["Define social facilitation.", "The positive effect an audience has on performance (often on experts/simple skills); the negative effect is <b>social inhibition</b> (often on novices/complex skills)."],
+      ["Explain evaluation apprehension.", "The perception that one is being judged, which raises arousal and can harm performance — managed by training in front of others and selective attention."],
+      ["Define a goal and the SMARTER principle.", "A target that directs effort. SMARTER: Specific, Measurable, Achievable, Recorded, Time-phased, Evaluated, Re-done."],
+      ["Compare outcome and process goals.", "<b>Outcome goals</b> focus on the result vs others (winning); <b>process/performance goals</b> focus on technique/personal standards and are better for confidence."],
+      ["Define self-efficacy (Bandura).", "Self-confidence in a <b>specific</b> situation, built from performance accomplishments, vicarious experience, verbal persuasion and emotional arousal."],
+      ["Describe attribution theory (Weiner).", "How we explain success/failure using locus of causality (internal/external) and stability (stable/unstable). Attributing failure to <b>unstable, controllable</b> factors avoids learned helplessness."],
+      ["Define learned helplessness and how to avoid it.", "A belief that failure is inevitable due to stable internal factors; avoided via <b>attribution retraining</b> and achievable process goals."]
+    ],
+    quiz: [
+      ["The interactionist view of personality is summarised as:", ["B = P only", "B = f(P·E)", "B = E only", "B = P + luck"], 1, "Behaviour is a function of personality interacting with environment."],
+      ["The three components of an attitude are:", ["Cognitive, affective, behavioural", "Input, decision, output", "Trait, state, mood", "Specific, measurable, achievable"], 0, "The triadic model: cognitive, affective, behavioural."],
+      ["Which theory says performance is best at moderate arousal?", ["Drive theory", "Inverted-U theory", "Catastrophe theory", "Trait theory"], 1, "The inverted-U predicts an optimal mid-level of arousal."],
+      ["Catastrophe theory differs from inverted-U because:", ["Arousal has no effect", "High arousal + high cognitive anxiety causes a sharp drop", "Performance always rises", "It ignores anxiety"], 1, "Combined high arousal and cognitive anxiety cause a sudden collapse."],
+      ["Drive theory predicts experts perform well at high arousal because:", ["They have no dominant response", "High arousal favours the dominant (well-learned) response", "They feel no anxiety", "Arousal lowers skill"], 1, "Arousal strengthens the dominant response, which for experts is correct."],
+      ["An audience improving an expert's simple skill is:", ["Social inhibition", "Social facilitation", "Evaluation apprehension", "Learned helplessness"], 1, "A positive audience effect is social facilitation."],
+      ["Trait anxiety is:", ["Situation-specific anxiety", "A general, enduring tendency to feel anxious", "Caused only by crowds", "The same as arousal"], 1, "Trait anxiety is an enduring personality characteristic."],
+      ["Process goals are preferable to outcome goals because they:", ["Depend on beating others", "Focus on controllable technique and build confidence", "Ignore improvement", "Always guarantee winning"], 1, "Process goals focus on personal, controllable standards."],
+      ["Self-efficacy according to Bandura is:", ["General self-esteem", "Confidence in a specific situation", "Trait anxiety", "An attitude"], 1, "Self-efficacy is situation-specific confidence."],
+      ["Attributing failure to an unstable, controllable factor (e.g. effort) helps:", ["Cause learned helplessness", "Maintain motivation and avoid helplessness", "Lower self-efficacy", "Reduce arousal to zero"], 1, "Controllable, unstable attributions protect motivation."],
+      ["Cognitive dissonance is used to:", ["Maintain an attitude", "Change an attitude by creating conflict", "Increase arousal only", "Set goals"], 1, "Conflict makes the old attitude uncomfortable, prompting change."],
+      ["The R and E in SMARTER goals stand for:", ["Recorded and Evaluated", "Realistic and Easy", "Rapid and Exact", "Recorded and Exciting"], 0, "SMARTER includes Recorded and Evaluated."]
+    ]
+  };
+
+  T.sport_society = {
+    name: "6 · Sport & Society",
+    cards: [
+      ["Distinguish the pre-industrial and post-industrial development of sport.", "Pre-industrial sports were <b>local, rural, violent and occasional</b> (e.g. mob football); industrialisation brought <b>codification, leagues, urban facilities</b> and rail travel."],
+      ["Define the 'rational recreation' of the 19th century.", "Organised, rule-bound sport with set times and fair play, promoted via public schools and the church (muscular Christianity)."],
+      ["Explain the role of public schools in developing sport.", "They <b>codified rules</b>, promoted athleticism and character-building, and spread games through old boys, universities and the Empire."],
+      ["Define amateurism and professionalism (historically).", "<b>Amateurs</b> (often upper class) played for love of sport; <b>professionals</b> were paid — historically subject to class-based exclusion."],
+      ["Define the golden triangle.", "The interdependent relationship between <b>sport, sponsorship and the media</b>, each generating money and exposure for the others."],
+      ["Explain the impact of the media on sport.", "Provides revenue and exposure but can dictate <b>rule changes, scheduling and formats</b> (e.g. T20 cricket) to suit audiences."],
+      ["Define commercialisation.", "Treating sport as a <b>commodity</b> to generate profit via sponsorship, merchandise, broadcasting and advertising."],
+      ["Explain WADA's role.", "The <b>World Anti-Doping Agency</b> sets and enforces global anti-doping rules, testing and the prohibited list."],
+      ["Give arguments for and against performance-enhancing drugs being banned.", "For the ban: health risks, unfair advantage, poor role-modelling. Against: athlete autonomy, hard to police, levelling the field — but the consensus heavily favours the ban."],
+      ["Define the concept of the 'sport England / UK Sport' funding split.", "<b>Sport England</b> funds grassroots participation; <b>UK Sport</b> funds elite/Olympic performance."],
+      ["Explain barriers to participation and how to overcome them.", "Barriers include cost, time, access, discrimination and stereotyping; tackled through funding, targeted schemes, role models and inclusive facilities."],
+      ["Define the term 'deviance' in sport.", "Behaviour that breaks the norms/laws of sport — e.g. doping, match-fixing, violence — either by underperforming or overstepping rules."],
+      ["Explain the impact of technology on officiating.", "Tools like <b>VAR, Hawk-Eye and goal-line technology</b> improve accuracy but can disrupt flow and spontaneity."],
+      ["Define globalisation of sport.", "The worldwide spread of sport via media, migration of athletes and multinational sponsorship, increasing access but also commercial pressure."],
+      ["Explain the role of National Governing Bodies (NGBs).", "Organise, regulate and develop a sport — setting rules, running competitions, developing talent pathways and safeguarding."]
+    ],
+    quiz: [
+      ["Mob football in pre-industrial Britain was typically:", ["Codified and timed", "Local, rural and violent", "Played in stadiums", "Strictly amateur leagues"], 1, "Pre-industrial sport was local, occasional and unruly."],
+      ["The 'golden triangle' links sport, the media and:", ["Government", "Sponsorship", "Schools", "Weather"], 1, "Sport, sponsorship and media form the commercial golden triangle."],
+      ["Rational recreation in the 19th century brought:", ["Random violent games", "Organised, rule-bound sport with fair play", "An end to all sport", "Only rural pastimes"], 1, "Rational recreation introduced codified, regulated sport."],
+      ["WADA is responsible for:", ["Selling broadcasting rights", "Global anti-doping rules and testing", "Funding stadiums", "Setting ticket prices"], 1, "The World Anti-Doping Agency governs anti-doping."],
+      ["In the UK, elite Olympic performance is funded mainly by:", ["Sport England", "UK Sport", "The Premier League", "WADA"], 1, "UK Sport funds elite; Sport England funds grassroots."],
+      ["A drawback of media influence on sport is that it can:", ["Reduce all revenue", "Dictate rule changes and scheduling", "Ban sponsorship", "Stop globalisation"], 1, "Media can reshape rules, timing and formats to suit audiences."],
+      ["Public schools helped develop sport by:", ["Banning games", "Codifying rules and spreading games via the Empire", "Removing fair play", "Keeping sport rural"], 1, "They codified rules and exported games widely."],
+      ["Commercialisation treats sport as a:", ["Charity", "Commodity to generate profit", "Purely amateur pastime", "Government service"], 1, "Commercialisation makes sport a profit-generating commodity."],
+      ["Goal-line technology and VAR are examples of:", ["Deviance", "Technology improving officiating accuracy", "Sponsorship", "Globalisation"], 1, "They are officiating technologies that improve accuracy."],
+      ["Match-fixing and doping are examples of:", ["Fair play", "Deviance in sport", "Rational recreation", "Amateurism"], 1, "Both break the norms/laws of sport — deviance."],
+      ["A common barrier to participation is:", ["Unlimited free time", "Cost and access", "Too many role models", "Excess funding"], 1, "Cost, time and access are typical barriers."],
+      ["National Governing Bodies are responsible for:", ["Only selling tickets", "Regulating and developing their sport", "Global anti-doping", "Broadcasting rights only"], 1, "NGBs organise, regulate and develop their sport."]
+    ]
+  };
+
+  console.log("[alevel_pe p3] sport psychology + sport & society added");
+})();
+
+</script>
+<script>
+(function(){
+  const T = window.COURSES.aqa_alevel_pe.topics;
+
+  T.musculoskeletal = {
+    name: "7 · Musculoskeletal System & Movement",
+    cards: [
+      ["Name the three muscle fibre types.", "<b>Type I</b> (slow oxidative), <b>Type IIa</b> (fast oxidative glycolytic) and <b>Type IIx</b> (fast glycolytic)."],
+      ["Describe Type I fibres.", "Slow-twitch: high resistance to fatigue, many mitochondria/capillaries, high myoglobin — suited to <b>endurance</b>."],
+      ["Describe Type IIx fibres.", "Fast glycolytic: high force and speed, fast contraction, but <b>fatigue quickly</b> — suited to power/sprinting."],
+      ["Define antagonistic muscle action.", "Muscles work in pairs: as the <b>agonist (prime mover)</b> contracts, the <b>antagonist</b> relaxes (e.g. biceps and triceps)."],
+      ["Define an isotonic contraction (concentric vs eccentric).", "Muscle changes length under tension: <b>concentric</b> shortens (lifting), <b>eccentric</b> lengthens under control (lowering)."],
+      ["Define an isometric contraction.", "Muscle generates tension <b>without changing length</b> — e.g. holding a plank or a rugby scrum bind."],
+      ["Identify the joint type and movements at the shoulder.", "A <b>ball-and-socket</b> joint allowing flexion, extension, abduction, adduction, rotation and circumduction."],
+      ["Identify the joint type and movements at the knee.", "A <b>hinge</b> joint allowing flexion and extension (and slight rotation when flexed)."],
+      ["Define agonist and fixator.", "The <b>agonist</b> is the prime mover; the <b>fixator</b> stabilises the origin so the agonist can act efficiently."],
+      ["Describe the all-or-none law / motor units.", "A motor neurone and its muscle fibres fire fully or not at all; <b>more motor units</b> are recruited for greater force (wave summation/recruitment)."],
+      ["Explain how fibre type relates to events.", "Marathon runners have a high % of <b>Type I</b> fibres; sprinters have a high % of <b>Type IIx</b> fibres."],
+      ["Describe the role of proprioceptors in movement.", "Muscle spindles and Golgi tendon organs detect length/tension changes, enabling kinaesthetic control and the stretch reflex."],
+      ["Define the planes and axes of movement.", "Movements occur in the <b>sagittal, frontal and transverse</b> planes about the frontal, sagittal and vertical axes respectively."],
+      ["Give an example of movement in the transverse plane.", "A discus throw or a spin — rotation about the <b>vertical axis</b> in the transverse plane."],
+      ["Explain DOMS.", "<b>Delayed Onset Muscle Soreness</b> — micro-tears and inflammation 24–72 h after unaccustomed (esp. eccentric) exercise."]
+    ],
+    quiz: [
+      ["A marathon runner is likely to have a high percentage of:", ["Type IIx fibres", "Type I fibres", "Type IIa only", "No slow fibres"], 1, "Endurance suits fatigue-resistant Type I (slow oxidative) fibres."],
+      ["Lowering a dumbbell slowly is which contraction?", ["Concentric", "Eccentric", "Isometric", "Isokinetic only"], 1, "The muscle lengthens under tension — eccentric."],
+      ["Holding a plank is which type of contraction?", ["Concentric", "Eccentric", "Isometric", "Isotonic"], 2, "Tension with no length change — isometric."],
+      ["The shoulder is which type of joint?", ["Hinge", "Ball-and-socket", "Pivot", "Gliding"], 1, "A ball-and-socket joint allows movement in all directions."],
+      ["In a biceps curl up-phase, the biceps is the:", ["Antagonist", "Agonist", "Fixator", "Synergist only"], 1, "The biceps is the prime mover (agonist); the triceps relaxes."],
+      ["Greater muscular force is produced by:", ["Firing one fibre harder", "Recruiting more motor units", "Lengthening the muscle only", "Reducing oxygen"], 1, "More motor units recruited = more force (within the all-or-none law)."],
+      ["Type IIx fibres are best suited to:", ["Marathons", "Maximal sprinting and power", "Standing still", "Low-intensity cycling"], 1, "Fast glycolytic fibres give high power but fatigue quickly."],
+      ["The knee joint allows mainly:", ["Rotation only", "Flexion and extension", "Abduction and adduction", "Circumduction"], 1, "A hinge joint — flexion and extension."],
+      ["DOMS is most associated with:", ["Concentric-only work", "Unaccustomed eccentric exercise", "Resting", "Isometric holds only"], 1, "Eccentric, novel exercise causes micro-tears and soreness."],
+      ["A spinning discus throw occurs in which plane?", ["Sagittal", "Frontal", "Transverse", "Median"], 2, "Rotation about the vertical axis is in the transverse plane."],
+      ["The fixator's role is to:", ["Move the load", "Stabilise the origin of the agonist", "Oppose the agonist", "Lengthen passively"], 1, "A fixator stabilises so the agonist can work efficiently."],
+      ["Type I fibres are characterised by:", ["Few mitochondria", "Many mitochondria and high fatigue resistance", "Rapid fatigue", "Low myoglobin"], 1, "Slow oxidative fibres are rich in mitochondria and fatigue-resistant."]
+    ]
+  };
+
+  T.exercise_physiology = {
+    name: "8 · Exercise Physiology & Training",
+    cards: [
+      ["Define VO₂ max.", "The <b>maximum volume of oxygen</b> a person can take in and use per minute — a key measure of aerobic capacity."],
+      ["State factors affecting VO₂ max.", "Genetics, age, sex, training, and body composition all influence VO₂ max."],
+      ["Describe continuous training.", "Sustained, steady aerobic exercise (e.g. a 40-minute run) that develops <b>aerobic capacity</b>."],
+      ["Describe interval (HIIT) training.", "Alternating high-intensity work with recovery periods — develops both anaerobic and aerobic systems and is time-efficient."],
+      ["Describe fartlek training.", "'Speed play' — varying pace and terrain within continuous exercise, developing both energy systems; good for games players."],
+      ["Define the principles of training (SPORT).", "<b>Specificity, Progression, Overload, Reversibility, Tedium</b> — the principles guiding effective programmes."],
+      ["Define the FITT principle.", "<b>Frequency, Intensity, Time, Type</b> — variables manipulated to apply overload."],
+      ["Define periodisation.", "Dividing the year into <b>macro-, meso- and microcycles</b> (preparation, competition, transition) to peak at the right time."],
+      ["Explain plyometric training.", "Uses the <b>stretch-shortening cycle</b> (eccentric then rapid concentric) to develop power — e.g. depth jumps."],
+      ["Describe PNF stretching.", "<b>Proprioceptive Neuromuscular Facilitation</b> — contract-relax stretching that overrides the stretch reflex to improve flexibility."],
+      ["Define delayed onset reversibility.", "When training stops, fitness adaptations are <b>lost</b> over time (use it or lose it)."],
+      ["Explain altitude training.", "Training at altitude (low O₂) stimulates extra <b>red blood cell/EPO</b> production, boosting oxygen-carrying capacity on return to sea level."],
+      ["Define a warm-up's physiological benefits.", "Raises muscle temperature, increases blood flow and oxygen delivery, improves elasticity and reduces injury risk."],
+      ["Explain how to calculate training heart-rate zones (Karvonen).", "Use a percentage of <b>heart-rate reserve</b> (max HR − resting HR) added to resting HR to target an intensity zone."],
+      ["Describe lactate sampling as a fitness test.", "Blood lactate is measured at increasing intensities to find the lactate threshold and guide training zones."]
+    ],
+    quiz: [
+      ["VO₂ max is a measure of:", ["Muscular strength", "Maximum oxygen uptake/use per minute", "Flexibility", "Reaction time"], 1, "VO₂ max indicates aerobic capacity."],
+      ["The SPORT principles include:", ["Speed, Power, Oxygen, Reps, Time", "Specificity, Progression, Overload, Reversibility, Tedium", "Strength, Pace, Order, Rest, Tempo", "Sets, Pace, Overtraining, Rest, Type"], 1, "SPORT = Specificity, Progression, Overload, Reversibility, Tedium."],
+      ["FITT stands for:", ["Frequency, Intensity, Time, Type", "Fast, Intense, Tough, Timed", "Fitness, Interval, Tempo, Training", "Force, Impulse, Time, Torque"], 0, "FITT = Frequency, Intensity, Time, Type."],
+      ["HIIT primarily benefits performers by:", ["Only improving flexibility", "Developing both anaerobic and aerobic systems time-efficiently", "Reducing all fitness", "Removing the need for recovery"], 1, "Intervals develop multiple systems efficiently."],
+      ["Plyometric training develops:", ["Flexibility", "Power via the stretch-shortening cycle", "Aerobic capacity only", "Reaction time only"], 1, "Plyometrics use eccentric-then-concentric action for power."],
+      ["Altitude training improves performance by:", ["Lowering red blood cells", "Stimulating EPO and red blood cell production", "Reducing VO₂ max", "Removing oxygen need"], 1, "Low oxygen drives extra red blood cell production."],
+      ["Periodisation divides training into:", ["Only one block", "Macro-, meso- and microcycles", "Random sessions", "Warm-up and cool-down only"], 1, "Cycles structure the year to peak on time."],
+      ["PNF is a method of:", ["Strength testing", "Flexibility training", "Speed training", "Diet planning"], 1, "PNF (contract-relax) improves flexibility."],
+      ["Reversibility means:", ["Fitness is permanent", "Adaptations are lost when training stops", "Overload always works", "Specificity is ignored"], 1, "Stop training and gains reverse — use it or lose it."],
+      ["Fartlek training is characterised by:", ["Fixed steady pace", "Varied pace and terrain", "No aerobic element", "Only sprinting"], 1, "'Speed play' varies intensity within continuous work."],
+      ["The Karvonen method uses:", ["Body mass index", "Heart-rate reserve (max − resting)", "Lung volume", "Grip strength"], 1, "Karvonen targets a % of heart-rate reserve."],
+      ["A key physiological benefit of a warm-up is:", ["Lower muscle temperature", "Increased blood flow and reduced injury risk", "Reduced oxygen delivery", "Slower reactions"], 1, "Warming up raises temperature and blood flow, cutting injury risk."]
+    ]
+  };
+
+  console.log("[alevel_pe p4] musculoskeletal + exercise physiology added");
+})();
+
+</script>
+<script>
+(function(){
+  const T=window.COURSES.aqa_alevel_pe.topics;
+  const add=(tk,cards,quiz)=>{ const t=T[tk]; if(!t)return; if(cards)t.cards.push(...cards); if(quiz)t.quiz.push(...quiz); };
+
+  // ---------- CARDIO-RESPIRATORY ----------
+  add("cardio_respiratory",[
+    ["Define tidal volume.", "The volume of air <b>breathed in or out per breath</b> at rest (~0.5 L), rising during exercise."],
+    ["Define minute ventilation (VE).", "The volume of air breathed <b>per minute</b> = tidal volume × breathing frequency."],
+    ["Explain the role of chemoreceptors in breathing control.", "They detect rising <b>CO₂</b> (and falling pH/O₂) in the blood and signal the medulla to increase breathing rate and depth."],
+    ["Define the respiratory pump and its effect on venous return.", "Pressure changes in the thorax during breathing help <b>draw blood back</b> to the heart, boosting venous return during exercise."],
+    ["Explain arterio-venous oxygen difference changes with training.", "Training widens the <b>a-vO₂ difference</b> as muscles develop more capillaries and mitochondria to extract oxygen."]
+  ],[
+    ["Minute ventilation is calculated as:", ["TV ÷ frequency", "Tidal volume × breathing frequency", "TV − frequency", "Frequency ÷ TV"], 1, "VE = tidal volume × breathing frequency."],
+    ["Chemoreceptors mainly detect a rise in:", ["Oxygen", "Carbon dioxide", "Glucose", "Lactate only"], 1, "Rising CO₂ (and falling pH) drives increased breathing."],
+    ["Tidal volume during exercise compared with rest:", ["Decreases", "Increases", "Stays the same", "Falls to zero"], 1, "Tidal volume rises to meet greater oxygen demand."],
+    ["The respiratory pump aids:", ["Digestion", "Venous return", "Heart rate only", "Sweating"], 1, "Thoracic pressure changes help return blood to the heart."],
+    ["Vascular shunting during exercise directs blood away from the:", ["Working muscles", "Digestive organs", "Skin always", "Heart"], 1, "Blood is diverted from the gut to the working muscles."],
+    ["A trained endurance athlete typically shows:", ["Higher resting heart rate", "Lower resting heart rate (bradycardia)", "Smaller stroke volume", "Reduced capillaries"], 1, "Endurance training lowers resting HR and raises stroke volume."]
+  ]);
+
+  // ---------- ENERGY SYSTEMS ----------
+  add("energy_systems",[
+    ["Define ATP.", "<b>Adenosine triphosphate</b> — the energy currency of the cell; energy is released when a phosphate is removed to form ADP."],
+    ["State the energy yield of the aerobic system.", "Around <b>38 ATP</b> per glucose molecule (compared with 2 from anaerobic glycolysis)."],
+    ["Define gluconeogenesis.", "The formation of new glucose from non-carbohydrate sources (e.g. lactate, glycerol) during recovery."],
+    ["Explain the role of buffering in delaying fatigue.", "Bicarbonate buffers neutralise lactic acid, delaying the fall in pH that causes fatigue."],
+    ["Describe how diet (carbo-loading) affects performance.", "Increasing carbohydrate intake before endurance events <b>maximises glycogen stores</b>, delaying fatigue."]
+  ],[
+    ["ATP is best described as the:", ["Waste product of glycolysis", "Energy currency of the cell", "A type of fat", "A vitamin"], 1, "ATP stores and transfers energy in cells."],
+    ["The aerobic system yields approximately how many ATP per glucose?", ["2", "8", "38", "100"], 2, "Full aerobic breakdown yields ~38 ATP."],
+    ["Which fuel does the aerobic system use at low intensity for long durations?", ["Only phosphocreatine", "Fats and glucose", "Lactic acid", "Protein only"], 1, "Aerobically, fats and glucose are oxidised."],
+    ["Carbo-loading aims to:", ["Reduce glycogen", "Maximise muscle glycogen stores", "Increase lactic acid", "Lower VO₂ max"], 1, "It tops up glycogen to delay fatigue in endurance events."],
+    ["Bicarbonate buffering helps performance by:", ["Producing more lactate", "Neutralising acid and delaying fatigue", "Lowering pH faster", "Reducing oxygen"], 1, "Buffers slow the pH drop that causes fatigue."],
+    ["The predominant energy system for an 800 m run (~2 min) is the:", ["ATP–PC", "Glycolytic (anaerobic)", "Aerobic only", "None"], 1, "Around 2 minutes of high intensity is mainly glycolytic."]
+  ]);
+
+  // ---------- BIOMECHANICS ----------
+  add("biomechanics",[
+    ["Define momentum.", "Momentum = mass × velocity; a moving body's quantity of motion, conserved in collisions."],
+    ["Define impulse.", "Impulse = force × time, equal to the change in momentum; a longer contact time increases the momentum change (e.g. follow-through)."],
+    ["Explain how a sprinter uses impulse at the start.", "Applying a large force over time against the blocks creates a large impulse, maximising forward momentum."],
+    ["Define drag and factors affecting it.", "The resistive force opposing motion through air/water; affected by velocity, frontal cross-sectional area, streamlining and surface smoothness."],
+    ["Explain Bernoulli's principle in sport.", "Faster-moving air exerts lower pressure; shaping (e.g. a discus or cyclist's position) uses pressure differences to create lift or reduce drag."]
+  ],[
+    ["Momentum is calculated as:", ["Mass ÷ velocity", "Mass × velocity", "Force × time", "Mass × acceleration"], 1, "Momentum = mass × velocity."],
+    ["Impulse equals:", ["Mass × velocity", "Force × time (change in momentum)", "Force ÷ time", "Mass × acceleration only"], 1, "Impulse = force × time = change in momentum."],
+    ["A longer follow-through in a throw increases:", ["Drag only", "Contact time and so impulse", "Mass", "Stability only"], 1, "More contact time increases impulse and momentum change."],
+    ["Drag on a cyclist is reduced by:", ["A larger frontal area", "A streamlined, tucked position", "Rougher clothing", "Slowing down only"], 1, "A streamlined position reduces frontal area and drag."],
+    ["A see-saw balanced with unequal masses requires the heavier mass to sit:", ["Further from the pivot", "Closer to the pivot", "At the pivot", "Off the beam"], 1, "Moment = force × distance; the heavier mass needs a shorter distance."],
+    ["Bernoulli's principle states that faster-moving air has:", ["Higher pressure", "Lower pressure", "No effect", "More mass"], 1, "Faster air = lower pressure, creating lift/swerve."]
+  ]);
+
+  // ---------- SKILL ACQUISITION ----------
+  add("skill_acquisition",[
+    ["Define guidance types.", "<b>Visual</b> (demonstration), <b>verbal</b> (instruction), <b>manual</b> (physical support) and <b>mechanical</b> (aids/devices) guidance."],
+    ["Define the multi-store memory model.", "Information passes through the <b>short-term sensory store</b>, <b>short-term memory</b> and <b>long-term memory</b>, with attention and rehearsal moving it along."],
+    ["Define reaction time, movement time and response time.", "Reaction time = stimulus to first movement; movement time = start to finish of the action; response time = reaction + movement time."],
+    ["Explain Hick's law.", "Reaction time <b>increases</b> as the number of choices/stimuli increases."],
+    ["Define the psychological refractory period.", "A delay in responding to a second stimulus that arrives before the first response is complete (used in dummying/feinting)."]
+  ],[
+    ["Physically supporting a gymnast through a move is which guidance?", ["Visual", "Verbal", "Manual", "Mechanical"], 2, "Physical support is manual guidance."],
+    ["Hick's law states reaction time increases as:", ["Skill improves", "The number of choices increases", "Arousal falls", "Practice increases"], 1, "More choices = longer reaction time."],
+    ["Response time is:", ["Reaction time only", "Reaction time + movement time", "Movement time only", "Always fixed"], 1, "Response time combines reaction and movement time."],
+    ["A dummy/feint in sport exploits the:", ["Inverted-U", "Psychological refractory period", "Stretch reflex", "Bohr shift"], 1, "A second stimulus delays the opponent's response (PRP)."],
+    ["In the multi-store memory model, rehearsal moves information into:", ["The sensory store", "Long-term memory", "The bin", "Reaction time"], 1, "Rehearsal transfers information to long-term memory."],
+    ["A demonstration of a skill is which type of guidance?", ["Manual", "Mechanical", "Visual", "Verbal"], 2, "A demonstration is visual guidance."]
+  ]);
+
+  console.log("[pe_expand1] cardio/energy/biomech/skill expanded");
+})();
+
+</script>
+<script>
+(function(){
+  const T=window.COURSES.aqa_alevel_pe.topics;
+  const add=(tk,cards,quiz)=>{ const t=T[tk]; if(!t)return; if(cards)t.cards.push(...cards); if(quiz)t.quiz.push(...quiz); };
+
+  // ---------- SPORT PSYCHOLOGY ----------
+  add("sport_psychology",[
+    ["Define group cohesion (task vs social).", "<b>Task cohesion</b> is working together towards a goal; <b>social cohesion</b> is how well members get on. Task cohesion links more strongly to success."],
+    ["Describe Steiner's model of group performance.", "Actual productivity = potential productivity − <b>losses due to faulty processes</b> (co-ordination and motivation losses)."],
+    ["Define social loafing and the Ringelmann effect.", "Individuals reducing effort in a group (social loafing); the Ringelmann effect is performance per person falling as group size grows."],
+    ["Define leadership styles (autocratic, democratic, laissez-faire).", "<b>Autocratic</b> = leader decides; <b>democratic</b> = shared decisions; <b>laissez-faire</b> = hands-off. Best style depends on the situation."],
+    ["Describe Chelladurai's multidimensional model of leadership.", "Effective leadership and satisfaction occur when <b>required, actual and preferred</b> leader behaviours match, given situational, leader and member characteristics."]
+  ],[
+    ["Task cohesion refers to:", ["How well members socialise", "Working together towards a shared goal", "Crowd support", "Individual skill"], 1, "Task cohesion is co-operation towards the goal."],
+    ["The Ringelmann effect describes:", ["Effort rising with group size", "Individual performance falling as group size increases", "Better cohesion in big groups", "No change in effort"], 1, "Per-person output drops as the group grows."],
+    ["Steiner's model: actual productivity = potential productivity −", ["Arousal", "Losses due to faulty processes", "Cohesion", "Leadership"], 1, "Co-ordination and motivation losses reduce output."],
+    ["A leader who makes all decisions alone uses which style?", ["Democratic", "Autocratic", "Laissez-faire", "Person-centred"], 1, "Autocratic leaders make decisions themselves."],
+    ["Social loafing is best reduced by:", ["Hiding individual effort", "Highlighting individual contributions", "Larger anonymous groups", "Removing goals"], 1, "Making individual effort visible reduces loafing."],
+    ["Chelladurai's model links satisfaction to a match between required, actual and:", ["Random behaviours", "Preferred leader behaviours", "Crowd size", "Arousal level"], 1, "Congruence of required/actual/preferred behaviour improves outcomes."]
+  ]);
+
+  // ---------- SPORT & SOCIETY ----------
+  add("sport_society",[
+    ["Define the term 'sportsmanship'.", "Fair, ethical and respectful behaviour towards opponents and officials — upholding the spirit of the game."],
+    ["Define gamesmanship.", "Bending the rules or using questionable tactics to gain an advantage <b>without</b> outright cheating (e.g. time-wasting)."],
+    ["Explain the social benefits of mass participation.", "Improved public health, community cohesion, reduced crime and lower healthcare costs."],
+    ["Define the term 'Sport for All'.", "A policy aiming to remove barriers so everyone, regardless of background, can take part in sport."],
+    ["Explain the impact of hosting a global event (legacy).", "Potential benefits: infrastructure, tourism, participation and pride; risks: cost, debt and underused venues ('white elephants')."]
+  ],[
+    ["Time-wasting to gain advantage without breaking rules is:", ["Sportsmanship", "Gamesmanship", "Deviance", "Fair play"], 1, "Gamesmanship bends rules without outright cheating."],
+    ["Shaking hands and respecting officials is an example of:", ["Gamesmanship", "Sportsmanship", "Commercialisation", "Deviance"], 1, "Fair, respectful conduct is sportsmanship."],
+    ["A risk of hosting a global sporting event is:", ["Improved infrastructure", "Costly underused 'white elephant' venues", "More tourism", "National pride"], 1, "Venues can become costly and underused afterwards."],
+    ["'Sport for All' policies aim to:", ["Restrict access", "Remove barriers to participation", "Fund only elites", "Ban amateurs"], 1, "The policy promotes inclusive participation."],
+    ["A social benefit of mass participation is:", ["Higher crime", "Improved public health and community cohesion", "More illness", "Less activity"], 1, "Participation improves health and brings communities together."],
+    ["Performance-enhancing drug use is an example of:", ["Sportsmanship", "Deviance breaking sport's norms", "Fair play", "Gamesmanship only"], 1, "Doping breaks the laws/norms of sport — deviance."]
+  ]);
+
+  // ---------- MUSCULOSKELETAL ----------
+  add("musculoskeletal",[
+    ["Define wave summation.", "Repeated stimulation of a muscle fibre before it relaxes, producing a <b>larger, sustained</b> contraction."],
+    ["Define spatial summation.", "Recruiting <b>more or larger motor units</b> to increase the strength of a contraction."],
+    ["Define the stretch reflex.", "A protective reflex where a muscle stretched too far contracts to prevent overstretching (via muscle spindles)."],
+    ["Describe the sliding filament theory.", "Actin filaments slide over myosin (forming cross-bridges) to shorten the sarcomere and contract the muscle."],
+    ["Define origin and insertion.", "The <b>origin</b> is the muscle's fixed attachment; the <b>insertion</b> is the attachment that moves towards the origin during contraction."]
+  ],[
+    ["Recruiting more motor units to increase force is:", ["Wave summation", "Spatial summation", "The stretch reflex", "Reciprocal inhibition"], 1, "Spatial summation recruits more/larger motor units."],
+    ["The sliding filament theory involves:", ["Bones sliding", "Actin sliding over myosin to shorten the sarcomere", "Tendons stretching", "Joints fusing"], 1, "Actin and myosin form cross-bridges to shorten the sarcomere."],
+    ["The stretch reflex protects a muscle by:", ["Relaxing it fully", "Contracting it when overstretched", "Lengthening it more", "Cutting blood flow"], 1, "Muscle spindles trigger contraction to prevent overstretch."],
+    ["A muscle's fixed attachment point is the:", ["Insertion", "Origin", "Belly", "Tendon sheath"], 1, "The origin is the fixed end; the insertion moves."],
+    ["Wave summation produces a stronger contraction by:", ["Recruiting more units", "Repeated stimulation before relaxation", "Lengthening the muscle", "Lowering frequency"], 1, "Rapid repeated stimulation sustains and strengthens contraction."],
+    ["A sprinter's powerful starts rely on a high proportion of:", ["Type I fibres", "Type IIx fibres", "Cardiac muscle", "Smooth muscle"], 1, "Fast glycolytic Type IIx fibres give explosive power."]
+  ]);
+
+  // ---------- EXERCISE PHYSIOLOGY ----------
+  add("exercise_physiology",[
+    ["Define aerobic capacity.", "The ability to take in, transport and use oxygen to sustain prolonged exercise — measured by VO₂ max."],
+    ["Define strength endurance.", "The ability of a muscle to sustain repeated contractions against a resistance over time."],
+    ["Describe a maximal vs sub-maximal fitness test (with an example).", "<b>Maximal</b> tests require all-out effort (e.g. multi-stage fitness test); <b>sub-maximal</b> tests predict fitness without exhaustion (e.g. Queen's College step test)."],
+    ["Explain the importance of a cool-down.", "Maintains blood flow to flush out lactate and reduce blood pooling, aiding recovery and reducing DOMS."],
+    ["Define one-rep max (1RM) and its use.", "The maximum weight liftable once; used to set training intensities for strength programmes."]
+  ],[
+    ["VO₂ max measures:", ["Strength", "Aerobic capacity", "Flexibility", "Reaction time"], 1, "VO₂ max is the key measure of aerobic capacity."],
+    ["The multi-stage fitness test (bleep test) is a:", ["Sub-maximal test", "Maximal test predicting VO₂ max", "Flexibility test", "Strength test"], 1, "It is a maximal test estimating VO₂ max."],
+    ["A cool-down aids recovery mainly by:", ["Trapping lactate", "Maintaining blood flow to remove lactate", "Raising DOMS", "Stopping circulation"], 1, "Continued mild activity flushes lactate and limits pooling."],
+    ["One-rep max (1RM) is used to:", ["Measure flexibility", "Set strength-training intensities", "Test VO₂ max", "Measure reaction time"], 1, "1RM sets loads for strength work."],
+    ["Strength endurance is the ability to:", ["Lift once maximally", "Sustain repeated contractions over time", "Stretch far", "React quickly"], 1, "It is repeated contractions against resistance."],
+    ["A sub-maximal test is preferred when:", ["Maximal effort is safe and needed", "Avoiding exhaustion (e.g. unfit/rehab clients)", "Testing elite sprint power", "Measuring 1RM"], 1, "Sub-maximal tests avoid all-out effort, safer for many groups."]
+  ]);
+
+  console.log("[pe_expand2] psych/society/musculo/physiology expanded");
+})();
+
+</script>
+<script>
+(function(){
+  const C=window.COURSES; if(!C||!C.aqa_alevel_pe) return;
+  const T=C.aqa_alevel_pe.topics;
+  const D=(d,o)=>({d,o:o||{}});
+  function qa(tk,prefix,spec){ const t=T[tk]; if(!t)return; const q=t.quiz.find(q=>String(q[0]).startsWith(prefix)&&!q[4]); if(q) q[4]=spec; }
+  function cb(tk,prefix,spec){ const t=T[tk]; if(!t)return; const c=t.cards.find(c=>String(c[0]).startsWith(prefix)); if(c){ while(c.length<4)c.push(undefined); c[3]=spec; } }
+
+  // ---------- BIOMECHANICS (levers via beam, projectile triangle) ----------
+  qa("biomechanics","Standing on tiptoe (plantar flexion) uses which lever", D("beam",{pivot:0.95,forces:[{at:0.5,label:"load",dir:"down"},{at:0.0,label:"effort",dir:"up"}],beamLabel:"2nd-class lever"}));
+  qa("biomechanics","A biceps curl at the elbow is which class of lever", D("beam",{pivot:0.0,forces:[{at:0.4,label:"effort",dir:"up"},{at:0.95,label:"load",dir:"down"}],beamLabel:"3rd-class lever"}));
+  qa("biomechanics","A see-saw balanced with unequal masses requires the heavier", D("beam",{pivot:0.5,forces:[{at:0.3,label:"heavy",dir:"down"},{at:0.85,label:"light",dir:"down"}],beamLabel:"moments balance"}));
+  qa("biomechanics","Horizontal distance of a projectile depends on speed, height", D("rightTriangle",{labels:{b:"horizontal",h:"vertical",hyp:"release velocity"},angleLabel:"θ"}));
+  qa("biomechanics","A sprinter driving out of the blocks best illustrates Newton", D("freeBody",{boxLabel:"sprinter",forces:[{dir:"right",label:"drive",color:"#39e0c4"},{dir:"left",label:"reaction",color:"#f4b740"}]}));
+  cb("biomechanics","Describe a second-class lever with an example", D("beam",{pivot:0.95,forces:[{at:0.5,label:"load",dir:"down"},{at:0.0,label:"effort",dir:"up"}],beamLabel:"2nd-class lever"}));
+  cb("biomechanics","Describe a third-class lever with an example", D("beam",{pivot:0.0,forces:[{at:0.4,label:"effort",dir:"up"},{at:0.95,label:"load",dir:"down"}],beamLabel:"3rd-class lever"}));
+  cb("biomechanics","Define a free body diagram", D("freeBody",{boxLabel:"body",forces:[{dir:"up",label:"R",color:"#39e0c4"},{dir:"down",label:"W",color:"#f4b740"},{dir:"right",label:"F",color:"#39e0c4"},{dir:"left",label:"air resistance",color:"#ff5d6c"}]}));
+
+  // ---------- CARDIO-RESPIRATORY (oxygen dissociation curve) ----------
+  cb("cardio_respiratory","Define the oxyhaemoglobin dissociation curve", D("dissociationCurve",{}));
+  cb("cardio_respiratory","Explain the Bohr shift", D("dissociationCurve",{label:"Bohr shift (right)"}));
+
+  // ---------- ENERGY SYSTEMS (recovery / EPOC curve) ----------
+  cb("energy_systems","Define EPOC", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"time after exercise",ylabel:"oxygen uptake",label:"EPOC recovery"}));
+  cb("energy_systems","Define the energy continuum", D("graphCurve",{type:"exp_decay",xmax:8,ymax:8,xlabel:"duration",ylabel:"% anaerobic",label:"anaerobic → aerobic"}));
+
+  // ---------- EXERCISE PHYSIOLOGY (training intensity / lactate) ----------
+  cb("exercise_physiology","Describe lactate sampling as a fitness test", D("graphCurve",{type:"exp_rise",xmax:8,ymax:8,xlabel:"exercise intensity",ylabel:"blood lactate",label:"lactate threshold"}));
+  cb("exercise_physiology","Define VO₂ max", D("graphCurve",{type:"sqrt",xmax:8,ymax:8,xlabel:"exercise intensity",ylabel:"oxygen uptake",label:"VO₂ plateaus at max"}));
+
+  // ---------- MUSCULOSKELETAL (antagonistic pair via free body) ----------
+  cb("musculoskeletal","Define antagonistic muscle action", D("freeBody",{boxLabel:"elbow",forces:[{dir:"up",label:"biceps (agonist)",color:"#39e0c4"},{dir:"down",label:"triceps (antagonist)",color:"#7d93a8"}]}));
+
+  console.log("[pe_diagrams] PE diagrams attached");
+})();
+
+</script>
+<script>
+/* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
    in every SOURCE course, it deterministically permutes the 4
@@ -10011,7 +10628,7 @@ ocr_alevel: {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","edexcel_alevel_maths","ks3_maths"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
@@ -10124,6 +10741,7 @@ ocr_alevel: {
     ocr_alevel_biology: { level:"A-Level", subject:"Biology" },
     ocr_alevel_chemistry:{ level:"A-Level", subject:"Chemistry" },
     edexcel_alevel_maths: { level:"A-Level", subject:"Maths" },
+    aqa_alevel_pe:        { level:"A-Level", subject:"Physical Education" },
     ks3_maths:           { level:"KS3",      subject:"Maths" },
     edexcel_foundation: { level:"GCSE",    subject:"Maths — Foundation" },
     edexcel_higher:     { level:"GCSE",    subject:"Maths — Higher" },
