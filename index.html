@@ -105,6 +105,27 @@
   .vid-link .vl-go{flex:none;font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
   .vid-empty{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:40px 24px;text-align:center;color:var(--ink-dim)}
   .vid-empty .big{font-size:18px;color:var(--ink);margin-bottom:8px}
+  /* Animations */
+  .anim-set{margin-bottom:34px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;}
+  .anim-set h3{font-size:17px;margin-bottom:4px;color:var(--ink)}
+  .anim-sub{color:var(--ink-dim);font-size:13px;margin-bottom:14px;line-height:1.5}
+  .anim-stage{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .anim-stage svg{max-width:100%;height:auto;display:block}
+  .anim-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%}
+  .anim-controls label{font-size:12px;color:var(--ink-dim);display:flex;flex-direction:column;gap:4px;min-width:120px}
+  .anim-controls input[type=range]{width:150px;accent-color:var(--phosphor)}
+  .anim-controls .val{color:var(--phosphor);font-family:var(--mono);font-size:12px}
+  .anim-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--phosphor);background:transparent;color:var(--phosphor);font-weight:600;font-size:13px;cursor:pointer;transition:.15s}
+  .anim-btn:hover{background:var(--phosphor);color:var(--bg)}
+  .anim-btn.active{background:var(--phosphor);color:var(--bg)}
+  .anim-readout{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;text-align:center;min-width:160px}
+  .anim-readout b{color:var(--phosphor)}
+  .anim-explain{margin-top:16px;font-size:14px;line-height:1.6;color:var(--ink)}
+  .anim-explain h4{color:var(--phosphor);font-size:14px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+  .anim-explain p{margin-bottom:10px}
+  .anim-explain ul{margin:0 0 10px 18px} .anim-explain li{margin-bottom:5px}
+  .anim-explain .keyword{color:var(--amber);font-weight:600}
+  .anim-err{color:var(--ink-dim);font-style:italic;padding:20px}
 
   .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:20px;background:var(--panel);
     border:1px solid var(--line);border-radius:10px;margin-bottom:24px}
@@ -309,6 +330,7 @@
     <div class="tabs" role="tablist">
       <button class="tab active" data-mode="cards" role="tab">Flashcards</button>
       <button class="tab" data-mode="quiz" role="tab">Exam questions</button>
+      <button class="tab" data-mode="anim" role="tab">Animations</button>
       <button class="tab" data-mode="videos" role="tab">Videos</button>
     </div>
   </div>
@@ -352,6 +374,11 @@
   <section id="videosView" class="hidden">
     <div class="heading"><h2 id="videosTitle">Videos</h2><span class="meta" id="videosMeta"></span></div>
     <div id="videosBody"></div>
+  </section>
+
+  <section id="animView" class="hidden">
+    <div class="heading"><h2 id="animTitle">Animations</h2><span class="meta" id="animMeta"></span></div>
+    <div id="animBody"></div>
   </section>
 
   <section id="statsView" class="hidden">
@@ -13472,6 +13499,1202 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ============================================================
+//  FLUXOR ANIMATIONS — GCSE Physics (AQA)
+//  Interactive, practical-focused animations with explanations.
+//  Registry: window.ANIMATIONS[courseKey][topicKey] = [ {title, subtitle, build(host), explain} ]
+//  Attached to BOTH aqa_gcse and combined_physics (shared physics content).
+// ============================================================
+(function(){
+  window.ANIMATIONS = window.ANIMATIONS || {};
+  const NS = "http://www.w3.org/2000/svg";
+
+  // ── tiny helpers ────────────────────────────────────────────────────────
+  function el(tag, attrs, parent){
+    const e=document.createElementNS(NS, tag);
+    if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+  function svg(w,h){
+    const s=el("svg",{viewBox:"0 0 "+w+" "+h,width:w,height:h,"font-family":"system-ui,sans-serif"});
+    return s;
+  }
+  function controls(host){ const d=document.createElement("div"); d.className="anim-controls"; host.appendChild(d); return d; }
+  function slider(parent,label,min,max,val,step,oninput){
+    const wrap=document.createElement("label");
+    const span=document.createElement("span"); span.textContent=label;
+    const valSpan=document.createElement("span"); valSpan.className="val";
+    const input=document.createElement("input");
+    input.type="range"; input.min=min; input.max=max; input.value=val; input.step=step||1;
+    wrap.appendChild(span); wrap.appendChild(input); wrap.appendChild(valSpan); parent.appendChild(wrap);
+    function fmt(v){ valSpan.textContent=oninput(parseFloat(v)); }
+    input.addEventListener("input",()=>fmt(input.value));
+    fmt(input.value);
+    return input;
+  }
+  function btn(parent,label,onclick){
+    const b=document.createElement("button"); b.className="anim-btn"; b.textContent=label;
+    b.addEventListener("click",()=>onclick(b)); parent.appendChild(b); return b;
+  }
+  function readout(host){ const d=document.createElement("div"); d.className="anim-readout"; host.appendChild(d); return d; }
+  // theme colours (read from CSS custom properties so light/dark both work)
+  function col(name,fallback){
+    try{ const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fallback; }
+    catch(e){ return fallback; }
+  }
+
+  function reg(course, topic, anims){
+    window.ANIMATIONS[course]=window.ANIMATIONS[course]||{};
+    window.ANIMATIONS[course][topic]=anims;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ENERGY — Specific heat capacity practical
+  // ═══════════════════════════════════════════════════════════════════════
+  const energyAnims = [
+    {
+      title:"Specific heat capacity — heating a metal block",
+      subtitle:"Required practical: an electric heater warms a 1 kg metal block. Watch how temperature rises and change the power to see the effect.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,220); host.appendChild(s);
+        // block
+        el("rect",{x:110,y:90,width:100,height:100,rx:6,fill:"#5a6b7d",stroke:LINE,"stroke-width":2},s);
+        // heater coil hole
+        el("rect",{x:150,y:70,width:20,height:50,fill:"#2a3441",stroke:LINE},s);
+        const coil=el("path",{d:"M160 75 q-8 5 0 10 q8 5 0 10 q-8 5 0 10",stroke:AM,"stroke-width":2.5,fill:"none"},s);
+        // thermometer
+        el("rect",{x:185,y:60,width:8,height:70,rx:4,fill:"#2a3441",stroke:LINE},s);
+        const merc=el("rect",{x:187,y:120,width:4,height:8,fill:"#e2554e"},s);
+        // heat glow
+        const glow=el("rect",{x:110,y:90,width:100,height:100,rx:6,fill:AM,opacity:0},s);
+        const tempTxt=el("text",{x:160,y:50,"text-anchor":"middle","font-size":15,fill:INK,"font-weight":700},s);
+        const c=controls(host);
+        const out=readout(host);
+        let power=40, temp=20, running=false, raf=null, t0=null;
+        const mass=1, shc=900; // J/kg°C (approx aluminium)
+        function setTemp(T){
+          temp=T;
+          const frac=Math.min(1,(T-20)/180);
+          merc.setAttribute("height", 8+frac*60); merc.setAttribute("y", 128-frac*60);
+          glow.setAttribute("opacity", frac*0.5);
+          tempTxt.textContent=Math.round(T)+" °C";
+          const energy=mass*shc*(T-20);
+          out.innerHTML="Power: <b>"+power+" W</b> · Temp: <b>"+Math.round(T)+" °C</b><br>Energy stored: <b>"+Math.round(energy)+" J</b>";
+        }
+        const pw=slider(c,"Heater power (W)",10,100,40,5,v=>{power=v;setTemp(temp);return v+" W";});
+        function loop(ts){
+          if(!running){ return; }
+          if(!t0) t0=ts;
+          const dt=(ts-t0)/1000; t0=ts;
+          // dT = P*dt/(m*c)  (sped up ×8 for visibility)
+          const dT=(power*dt*8)/(mass*shc);
+          let T=temp+dT;
+          if(T>=200){ T=200; running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); }
+          setTemp(T);
+          if(running) raf=requestAnimationFrame(loop);
+        }
+        const startBtn=btn(c,"Start heating",b=>{
+          if(b.textContent==="Reset"){ setTemp(20); b.textContent="Start heating"; return; }
+          if(running){ running=false; b.textContent="Start heating"; b.classList.remove("active"); }
+          else { running=true; t0=null; b.textContent="Pause"; b.classList.add("active"); raf=requestAnimationFrame(loop); }
+        });
+        setTemp(20);
+        return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>An electric heater transfers energy to the metal block. The block's internal energy rises, so its <span class='keyword'>temperature</span> increases. A more powerful heater transfers energy faster, so the temperature rises more quickly.</p><h4>The physics</h4><p>The energy needed to heat the block is <b>E = m c Δθ</b> — mass × specific heat capacity × temperature change. Rearranging lets you find the <span class='keyword'>specific heat capacity</span> c from measured values of energy, mass and temperature rise.</p><h4>Required practical link</h4><p>In the real experiment you measure energy with a joulemeter (or power × time), record temperature with a thermometer, and plot temperature against energy supplied. The block is insulated to reduce energy lost to the surroundings, which would otherwise make the measured c too high.</p>"
+    },
+    {
+      title:"Energy transfers — a falling ball",
+      subtitle:"Drop the ball and watch energy move between the gravitational and kinetic stores.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,240); host.appendChild(s);
+        el("line",{x1:30,y1:210,x2:290,y2:210,stroke:LINE,"stroke-width":2},s);
+        const ball=el("circle",{cx:80,cy:30,r:12,fill:PH},s);
+        // energy bars
+        function bar(x,label,c){
+          el("text",{x:x+15,y:225,"text-anchor":"middle","font-size":11,fill:DIM},s).textContent=label;
+          const outline=el("rect",{x:x,y:40,width:30,height:160,fill:"none",stroke:LINE},s);
+          const fill=el("rect",{x:x,y:200,width:30,height:0,fill:c},s);
+          return fill;
+        }
+        const geBar=bar(220,"GPE",AM);
+        const keBar=bar(260,"KE",PH);
+        const out=readout(host);
+        const c=controls(host);
+        let h=170, running=false, raf=null, y=30, v=0, t0=null;
+        const g=9.8, mass=0.5, topY=30, groundY=198;
+        function draw(){
+          const height=(groundY-y)/(groundY-topY)*h; // metres represented
+          ball.setAttribute("cy",y);
+          const ge=mass*g*height, ke=0.5*mass*v*v, tot=mass*g*h||1;
+          geBar.setAttribute("height", Math.max(0,ge/(mass*g*h)*160)); geBar.setAttribute("y",200-ge/(mass*g*h)*160);
+          const keMax=mass*g*h;
+          keBar.setAttribute("height", Math.max(0,Math.min(160,ke/keMax*160))); keBar.setAttribute("y",200-Math.min(160,ke/keMax*160));
+          out.innerHTML="Height: <b>"+height.toFixed(1)+" m</b> · Speed: <b>"+v.toFixed(1)+" m/s</b><br>GPE: <b>"+ge.toFixed(1)+" J</b> · KE: <b>"+ke.toFixed(1)+" J</b>";
+        }
+        function loop(ts){
+          if(!running) return;
+          if(!t0) t0=ts; const dt=Math.min(0.05,(ts-t0)/1000); t0=ts;
+          v+=g*dt; y+=v*dt*18;
+          if(y>=groundY){ y=groundY; v=0; running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); }
+          draw(); if(running) raf=requestAnimationFrame(loop);
+        }
+        const startBtn=btn(c,"Drop",b=>{
+          if(b.textContent==="Reset"){ y=topY; v=0; draw(); b.textContent="Drop"; return; }
+          running=true; t0=null; b.textContent="Falling…"; b.classList.add("active"); raf=requestAnimationFrame(loop);
+        });
+        y=topY; v=0; draw();
+        return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>As the ball falls, energy is transferred from its <span class='keyword'>gravitational potential store</span> to its <span class='keyword'>kinetic store</span>. The total energy stays the same (ignoring air resistance) — this is <span class='keyword'>conservation of energy</span>.</p><h4>The physics</h4><p>At the top the ball has maximum GPE (<b>E = m g h</b>) and zero KE. As it falls, h decreases so GPE falls, while speed increases so KE (<b>E = ½ m v²</b>) rises. Just before impact, almost all the GPE has become KE.</p><h4>Real world</h4><p>With air resistance, some energy is transferred to the thermal store of the surroundings, so the ball arrives slightly slower than the ideal calculation predicts.</p>"
+    }
+  ];
+  reg("aqa_gcse","energy",energyAnims);
+  reg("combined_physics","energy",energyAnims);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ELECTRICITY — I-V characteristics + series/parallel
+  // ═══════════════════════════════════════════════════════════════════════
+  const elecAnims = [
+    {
+      title:"Ohm's law — current, voltage and resistance",
+      subtitle:"Required practical: change the voltage across a fixed resistor and watch the current respond. Drag the sliders.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,170); host.appendChild(s);
+        // simple circuit: battery - resistor - ammeter loop
+        el("rect",{x:30,y:30,width:260,height:110,rx:8,fill:"none",stroke:LINE,"stroke-width":2},s);
+        el("line",{x1:30,y1:85,x2:30,y2:85,stroke:INK},s);
+        // battery
+        el("line",{x1:24,y1:70,x2:36,y2:70,stroke:INK,"stroke-width":3},s);
+        el("line",{x1:27,y1:100,x2:33,y2:100,stroke:INK,"stroke-width":1.5},s);
+        el("text",{x:14,y:90,"font-size":11,fill:DIM},s).textContent="V";
+        // resistor (top)
+        el("rect",{x:130,y:22,width:60,height:16,fill:"none",stroke:AM,"stroke-width":2},s);
+        el("text",{x:160,y:16,"text-anchor":"middle","font-size":11,fill:AM},s).textContent="R";
+        // ammeter (bottom)
+        el("circle",{cx:160,cy:140,r:14,fill:"#1b2533",stroke:PH,"stroke-width":2},s);
+        el("text",{x:160,y:145,"text-anchor":"middle","font-size":13,fill:PH,"font-weight":700},s).textContent="A";
+        // electron flow dots
+        const dots=[];
+        for(let i=0;i<8;i++){ dots.push(el("circle",{cx:0,cy:0,r:3,fill:PH},s)); }
+        const out=readout(host);
+        const c=controls(host);
+        let V=6, R=12, phase=0, raf=null;
+        const vS=slider(c,"Voltage (V)",1,12,6,0.5,x=>{V=x;upd();return x+" V";});
+        const rS=slider(c,"Resistance (Ω)",2,30,12,1,x=>{R=x;upd();return x+" Ω";});
+        function upd(){
+          const I=V/R;
+          out.innerHTML="V = <b>"+V+" V</b>, R = <b>"+R+" Ω</b><br>Current I = V/R = <b>"+I.toFixed(2)+" A</b>";
+          return I;
+        }
+        // perimeter path points (rounded rect approx as 4 segments)
+        const path=[[30,30],[290,30],[290,140],[30,140]];
+        function ptAt(f){
+          // f in 0..1 around perimeter
+          const segs=[[path[0],path[1]],[path[1],path[2]],[path[2],path[3]],[path[3],path[0]]];
+          const total=4; let d=f*total; let i=Math.floor(d); let fr=d-i; i=i%4;
+          const a=segs[i][0], b=segs[i][1];
+          return [a[0]+(b[0]-a[0])*fr, a[1]+(b[1]-a[1])*fr];
+        }
+        function loop(){
+          const I=V/R; phase=(phase+0.002+I*0.004)%1;
+          dots.forEach((dot,k)=>{ const p=ptAt((phase+k/dots.length)%1); dot.setAttribute("cx",p[0]); dot.setAttribute("cy",p[1]); });
+          raf=requestAnimationFrame(loop);
+        }
+        upd(); loop();
+        return ()=>{ if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>The battery's <span class='keyword'>potential difference</span> (voltage) pushes charge around the circuit. The moving dots represent the flow of charge — the current. A higher voltage pushes more current; a higher resistance reduces it.</p><h4>The physics</h4><p>For a component at constant temperature, current is directly proportional to voltage: <b>V = I R</b>. The dots speed up when you raise the voltage and slow down when you raise the resistance.</p><h4>Required practical link</h4><p>To investigate this you vary the p.d. across a fixed resistor with a variable resistor, recording current (ammeter, in series) and voltage (voltmeter, in parallel). A straight-line graph through the origin shows the resistor is <span class='keyword'>ohmic</span> — resistance is constant.</p>"
+    },
+    {
+      title:"I–V characteristic of a filament lamp",
+      subtitle:"A filament lamp is not ohmic. Increase the current and watch the filament heat up and its resistance change.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,210); host.appendChild(s);
+        // graph axes
+        const ox=50, oy=140, gw=240, gh=110;
+        el("line",{x1:ox,y1:oy,x2:ox+gw,y2:oy,stroke:LINE,"stroke-width":1.5},s); // x
+        el("line",{x1:ox,y1:oy,x2:ox,y2:oy-gh,stroke:LINE,"stroke-width":1.5},s); // y up
+        el("line",{x1:ox,y1:oy,x2:ox-0,y2:oy+0,stroke:LINE},s);
+        el("text",{x:ox+gw,y:oy+16,"text-anchor":"end","font-size":11,fill:DIM},s).textContent="V →";
+        el("text",{x:ox-8,y:oy-gh+4,"text-anchor":"end","font-size":11,fill:DIM},s).textContent="I";
+        // the characteristic curve (S-shape through origin)
+        let d="M"+ox+" "+oy;
+        for(let i=0;i<=40;i++){ const V=(i/40)*4-2; const I=Math.cbrt(V)*0.9; const x=ox+gw/2+(V/2)*(gw/2); const y=oy-(I/1.2)*(gh*0.45)-0; d+=" L"+x.toFixed(1)+" "+(y).toFixed(1); }
+        el("path",{d:d,stroke:PH,"stroke-width":2.5,fill:"none"},s);
+        // moving point on curve
+        const pt=el("circle",{cx:ox+gw/2,cy:oy,r:5,fill:AM},s);
+        // lamp
+        el("circle",{cx:160,cy:30,r:0,fill:"none"},s);
+        const lampGlow=el("circle",{cx:285,cy:40,r:14,fill:AM,opacity:0},s);
+        el("circle",{cx:285,cy:40,r:12,fill:"none",stroke:AM,"stroke-width":2},s);
+        el("text",{x:285,y:62,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="lamp";
+        const out=readout(host);
+        const c=controls(host);
+        let V=0;
+        slider(c,"Voltage (V)",-2,2,0,0.1,x=>{
+          V=x; const I=Math.cbrt(V)*0.9;
+          const px=ox+gw/2+(V/2)*(gw/2); const py=oy-(I/1.2)*(gh*0.45);
+          pt.setAttribute("cx",px); pt.setAttribute("cy",py);
+          lampGlow.setAttribute("opacity", Math.min(0.8,Math.abs(I)*0.7));
+          lampGlow.setAttribute("r", 14+Math.abs(I)*6);
+          const Rr = V!==0 ? Math.abs(V/I) : 0;
+          out.innerHTML="V = <b>"+V.toFixed(1)+" V</b> · I = <b>"+I.toFixed(2)+" A</b><br>Resistance ≈ <b>"+(V!==0?Rr.toFixed(1):"—")+" Ω</b> (rises as it heats)";
+          return x.toFixed(1)+" V";
+        });
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>As more current flows through the filament, it gets hotter and glows. The hotter filament has a <span class='keyword'>higher resistance</span>, so the current does not rise in proportion to voltage — the graph curves.</p><h4>The physics</h4><p>In a metal, heating makes the metal ions vibrate more, so they obstruct the flow of charge more often. That's why the I–V graph for a filament lamp is an <span class='keyword'>S-shaped curve</span>, not a straight line — the lamp is <span class='keyword'>non-ohmic</span>.</p><h4>Why it matters</h4><p>The curve is symmetric because the filament behaves the same whichever way the current flows. Compare this to a diode, which only lets current flow one way.</p>"
+    },
+    {
+      title:"Series vs parallel circuits",
+      subtitle:"Switch between series and parallel and watch the brightness of the bulbs change.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,180); host.appendChild(s);
+        let mode="series";
+        const out=readout(host);
+        function draw(){
+          while(s.firstChild) s.removeChild(s.firstChild);
+          // battery
+          el("line",{x1:24,y1:70,x2:36,y2:70,stroke:INK,"stroke-width":3},s);
+          el("line",{x1:27,y1:100,x2:33,y2:100,stroke:INK,"stroke-width":1.5},s);
+          el("text",{x:16,y:90,"font-size":11,fill:DIM},s).textContent="6V";
+          function bulb(x,y,bright){
+            el("circle",{cx:x,cy:y,r:16,fill:AM,opacity:bright},s);
+            el("circle",{cx:x,cy:y,r:13,fill:"none",stroke:AM,"stroke-width":2},s);
+            el("line",{x1:x-9,y1:y-9,x2:x+9,y2:y+9,stroke:AM,"stroke-width":1.5},s);
+            el("line",{x1:x+9,y1:y-9,x2:x-9,y2:y+9,stroke:AM,"stroke-width":1.5},s);
+          }
+          if(mode==="series"){
+            el("rect",{x:30,y:40,width:260,height:90,rx:8,fill:"none",stroke:INK,"stroke-width":2},s);
+            bulb(120,40,0.45); bulb(200,40,0.45);
+            out.innerHTML="<b>Series:</b> same current through both bulbs.<br>Voltage is shared → each bulb is <b>dimmer</b>.";
+          } else {
+            el("rect",{x:30,y:40,width:260,height:90,rx:8,fill:"none",stroke:INK,"stroke-width":2},s);
+            // two parallel branches
+            el("line",{x1:120,y1:40,x2:120,y2:130,stroke:INK,"stroke-width":2},s);
+            el("line",{x1:210,y1:40,x2:210,y2:130,stroke:INK,"stroke-width":2},s);
+            bulb(165,40,0.9); bulb(165,130,0.9);
+            out.innerHTML="<b>Parallel:</b> each bulb gets the full 6 V.<br>Both bulbs are at <b>full brightness</b>.";
+          }
+        }
+        const c=controls(host);
+        const bSer=btn(c,"Series",b=>{ mode="series"; draw(); setActive(b); });
+        const bPar=btn(c,"Parallel",b=>{ mode="parallel"; draw(); setActive(b); });
+        function setActive(active){ [bSer,bPar].forEach(x=>x.classList.remove("active")); active.classList.add("active"); }
+        bSer.classList.add("active");
+        draw();
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>In a <span class='keyword'>series</span> circuit there is only one loop, so the same current flows through every component and the battery's voltage is shared between them. Adding more bulbs makes each one dimmer.</p><p>In a <span class='keyword'>parallel</span> circuit each bulb is on its own branch and gets the full battery voltage, so each stays bright. The branches can be switched independently.</p><h4>The physics</h4><p>Series: total resistance = R₁ + R₂ (adds up, so current falls). Parallel: total resistance is <b>less</b> than the smallest single resistor, so more current is drawn from the battery overall.</p><h4>Real world</h4><p>House wiring uses parallel circuits so each appliance gets the full mains voltage and can be switched on or off without affecting the others.</p>"
+    }
+  ];
+  reg("aqa_gcse","electricity",elecAnims);
+  reg("combined_physics","electricity",elecAnims);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  PARTICLE MODEL — states of matter + heating/cooling
+  // ═══════════════════════════════════════════════════════════════════════
+  const particleAnims = [
+    {
+      title:"States of matter — particle arrangement",
+      subtitle:"Switch between solid, liquid and gas and watch how the particles arrange and move.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(300,200); host.appendChild(s);
+        el("rect",{x:20,y:20,width:260,height:160,rx:6,fill:"none",stroke:LINE,"stroke-width":2},s);
+        const N=36, parts=[];
+        for(let i=0;i<N;i++){ parts.push({el:el("circle",{r:8,fill:PH},s),x:0,y:0,bx:0,by:0,vx:0,vy:0}); }
+        let mode="solid", raf=null;
+        function layout(){
+          if(mode==="solid"||mode==="liquid"){
+            const cols=6, sp=34;
+            parts.forEach((p,i)=>{ const r=Math.floor(i/cols), c=i%cols; p.bx=55+c*sp; p.by=mode==="solid"?(55+r*sp):(75+r*sp); });
+          }
+          parts.forEach(p=>{ p.x=p.bx; p.y=p.by; p.vx=(Math.random()-0.5); p.vy=(Math.random()-0.5); });
+        }
+        function loop(){
+          parts.forEach(p=>{
+            if(mode==="solid"){ // vibrate about fixed point
+              p.x=p.bx+(Math.random()-0.5)*5; p.y=p.by+(Math.random()-0.5)*5;
+            } else if(mode==="liquid"){ // slow drift, stay in lower 2/3
+              p.x+=p.vx*1.2; p.y+=p.vy*1.2;
+              if(p.x<30||p.x>270){p.vx*=-1;} if(p.y<70||p.y>170){p.vy*=-1;}
+              if(Math.random()<0.03){ p.vx=(Math.random()-0.5)*2; p.vy=(Math.random()-0.5)*2; }
+            } else { // gas: fast, fill whole box
+              p.x+=p.vx*3.2; p.y+=p.vy*3.2;
+              if(p.x<30||p.x>270){p.vx*=-1; p.x=Math.max(30,Math.min(270,p.x));}
+              if(p.y<30||p.y>170){p.vy*=-1; p.y=Math.max(30,Math.min(170,p.y));}
+            }
+            p.el.setAttribute("cx",p.x); p.el.setAttribute("cy",p.y);
+          });
+          raf=requestAnimationFrame(loop);
+        }
+        const c=controls(host); const out=readout(host);
+        function setMode(m,b){ mode=m; layout(); [bS,bL,bG].forEach(x=>x.classList.remove("active")); b.classList.add("active");
+          out.innerHTML = m==="solid"?"<b>Solid:</b> particles packed in a fixed regular pattern, vibrating in place." :
+                          m==="liquid"?"<b>Liquid:</b> particles touching but free to move past each other." :
+                          "<b>Gas:</b> particles far apart, moving fast in all directions.";
+        }
+        const bS=btn(c,"Solid",b=>setMode("solid",b));
+        const bL=btn(c,"Liquid",b=>setMode("liquid",b));
+        const bG=btn(c,"Gas",b=>setMode("gas",b));
+        for(let i=parts.length;i<parts.length;i++){}
+        // gas uses random velocities
+        parts.forEach(p=>{ p.vx=(Math.random()-0.5)*2; p.vy=(Math.random()-0.5)*2; });
+        setMode("solid",bS); layout(); loop();
+        return ()=>{ if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>The <span class='keyword'>particle model</span> explains the three states of matter by how the particles are arranged and how much energy they have.</p><ul><li><span class='keyword'>Solid</span> — particles in a fixed, regular lattice, vibrating about fixed positions. Fixed shape and volume.</li><li><span class='keyword'>Liquid</span> — particles still touching but able to slide past each other. Fixed volume, takes the shape of its container.</li><li><span class='keyword'>Gas</span> — particles far apart, moving quickly in random directions. Fills any container.</li></ul><h4>The physics</h4><p>Heating a substance transfers energy to the particles' <span class='keyword'>kinetic store</span>, making them move faster. Enough energy lets them break free of their neighbours — melting, then boiling. The mass is conserved through every change of state because no particles are created or destroyed.</p>"
+    },
+    {
+      title:"Heating curve — energy and changes of state",
+      subtitle:"Add energy to ice and follow the temperature. Notice the flat sections where state changes happen.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,210); host.appendChild(s);
+        const ox=44, oy=180, gw=250, gh=150;
+        el("line",{x1:ox,y1:oy,x2:ox+gw,y2:oy,stroke:LINE},s);
+        el("line",{x1:ox,y1:oy,x2:ox,y2:oy-gh,stroke:LINE},s);
+        el("text",{x:ox+gw/2,y:205,"text-anchor":"middle","font-size":11,fill:DIM},s).textContent="energy added →";
+        el("text",{x:12,y:oy-gh/2,"font-size":11,fill:DIM,transform:"rotate(-90 12 "+(oy-gh/2)+")"},s).textContent="temp °C";
+        // heating curve segments (ice -> melt -> water -> boil -> steam)
+        // x fractions: 0-0.12 ice rise, 0.12-0.35 melt flat, 0.35-0.62 water rise, 0.62-0.92 boil flat, 0.92-1 steam rise
+        const pts=[[0,-20],[0.12,0],[0.35,0],[0.62,100],[0.92,100],[1,120]];
+        function X(f){return ox+f*gw;} function Y(t){return oy-((t+20)/140)*gh;}
+        let d="M"+X(pts[0][0])+" "+Y(pts[0][1]);
+        for(let i=1;i<pts.length;i++) d+=" L"+X(pts[i][0])+" "+Y(pts[i][1]);
+        el("path",{d:d,stroke:LINE,"stroke-width":1.5,fill:"none","stroke-dasharray":"4 4"},s);
+        const trace=el("path",{d:"M"+X(0)+" "+Y(-20),stroke:PH,"stroke-width":3,fill:"none"},s);
+        const dot=el("circle",{cx:X(0),cy:Y(-20),r:5,fill:AM},s);
+        const lbl=el("text",{x:160,y:24,"text-anchor":"middle","font-size":13,fill:INK,"font-weight":700},s);
+        const out=readout(host);
+        const c=controls(host);
+        function tempAt(f){
+          for(let i=1;i<pts.length;i++){ if(f<=pts[i][0]){ const a=pts[i-1],b=pts[i]; const fr=(f-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*fr; } }
+          return 120;
+        }
+        function stateAt(f){
+          if(f<0.12) return "Ice warming up";
+          if(f<0.35) return "Melting (ice → water)";
+          if(f<0.62) return "Water warming up";
+          if(f<0.92) return "Boiling (water → steam)";
+          return "Steam warming up";
+        }
+        let f=0, running=false, raf=null;
+        function setF(v){
+          f=v; let d2="M"+X(0)+" "+Y(-20);
+          for(let i=0;i<=60;i++){ const ff=(i/60)*f; d2+=" L"+X(ff)+" "+Y(tempAt(ff)); }
+          trace.setAttribute("d",d2);
+          dot.setAttribute("cx",X(f)); dot.setAttribute("cy",Y(tempAt(f)));
+          lbl.textContent=stateAt(f);
+          out.innerHTML="Temperature: <b>"+Math.round(tempAt(f))+" °C</b><br>"+stateAt(f);
+        }
+        function loop(){ if(!running) return; f+=0.006; if(f>=1){f=1;running=false;startBtn.textContent="Reset";startBtn.classList.remove("active");} setF(f); if(running)raf=requestAnimationFrame(loop); }
+        const startBtn=btn(c,"Add energy",b=>{
+          if(b.textContent==="Reset"){ setF(0); b.textContent="Add energy"; return; }
+          running=true; b.textContent="Heating…"; b.classList.add("active"); raf=requestAnimationFrame(loop);
+        });
+        slider(c,"Energy added",0,100,0,1,x=>{ running=false; startBtn.textContent="Add energy"; startBtn.classList.remove("active"); setF(x/100); return x+"%";});
+        setF(0);
+        return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Energy is added to ice at a steady rate. The temperature rises — but during melting and boiling the temperature <span class='keyword'>stays constant</span> even though energy is still being supplied. These are the flat sections of the graph.</p><h4>The physics</h4><p>During a change of state, the energy supplied is used to break the bonds between particles (overcoming the forces of attraction), not to raise their kinetic energy. This energy is the <span class='keyword'>latent heat</span>. Temperature only measures average kinetic energy, so it doesn't change while bonds are breaking.</p><h4>Key terms</h4><ul><li><span class='keyword'>Specific latent heat of fusion</span> — energy to melt 1 kg without temperature change.</li><li><span class='keyword'>Specific latent heat of vaporisation</span> — energy to boil 1 kg without temperature change (usually much larger).</li></ul>"
+    }
+  ];
+  reg("aqa_gcse","particle",particleAnims);
+  reg("combined_physics","particle",particleAnims);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  FORCES — Hooke's law + acceleration
+  // ═══════════════════════════════════════════════════════════════════════
+  const forcesAnims = [
+    {
+      title:"Hooke's law — stretching a spring",
+      subtitle:"Required practical: hang masses on a spring and watch the extension. Add weight and see the force–extension graph build.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,240); host.appendChild(s);
+        // spring on left, graph on right
+        el("line",{x1:20,y1:30,x2:80,y2:30,stroke:INK,"stroke-width":3},s); // clamp
+        const springTop=34;
+        const spring=el("path",{d:"",stroke:PH,"stroke-width":2.5,fill:"none"},s);
+        const massBox=el("rect",{x:35,y:0,width:30,height:24,rx:3,fill:AM},s);
+        const massLbl=el("text",{x:50,y:0,"text-anchor":"middle","font-size":10,fill:"#2c1d00","font-weight":700},s);
+        // graph
+        const ox=130, oy=200, gw=170, gh=160;
+        el("line",{x1:ox,y1:oy,x2:ox+gw,y2:oy,stroke:LINE},s);
+        el("line",{x1:ox,y1:oy,x2:ox,y2:oy-gh,stroke:LINE},s);
+        el("text",{x:ox+gw,y:oy+14,"text-anchor":"end","font-size":10,fill:DIM},s).textContent="extension →";
+        el("text",{x:ox-6,y:oy-gh+6,"text-anchor":"end","font-size":10,fill:DIM},s).textContent="force";
+        const gline=el("path",{d:"",stroke:PH,"stroke-width":2,fill:"none"},s);
+        const gdot=el("circle",{cx:ox,cy:oy,r:4,fill:AM},s);
+        const limitLine=el("line",{x1:ox,y1:oy,x2:ox,y2:oy,stroke:"#e2554e","stroke-width":1,"stroke-dasharray":"3 3",opacity:0},s);
+        const out=readout(host);
+        const c=controls(host);
+        const k=20; // N/m
+        const limit=8; // N elastic limit
+        function drawSpring(ext){
+          const coils=8, x=50, top=springTop, len=60+ext*8;
+          let d="M"+x+" "+top; const dy=len/coils;
+          for(let i=0;i<coils;i++){ d+=" l"+( i%2?-12:12)+" "+dy; }
+          d+=" L"+x+" "+(top+len);
+          spring.setAttribute("d",d);
+          massBox.setAttribute("y", top+len); massLbl.setAttribute("y", top+len+16);
+        }
+        function upd(F){
+          let ext=F/k; let beyond=false;
+          if(F>limit){ ext=limit/k + (F-limit)/(k*0.4); beyond=true; } // non-linear past limit
+          drawSpring(ext*40);
+          massLbl.textContent=(F/9.8*1000>=1000?(F/9.8).toFixed(1)+"kg":Math.round(F/9.8*1000)+"g");
+          // graph: linear to limit then curves
+          let d="M"+ox+" "+oy; const N=40;
+          for(let i=0;i<=N;i++){ const f=(i/N)*F; let e=f<=limit? f/k : limit/k+(f-limit)/(k*0.4);
+            const gx=ox+(e/ (12/k))* (gw/ (12/0.4)); // scale
+            const X=ox+ e*200; const Y=oy- f*(gh/12);
+            d+=" L"+X.toFixed(1)+" "+Y.toFixed(1); }
+          gline.setAttribute("d",d);
+          const eF = F<=limit? F/k : limit/k+(F-limit)/(k*0.4);
+          gdot.setAttribute("cx",ox+eF*200); gdot.setAttribute("cy",oy-F*(gh/12));
+          limitLine.setAttribute("opacity", beyond?1:0);
+          limitLine.setAttribute("x1",ox+(limit/k)*200); limitLine.setAttribute("x2",ox+(limit/k)*200);
+          limitLine.setAttribute("y2",oy-gh);
+          out.innerHTML="Force: <b>"+F.toFixed(1)+" N</b> · Extension: <b>"+(eF*100).toFixed(1)+" cm</b>"+(beyond?"<br><span style='color:#e2554e'>Past the elastic limit — no longer proportional!</span>":"<br>F = k × e (proportional)");
+        }
+        slider(c,"Force / weight (N)",0,16,2,0.5,x=>{ upd(x); return x+" N"; });
+        upd(2);
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>Adding weight stretches the spring. Up to a point, the <span class='keyword'>extension is directly proportional to the force</span> — double the force, double the extension. The force–extension graph is a straight line through the origin.</p><h4>The physics</h4><p>This is <span class='keyword'>Hooke's law</span>: <b>F = k e</b>, where k is the spring constant (stiffness) and e is the extension. A stiffer spring has a larger k and stretches less for the same force.</p><h4>The elastic limit</h4><p>Beyond the <span class='keyword'>limit of proportionality</span>, the line curves — the spring stretches more for each added newton and may not return to its original length. The energy stored in a stretched spring (within the limit) is the <span class='keyword'>elastic potential energy</span>, equal to the area under the line.</p><h4>Required practical link</h4><p>You hang known masses, measure extension with a ruler, and plot force against extension. The gradient of the straight section gives the spring constant.</p>"
+    },
+    {
+      title:"Newton's second law — force, mass and acceleration",
+      subtitle:"Push a trolley with different forces and masses. Watch how the acceleration changes.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,150); host.appendChild(s);
+        el("line",{x1:0,y1:120,x2:320,y2:120,stroke:LINE,"stroke-width":2},s);
+        const trolley=el("rect",{x:20,y:88,width:50,height:30,rx:4,fill:PH},s);
+        const w1=el("circle",{cx:32,cy:122,r:6,fill:INK},s), w2=el("circle",{cx:58,cy:122,r:6,fill:INK},s);
+        const arrow=el("line",{x1:70,y1:103,x2:110,y2:103,stroke:AM,"stroke-width":4,"marker-end":"url(#fa)"},s);
+        const defs=el("defs",{},s); const mk=el("marker",{id:"fa",markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"},defs);
+        el("path",{d:"M0 0 L6 3 L0 6 Z",fill:AM},mk);
+        const out=readout(host);
+        const c=controls(host);
+        let F=10, M=2, x=20, v=0, raf=null, running=false;
+        const fS=slider(c,"Force (N)",1,20,10,1,val=>{F=val;upd();return val+" N";});
+        const mS=slider(c,"Mass (kg)",0.5,10,2,0.5,val=>{M=val;upd();return val+" kg";});
+        function upd(){ const a=F/M; out.innerHTML="F = <b>"+F+" N</b>, m = <b>"+M+" kg</b><br>Acceleration a = F/m = <b>"+a.toFixed(1)+" m/s²</b>"; arrow.setAttribute("x2",70+Math.min(60,F*3)); }
+        function loop(){ if(!running) return; const a=F/M; v+=a*0.02; x+=v*0.6; if(x>250){x=20;v=0;} trolley.setAttribute("x",x); w1.setAttribute("cx",x+12); w2.setAttribute("cx",x+38); arrow.setAttribute("x1",x+50); arrow.setAttribute("x2",x+50+Math.min(60,F*3)); raf=requestAnimationFrame(loop); }
+        const startBtn=btn(c,"Push",b=>{ if(running){running=false;b.textContent="Push";b.classList.remove("active");} else {running=true;b.textContent="Reset";b.classList.add("active");raf=requestAnimationFrame(loop);} if(b.textContent==="Push"){x=20;v=0;trolley.setAttribute("x",x);} });
+        upd();
+        return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>A resultant force makes the trolley accelerate. A bigger force gives a bigger acceleration; a heavier trolley accelerates less for the same force.</p><h4>The physics</h4><p>This is <span class='keyword'>Newton's second law</span>: <b>F = m a</b>, or acceleration = force ÷ mass. Force is measured in newtons (N), mass in kilograms (kg) and acceleration in metres per second squared (m/s²).</p><h4>Required practical link</h4><p>In the trolley-and-runway experiment you keep mass constant and vary the force (showing a ∝ F), then keep force constant and vary the mass (showing a ∝ 1/m). Light gates measure the acceleration. A friction-compensated runway removes the effect of resistive forces.</p>"
+    }
+  ];
+  reg("aqa_gcse","forces",forcesAnims);
+  reg("combined_physics","forces",forcesAnims);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  WAVES — transverse/longitudinal + ripple tank reflection
+  // ═══════════════════════════════════════════════════════════════════════
+  const wavesAnims = [
+    {
+      title:"Transverse and longitudinal waves",
+      subtitle:"Compare the two wave types. Change the frequency and watch how the particles move.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,210); host.appendChild(s);
+        el("text",{x:10,y:30,"font-size":11,fill:DIM},s).textContent="Transverse (e.g. light, water)";
+        el("text",{x:10,y:130,"font-size":11,fill:DIM},s).textContent="Longitudinal (e.g. sound)";
+        // transverse: row of dots that bob up/down
+        const tDots=[], lDots=[];
+        for(let i=0;i<22;i++){ tDots.push(el("circle",{cx:20+i*13,cy:60,r:4,fill:PH},s)); }
+        for(let i=0;i<28;i++){ lDots.push(el("circle",{cx:20+i*10,cy:160,r:4,fill:AM},s)); }
+        let freq=1, phase=0, raf=null;
+        const c=controls(host); const out=readout(host);
+        slider(c,"Frequency",0.5,3,1,0.1,x=>{freq=x;out.innerHTML="Frequency: <b>"+x.toFixed(1)+" Hz</b> (relative)<br>Higher frequency → shorter wavelength.";return x.toFixed(1)+"×";});
+        function loop(){
+          phase+=0.04*freq;
+          tDots.forEach((d,i)=>{ d.setAttribute("cy",60+Math.sin(phase - i*0.5*freq)*22); });
+          lDots.forEach((d,i)=>{ const base=20+i*10; d.setAttribute("cx", base+Math.sin(phase - i*0.45*freq)*7); });
+          raf=requestAnimationFrame(loop);
+        }
+        out.innerHTML="Frequency: <b>1.0 Hz</b> (relative)<br>Higher frequency → shorter wavelength.";
+        loop();
+        return ()=>{ if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>In a <span class='keyword'>transverse</span> wave the particles vibrate at right angles (90°) to the direction the wave travels — like the dots bobbing up and down while the wave moves sideways. Light and water waves are transverse.</p><p>In a <span class='keyword'>longitudinal</span> wave the particles vibrate back and forth <em>along</em> the same direction the wave travels, creating regions of <span class='keyword'>compression</span> (squashed together) and <span class='keyword'>rarefaction</span> (spread apart). Sound is longitudinal.</p><h4>The physics</h4><p>In both cases the wave transfers <span class='keyword'>energy</span> without transferring matter — the particles only oscillate about a fixed point. The wave speed is given by <b>v = f λ</b> (frequency × wavelength). Raising the frequency at constant speed shortens the wavelength.</p>"
+    },
+    {
+      title:"Reflection in a ripple tank",
+      subtitle:"Watch plane waves hit a barrier and reflect. The angle of incidence equals the angle of reflection.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(300,220); host.appendChild(s);
+        el("rect",{x:10,y:10,width:280,height:200,rx:6,fill:"#0e1722",stroke:LINE},s);
+        // barrier (diagonal)
+        el("line",{x1:150,y1:20,x2:280,y2:150,stroke:AM,"stroke-width":4},s);
+        el("text",{x:230,y:100,"font-size":10,fill:AM,transform:"rotate(45 230 100)"},s).textContent="barrier";
+        // incoming wavefronts (vertical lines moving right), reflected ones move down
+        const inc=[], ref=[];
+        for(let i=0;i<5;i++){ inc.push(el("line",{x1:20+i*26,y1:20,x2:20+i*26,y2:200,stroke:PH,"stroke-width":2,opacity:0.8},s)); }
+        let raf=null, t=0;
+        function loop(){
+          t+=1.1;
+          inc.forEach((l,i)=>{ let x=20+((i*26+t)% 130); l.setAttribute("x1",x); l.setAttribute("x2",x); l.setAttribute("y2", Math.min(200, x<150? 200 : 200)); });
+          raf=requestAnimationFrame(loop);
+        }
+        // reflected fronts: draw a few static-ish diagonal lines that pulse
+        for(let i=0;i<4;i++){ ref.push(el("line",{x1:160+i*20,y1:200,x2:280,y2:80+i*20,stroke:PH,"stroke-width":2,opacity:0.35},s)); }
+        loop();
+        return ()=>{ if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Straight (plane) water waves travel towards a barrier. When they hit it, they bounce off — they are <span class='keyword'>reflected</span>. The reflected wavefronts travel away at the same angle they arrived.</p><h4>The physics</h4><p>The <span class='keyword'>angle of incidence equals the angle of reflection</span>, both measured from the normal (the line at 90° to the barrier). The wavelength and frequency don't change on reflection — only the direction does.</p><h4>Required practical link</h4><p>A ripple tank with a vibrating bar makes plane waves; a small lamp above casts shadows of the wavefronts onto a screen below so you can measure wavelength and observe reflection, refraction and diffraction.</p>"
+    }
+  ];
+  reg("aqa_gcse","waves",wavesAnims);
+  reg("combined_physics","waves",wavesAnims);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MAGNETISM — magnetic field + motor effect
+  // ═══════════════════════════════════════════════════════════════════════
+  const magAnims = [
+    {
+      title:"Plotting a magnetic field with a compass",
+      subtitle:"Move the compass around the bar magnet and watch the needle line up with the field.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,220); host.appendChild(s);
+        // bar magnet
+        el("rect",{x:120,y:95,width:40,height:30,fill:"#e2554e"},s);
+        el("rect",{x:160,y:95,width:40,height:30,fill:"#4a76d4"},s);
+        el("text",{x:140,y:115,"text-anchor":"middle","font-size":14,fill:"#fff","font-weight":700},s).textContent="N";
+        el("text",{x:180,y:115,"text-anchor":"middle","font-size":14,fill:"#fff","font-weight":700},s).textContent="S";
+        // field lines (static guides)
+        const cxN=140, cyM=110, cxS=180;
+        for(let i=-2;i<=2;i++){
+          const off=i*22;
+          el("path",{d:"M"+cxS+" "+(cyM+off*0.3)+" Q "+(250)+" "+(cyM+off)+" "+cxN+" "+(cyM+off*0.3),stroke:DIM,"stroke-width":1,fill:"none",opacity:0.4},s);
+          el("path",{d:"M"+cxN+" "+(cyM+off*0.3)+" Q "+(70)+" "+(cyM+off)+" "+cxS+" "+(cyM+off*0.3),stroke:DIM,"stroke-width":1,fill:"none",opacity:0.0},s);
+        }
+        // compass (draggable)
+        const compass=el("g",{},s);
+        const cc=el("circle",{cx:60,cy:50,r:16,fill:"#141c27",stroke:PH,"stroke-width":2},compass);
+        const needle=el("line",{x1:60,y1:50,x2:60,y2:36,stroke:"#e2554e","stroke-width":3},compass);
+        const needleS=el("line",{x1:60,y1:50,x2:60,y2:64,stroke:"#8fa6bd","stroke-width":3},compass);
+        let cx=60, cy=50;
+        function fieldAngle(x,y){
+          // approximate dipole field direction: vector sum from N (source) and S (sink)
+          const dxN=x-cxN, dyN=y-cyM, rN=Math.hypot(dxN,dyN)||1;
+          const dxS=x-cxS, dyS=y-cyM, rS=Math.hypot(dxS,dyS)||1;
+          const fx=dxN/(rN*rN*rN) - dxS/(rS*rS*rS);
+          const fy=dyN/(rN*rN*rN) - dyS/(rS*rS*rS);
+          return Math.atan2(fy,fx);
+        }
+        function place(x,y){
+          cx=x;cy=y; cc.setAttribute("cx",x);cc.setAttribute("cy",y);
+          const a=fieldAngle(x,y);
+          needle.setAttribute("x1",x);needle.setAttribute("y1",y);
+          needle.setAttribute("x2",x+Math.cos(a)*14);needle.setAttribute("y2",y+Math.sin(a)*14);
+          needleS.setAttribute("x1",x);needleS.setAttribute("y1",y);
+          needleS.setAttribute("x2",x-Math.cos(a)*14);needleS.setAttribute("y2",y-Math.sin(a)*14);
+        }
+        let drag=false;
+        function pt(ev){ const r=s.getBoundingClientRect(); const t=ev.touches?ev.touches[0]:ev; return [ (t.clientX-r.left)*(320/r.width), (t.clientY-r.top)*(220/r.height) ]; }
+        compass.style.cursor="grab";
+        s.addEventListener("mousedown",e=>{ const [x,y]=pt(e); if(Math.hypot(x-cx,y-cy)<24){drag=true;} });
+        s.addEventListener("mousemove",e=>{ if(drag){ const [x,y]=pt(e); place(x,y);} });
+        if(window.addEventListener) window.addEventListener("mouseup",()=>drag=false);
+        s.addEventListener("touchstart",e=>{ const [x,y]=pt(e); if(Math.hypot(x-cx,y-cy)<30){drag=true;e.preventDefault();} },{passive:false});
+        s.addEventListener("touchmove",e=>{ if(drag){ const [x,y]=pt(e); place(x,y); e.preventDefault();} },{passive:false});
+        s.addEventListener("touchend",()=>drag=false);
+        const out=readout(host); out.innerHTML="<b>Drag the compass</b> around the magnet. The needle always points along the field line.";
+        place(60,50);
+        return ()=>{ drag=false; };
+      },
+      explain:"<h4>What's happening</h4><p>A bar magnet is surrounded by a <span class='keyword'>magnetic field</span> — a region where another magnet or magnetic material feels a force. A plotting compass placed in the field lines up with it, because the compass needle is itself a tiny magnet.</p><h4>The physics</h4><p>Field lines run from the <span class='keyword'>north pole to the south pole</span> outside the magnet. They are closest together near the poles, where the field is <span class='keyword'>strongest</span>. The compass needle's north end always points in the direction of the field line at that point.</p><h4>Required practical link</h4><p>By marking the compass direction at many points around a magnet and joining the marks, you can plot the whole field pattern. This is how you'd show the field of a single magnet or the combined field between two magnets.</p>"
+    },
+    {
+      title:"The motor effect — force on a current-carrying wire",
+      subtitle:"Turn on the current and watch the wire jump. Reverse the current or the magnet to flip the force.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,200); host.appendChild(s);
+        // magnet poles (top N, bottom S) with field down
+        el("rect",{x:60,y:20,width:200,height:24,fill:"#e2554e"},s);
+        el("text",{x:160,y:37,"text-anchor":"middle","font-size":12,fill:"#fff","font-weight":700},s).textContent="N";
+        el("rect",{x:60,y:156,width:200,height:24,fill:"#4a76d4"},s);
+        el("text",{x:160,y:173,"text-anchor":"middle","font-size":12,fill:"#fff","font-weight":700},s).textContent="S";
+        // field arrows down
+        for(let i=0;i<5;i++){ el("line",{x1:90+i*35,y1:50,x2:90+i*35,y2:150,stroke:DIM,"stroke-width":1,"marker-end":"url(#fd)",opacity:0.4},s); }
+        const defs=el("defs",{},s); const mk=el("marker",{id:"fd",markerWidth:7,markerHeight:7,refX:3,refY:5,orient:"auto"},defs); el("path",{d:"M0 0 L6 0 L3 6 Z",fill:DIM},mk);
+        // wire (vertical bar through field) that moves left/right
+        const wire=el("circle",{cx:160,cy:100,r:10,fill:AM},s);
+        const wireSym=el("text",{x:160,y:105,"text-anchor":"middle","font-size":13,fill:"#2c1d00","font-weight":700},s);
+        const forceArrow=el("line",{x1:160,y1:100,x2:160,y2:100,stroke:PH,"stroke-width":4,"marker-end":"url(#ff)"},s);
+        const mk2=el("marker",{id:"ff",markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"},defs); el("path",{d:"M0 0 L6 3 L0 6 Z",fill:PH},mk2);
+        const out=readout(host); const c=controls(host);
+        let on=false, currentDir=1, fieldDir=1, pos=160, raf=null;
+        function dir(){ return currentDir*fieldDir; } // +1 → force right, -1 → left
+        function draw(){
+          wire.setAttribute("cx",pos);
+          wireSym.setAttribute("x",pos);
+          wireSym.textContent = on? (currentDir>0?"×":"•") : "";
+          const fx = on? dir()*40 : 0;
+          forceArrow.setAttribute("x1",pos); forceArrow.setAttribute("y1",100);
+          forceArrow.setAttribute("x2",pos+fx); forceArrow.setAttribute("y2",100);
+          forceArrow.setAttribute("opacity", on?1:0);
+          out.innerHTML = on? ("Current <b>"+(currentDir>0?"into page (×)":"out of page (•)")+"</b><br>Force pushes the wire <b>"+(dir()>0?"right →":"← left")+"</b>") : "Switch the current on to see the force.";
+        }
+        function loop(){ if(on){ pos+=dir()*1.2; pos=Math.max(40,Math.min(280,pos)); } draw(); raf=requestAnimationFrame(loop); }
+        btn(c,"Current on/off",b=>{ on=!on; b.classList.toggle("active",on); if(!on){pos=160;} });
+        btn(c,"Reverse current",()=>{ currentDir*=-1; });
+        btn(c,"Reverse magnet",()=>{ fieldDir*=-1; });
+        draw(); loop();
+        return ()=>{ if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>When a current flows through a wire that sits in a magnetic field, the wire experiences a <span class='keyword'>force</span> — this is the <span class='keyword'>motor effect</span>. The wire's own magnetic field interacts with the external field, pushing it out of the way.</p><h4>The physics</h4><p>The size of the force is given by <b>F = B I L</b> — magnetic flux density × current × length of wire in the field. The force is largest when the wire is at 90° to the field, and zero when the wire is parallel to it.</p><h4>Fleming's left-hand rule</h4><p>Point your <span class='keyword'>thumb, first finger and second finger</span> at right angles: First finger = Field, seCond finger = Current, thuMb = Motion (force). Reversing either the current <em>or</em> the field reverses the force — reversing both leaves it unchanged. This effect is the basis of the electric motor.</p>"
+    }
+  ];
+  reg("aqa_gcse","magnetism",magAnims);
+  reg("combined_physics","magnetism",magAnims);
+
+  console.log("[animations] GCSE Physics animations loaded for energy, electricity, particle, forces, waves, magnetism.");
+})();
+</script>
+<script>
+// ============================================================
+//  FLUXOR ANIMATIONS — GCSE Physics, Wave 2
+//  Adds animations to atomic & space (previously empty) and
+//  deepens energy, electricity, particle, forces, waves, magnetism.
+//  Appends to existing window.ANIMATIONS arrays.
+// ============================================================
+(function(){
+  window.ANIMATIONS = window.ANIMATIONS || {};
+  const NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]); if(parent)parent.appendChild(e); return e; }
+  function svg(w,h){ return el("svg",{viewBox:"0 0 "+w+" "+h,width:w,height:h,"font-family":"system-ui,sans-serif"}); }
+  function controls(host){ const d=document.createElement("div"); d.className="anim-controls"; host.appendChild(d); return d; }
+  function slider(parent,label,min,max,val,step,oninput){
+    const wrap=document.createElement("label"); const span=document.createElement("span"); span.textContent=label;
+    const valSpan=document.createElement("span"); valSpan.className="val"; const input=document.createElement("input");
+    input.type="range"; input.min=min; input.max=max; input.value=val; input.step=step||1;
+    wrap.appendChild(span); wrap.appendChild(input); wrap.appendChild(valSpan); parent.appendChild(wrap);
+    function fmt(v){ valSpan.textContent=oninput(parseFloat(v)); }
+    input.addEventListener("input",()=>fmt(input.value)); fmt(input.value); return input;
+  }
+  function btn(parent,label,onclick){ const b=document.createElement("button"); b.className="anim-btn"; b.textContent=label; b.addEventListener("click",()=>onclick(b)); parent.appendChild(b); return b; }
+  function readout(host){ const d=document.createElement("div"); d.className="anim-readout"; host.appendChild(d); return d; }
+  function col(name,fb){ try{ const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fb; }catch(e){ return fb; } }
+  // append animations to a topic in BOTH gcse + combined physics
+  function add(topic, anims){
+    ["aqa_gcse","combined_physics"].forEach(ck=>{
+      window.ANIMATIONS[ck]=window.ANIMATIONS[ck]||{};
+      window.ANIMATIONS[ck][topic]=(window.ANIMATIONS[ck][topic]||[]).concat(anims);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ATOMIC STRUCTURE  (was empty)
+  // ═══════════════════════════════════════════════════════════════════════
+  add("atomic", [
+    {
+      title:"Radioactive decay — half-life",
+      subtitle:"Watch a sample of unstable nuclei decay. Each half-life, half of the remaining nuclei decay. Change the half-life and step through time.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,250); host.appendChild(s);
+        // grid of nuclei
+        const N=100, cols=10, sp=22, ox=40, oy=20, nuclei=[];
+        for(let i=0;i<N;i++){ const r=Math.floor(i/cols), c=i%cols; nuclei.push({el:el("circle",{cx:ox+c*sp,cy:oy+r*sp,r:7,fill:PH}, s), decayed:false}); }
+        // decay-curve mini graph
+        const gx=40, gy=245, gw=240, gh=0;
+        const out=readout(host); const c=controls(host);
+        let halfLife=2, t=0, raf=null, running=false;
+        const hlS=slider(c,"Half-life (s)",1,5,2,1,v=>{halfLife=v;reset();return v+" s";});
+        function remainingAt(time){ return N*Math.pow(0.5, time/halfLife); }
+        function reset(){ t=0; nuclei.forEach(n=>{ n.decayed=false; n.el.setAttribute("fill",PH); n.el.setAttribute("opacity",1); }); upd(); }
+        function upd(){
+          const target=Math.round(remainingAt(t));
+          let alive=nuclei.filter(n=>!n.decayed).length;
+          // decay nuclei until alive==target
+          while(alive>target){ const live=nuclei.filter(n=>!n.decayed); const pick=live[Math.floor(Math.random()*live.length)]; pick.decayed=true; pick.el.setAttribute("fill",DIM); pick.el.setAttribute("opacity",0.25); alive--; }
+          out.innerHTML="Time: <b>"+t.toFixed(0)+" s</b> ("+(halfLife?(t/halfLife).toFixed(1):0)+" half-lives)<br>Undecayed nuclei: <b>"+target+"</b> of "+N;
+        }
+        function loop(){ if(!running)return; t+=0.05; if(t>=halfLife*7){t=halfLife*7;running=false;startBtn.textContent="Reset";startBtn.classList.remove("active");} upd(); if(running)raf=requestAnimationFrame(loop); }
+        const startBtn=btn(c,"Start",b=>{ if(b.textContent==="Reset"){reset();b.textContent="Start";return;} running=true;b.textContent="Running…";b.classList.add("active");raf=requestAnimationFrame(loop); });
+        btn(c,"+1 half-life",()=>{ running=false; startBtn.textContent="Start"; startBtn.classList.remove("active"); t+=halfLife; if(t>halfLife*7)t=halfLife*7; upd(); });
+        reset();
+        return ()=>{ running=false; if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Radioactive nuclei are unstable. We can't predict <em>which</em> nucleus will decay or <em>when</em> a single one will — decay is <span class='keyword'>random</span>. But with a large number of nuclei, a steady pattern appears: in each <span class='keyword'>half-life</span>, half of the remaining undecayed nuclei decay.</p><h4>The physics</h4><p>The <span class='keyword'>half-life</span> is the time taken for the number of undecayed nuclei (or the activity) to halve. After 1 half-life, ½ remains; after 2, ¼; after 3, ⅛, and so on. The activity, measured in becquerels (Bq), falls in the same proportion.</p><h4>Why it matters</h4><p>Half-life ranges from fractions of a second to billions of years. It determines how a radioactive source is used — short half-lives for medical tracers (so they don't linger in the body), long ones for dating rocks.</p>"
+    },
+    {
+      title:"Types of nuclear radiation — penetration",
+      subtitle:"Fire alpha, beta and gamma at different barriers and see what stops each one.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,200); host.appendChild(s);
+        // source on left
+        el("rect",{x:8,y:85,width:24,height:30,rx:3,fill:DIM},s);
+        el("text",{x:20,y:130,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="source";
+        // three barriers
+        const paper=el("rect",{x:110,y:40,width:8,height:120,fill:"#ccc",opacity:0.85},s);
+        el("text",{x:114,y:30,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="paper";
+        const alum=el("rect",{x:180,y:40,width:14,height:120,fill:"#9aa7b4"},s);
+        el("text",{x:187,y:30,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="aluminium";
+        const lead=el("rect",{x:250,y:40,width:26,height:120,fill:"#55606e"},s);
+        el("text",{x:263,y:30,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="thick lead";
+        const out=readout(host); const c=controls(host);
+        let particles=[], raf=null, type="alpha";
+        const stopX={alpha:110, beta:180, gamma:250+26}; // where each stops
+        const colour={alpha:"#e2554e", beta:PH, gamma:AM};
+        function fire(){
+          for(let i=0;i<3;i++){ particles.push({x:32,y:92+i*6,el:el("circle",{cx:32,cy:92+i*6,r:type==="gamma"?3:5,fill:colour[type]},s),done:false}); }
+        }
+        function loop(){
+          particles.forEach(p=>{ if(p.done)return; p.x+=2.4; if(p.x>=stopX[type]){ p.done=true; if(type!=="gamma"){p.el.setAttribute("opacity",0.3);} } p.el.setAttribute("cx",p.x); if(p.x>320){ p.el.remove(); p.done=true; } });
+          particles=particles.filter(p=>p.x<=320);
+          raf=requestAnimationFrame(loop);
+        }
+        function setType(t,b){ type=t; [bA,bB,bG].forEach(x=>x.classList.remove("active")); b.classList.add("active");
+          out.innerHTML = t==="alpha"?"<b>Alpha (α):</b> stopped by a sheet of paper. Highly ionising, short range." :
+                          t==="beta"?"<b>Beta (β):</b> passes paper, stopped by a few mm of aluminium." :
+                          "<b>Gamma (γ):</b> very penetrating — only reduced by thick lead or concrete."; }
+        const bA=btn(c,"Alpha α",b=>setType("alpha",b));
+        const bB=btn(c,"Beta β",b=>setType("beta",b));
+        const bG=btn(c,"Gamma γ",b=>setType("gamma",b));
+        btn(c,"Fire",()=>fire());
+        setType("alpha",bA); loop();
+        return ()=>{ if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>The three types of nuclear radiation have very different <span class='keyword'>penetrating power</span>:</p><ul><li><span class='keyword'>Alpha (α)</span> — a helium nucleus (2 protons + 2 neutrons). Large and highly charged, so it's the most <span class='keyword'>ionising</span> but is stopped by just a sheet of paper or a few cm of air.</li><li><span class='keyword'>Beta (β)</span> — a fast electron from the nucleus. Less ionising, more penetrating; stopped by a few mm of aluminium.</li><li><span class='keyword'>Gamma (γ)</span> — a high-energy electromagnetic wave. Least ionising but most penetrating; only reduced by thick lead or concrete.</li></ul><h4>Why it matters</h4><p>Penetrating power decides safe handling and uses: alpha for smoke detectors (won't escape the device), beta for thickness gauges, gamma for sterilising equipment and medical imaging.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  SPACE PHYSICS  (was empty)
+  // ═══════════════════════════════════════════════════════════════════════
+  add("space", [
+    {
+      title:"Red-shift and the expanding Universe",
+      subtitle:"Move the galaxy further away and watch its light stretch towards the red end of the spectrum.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,210); host.appendChild(s);
+        // galaxy
+        const gal=el("circle",{cx:60,cy:60,r:14,fill:"#dde7f0"},s);
+        el("text",{x:60,y:90,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="galaxy";
+        // earth
+        el("circle",{cx:290,cy:60,r:10,fill:"#4a76d4"},s);
+        el("text",{x:290,y:90,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="Earth";
+        // spectrum bar
+        el("text",{x:20,y:130,"font-size":10,fill:DIM},s).textContent="Observed spectrum:";
+        const spec=el("g",{},s);
+        // two absorption lines that shift right (toward red) with distance
+        const baseLines=[120,170]; // x positions at zero shift (in violet/blue region)
+        const specX=40, specW=240, specY=140, specH=30;
+        // rainbow gradient background
+        const defs=el("defs",{},s);
+        const grad=el("linearGradient",{id:"spec",x1:"0",x2:"1"},defs);
+        ["#7a4fff","#4a76d4","#39e0c4","#7ddc54","#f4b740","#e2554e"].forEach((c,i,arr)=>{ el("stop",{offset:(i/(arr.length-1)),"stop-color":c},grad); });
+        el("rect",{x:specX,y:specY,width:specW,height:specH,fill:"url(#spec)",opacity:0.5,rx:4},s);
+        const line1=el("line",{x1:specX+30,y1:specY,x2:specX+30,y2:specY+specH,stroke:"#000","stroke-width":3},s);
+        const line2=el("line",{x1:specX+70,y1:specY,x2:specX+70,y2:specY+specH,stroke:"#000","stroke-width":3},s);
+        const out=readout(host); const c=controls(host);
+        slider(c,"Distance to galaxy",0,100,10,1,v=>{
+          const f=v/100;
+          gal.setAttribute("cx",60 - f*0); gal.setAttribute("r",14-f*8);
+          // shift lines toward red (right)
+          const shift=f*150;
+          line1.setAttribute("x1",specX+30+shift); line1.setAttribute("x2",specX+30+shift);
+          line2.setAttribute("x1",specX+70+shift); line2.setAttribute("x2",specX+70+shift);
+          out.innerHTML="Distance: <b>"+v+"%</b> of max<br>Light is red-shifted by <b>"+Math.round(f*100)+"%</b> — more distant = more red-shift.";
+          return v+"%";
+        });
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>Light from distant galaxies is shifted towards the <span class='keyword'>red</span> (longer wavelength) end of the spectrum. The further away a galaxy is, the greater its red-shift — and the faster it is moving away from us.</p><h4>The physics</h4><p>Dark <span class='keyword'>absorption lines</span> in a galaxy's spectrum appear at longer wavelengths than in a lab on Earth. This <span class='keyword'>red-shift</span> happens because space itself is expanding, stretching the light waves as they travel.</p><h4>Why it matters</h4><p>The observation that almost all galaxies are red-shifted, with more distant ones receding faster, is the key evidence for the <span class='keyword'>Big Bang theory</span> — the Universe began from a hot, dense point and has been expanding ever since.</p>"
+    },
+    {
+      title:"The life cycle of a star",
+      subtitle:"Step through the stages. The path a star takes depends on its mass.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,200); host.appendChild(s);
+        const body=el("circle",{cx:160,cy:90,r:30,fill:AM},s);
+        const label=el("text",{x:160,y:165,"text-anchor":"middle","font-size":14,fill:INK,"font-weight":700},s);
+        const out=readout(host); const c=controls(host);
+        // stages for a Sun-like star vs massive star
+        const sunPath=[
+          {n:"Nebula",r:45,c:"#4a76d4",d:"A cloud of dust and gas. Gravity pulls it together."},
+          {n:"Protostar",r:34,c:"#e2554e",d:"The cloud collapses and heats up."},
+          {n:"Main sequence",r:30,c:AM,d:"Stable: gravity balanced by fusion pressure. Our Sun is here."},
+          {n:"Red giant",r:48,c:"#e2554e",d:"Fuel runs low; the star swells and cools."},
+          {n:"White dwarf",r:12,c:"#dde7f0",d:"Outer layers drift off (planetary nebula); a hot, dense core remains."}
+        ];
+        const bigPath=[
+          {n:"Nebula",r:48,c:"#4a76d4",d:"A larger cloud of dust and gas."},
+          {n:"Protostar",r:38,c:"#e2554e",d:"Collapses and heats up faster."},
+          {n:"Main sequence",r:34,c:"#a9d3ff",d:"A hot, massive blue star, fusing quickly."},
+          {n:"Red supergiant",r:55,c:"#e2554e",d:"Swells enormously as fuel runs out."},
+          {n:"Supernova",r:60,c:"#fff",d:"Explodes! Heavy elements are scattered into space."},
+          {n:"Neutron star / black hole",r:10,c:"#222",d:"The core collapses to a neutron star, or a black hole if massive enough."}
+        ];
+        let path=sunPath, i=0, mode="sun";
+        function show(){
+          const st=path[i];
+          body.setAttribute("r",st.r); body.setAttribute("fill",st.c);
+          if(st.c==="#222"){ body.setAttribute("stroke",DIM); body.setAttribute("stroke-width",2);} else body.removeAttribute("stroke");
+          label.textContent=st.n;
+          out.innerHTML="<b>"+st.n+"</b><br>"+st.d;
+        }
+        function setMode(m,b){ mode=m; path=m==="sun"?sunPath:bigPath; i=0; show(); [bSun,bBig].forEach(x=>x.classList.remove("active")); b.classList.add("active"); }
+        const bSun=btn(c,"Sun-like star",b=>setMode("sun",b));
+        const bBig=btn(c,"Massive star",b=>setMode("big",b));
+        btn(c,"Next stage →",()=>{ i=(i+1)%path.length; show(); });
+        setMode("sun",bSun);
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>Stars form from clouds of dust and gas (<span class='keyword'>nebulae</span>) pulled together by gravity. What happens next depends on the star's <span class='keyword'>mass</span>.</p><h4>A star like our Sun</h4><p>Nebula → protostar → <span class='keyword'>main sequence</span> (stable for billions of years) → red giant → <span class='keyword'>white dwarf</span> (after shedding its outer layers as a planetary nebula).</p><h4>A much more massive star</h4><p>Nebula → protostar → main sequence → red supergiant → <span class='keyword'>supernova</span> (a huge explosion) → <span class='keyword'>neutron star</span>, or a <span class='keyword'>black hole</span> if the star is massive enough.</p><h4>The physics</h4><p>On the main sequence, the inward pull of gravity is balanced by the outward pressure from <span class='keyword'>nuclear fusion</span>. Fusion in stars creates elements up to iron; supernovae create the heavier elements and scatter them into space — the raw material for new planets.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ENERGY — extra: power & efficiency / thermal insulation
+  // ═══════════════════════════════════════════════════════════════════════
+  add("energy", [
+    {
+      title:"Efficiency — Sankey energy flow",
+      subtitle:"Adjust how much energy is usefully transferred and watch the Sankey diagram update.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,200); host.appendChild(s);
+        const inX=20, inY=60, inH=80, midX=120;
+        const out=readout(host); const c=controls(host);
+        const useful=el("path",{fill:PH,opacity:0.85},s);
+        const wasted=el("path",{fill:"#e2554e",opacity:0.7},s);
+        const inputRect=el("rect",{x:inX,y:inY,width:30,height:inH,fill:AM},s);
+        el("text",{x:inX,y:inY-6,"font-size":10,fill:DIM},s).textContent="input";
+        const uLbl=el("text",{x:300,y:0,"text-anchor":"end","font-size":11,fill:PH},s);
+        const wLbl=el("text",{x:300,y:0,"text-anchor":"end","font-size":11,fill:"#e2554e"},s);
+        slider(c,"Efficiency (%)",10,95,60,5,v=>{
+          const f=v/100; const total=inH;
+          const uH=total*f, wH=total*(1-f);
+          // useful flow: straight band to top-right
+          const uy=inY; 
+          useful.setAttribute("d","M"+(inX+30)+" "+uy+" L"+midX+" "+uy+" L300 30 L300 "+(30+uH)+" L"+midX+" "+(uy+uH)+" L"+(inX+30)+" "+(uy+uH)+" Z");
+          wasted.setAttribute("d","M"+(inX+30)+" "+(uy+uH)+" L"+midX+" "+(uy+uH)+" L300 "+(150-wH)+" L300 150 L"+midX+" "+(inY+inH)+" L"+(inX+30)+" "+(inY+inH)+" Z");
+          uLbl.setAttribute("y",30+uH/2); uLbl.textContent="useful "+v+"%";
+          wLbl.setAttribute("y",150-wH/2); wLbl.textContent="wasted "+(100-v)+"%";
+          out.innerHTML="Efficiency = useful ÷ total = <b>"+v+"%</b><br>"+(100-v)+"% is wasted (usually as heat).";
+          return v+"%";
+        });
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>No device transfers <em>all</em> its input energy to the useful output — some is always wasted, usually to the <span class='keyword'>thermal store</span> of the surroundings. A <span class='keyword'>Sankey diagram</span> shows this: the width of each arrow represents the amount of energy.</p><h4>The physics</h4><p><b>Efficiency = useful energy transferred ÷ total energy supplied</b> (× 100%). The total input always equals useful output + wasted energy, because energy is conserved.</p><h4>Real world</h4><p>An LED bulb is far more efficient than an old filament bulb — it transfers most of the electrical energy to light, with little wasted as heat. Reducing wasted energy (e.g. with lubrication or insulation) raises efficiency.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ELECTRICITY — extra: charge flow / National Grid transformers
+  // ═══════════════════════════════════════════════════════════════════════
+  add("electricity", [
+    {
+      title:"Charge, current and time",
+      subtitle:"Current is the rate of flow of charge. Change the current and watch how quickly charge builds up.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,160); host.appendChild(s);
+        // wire with electrons flowing into a counter
+        el("line",{x1:10,y1:60,x2:250,y2:60,stroke:LINE,"stroke-width":3},s);
+        el("rect",{x:250,y:40,width:60,height:40,rx:4,fill:"#1b2533",stroke:PH},s);
+        el("text",{x:280,y:96,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="charge counted";
+        const dots=[]; for(let i=0;i<10;i++) dots.push(el("circle",{cx:-20,cy:60,r:4,fill:PH},s));
+        const countTxt=el("text",{x:280,y:64,"text-anchor":"middle","font-size":13,fill:PH,"font-weight":700},s);
+        const out=readout(host); const c=controls(host);
+        let I=2, Q=0, t=0, phase=0, raf=null;
+        slider(c,"Current (A)",0.5,5,2,0.5,v=>{I=v;return v+" A";});
+        function loop(){
+          phase+=0.01*I; t+=1/60; Q=I*t;
+          dots.forEach((d,k)=>{ let x=((phase+k/dots.length)%1)*260-10; d.setAttribute("cx",x); });
+          countTxt.textContent=Q.toFixed(1)+" C";
+          out.innerHTML="Current <b>"+I+" A</b> for <b>"+t.toFixed(1)+" s</b><br>Charge Q = I × t = <b>"+Q.toFixed(1)+" C</b>";
+          raf=requestAnimationFrame(loop);
+        }
+        btn(c,"Reset",()=>{ t=0; Q=0; });
+        loop();
+        return ()=>{ if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Electric <span class='keyword'>current</span> is the rate of flow of electric <span class='keyword'>charge</span>. The faster the charge flows (higher current), the more charge passes a point each second.</p><h4>The physics</h4><p><b>Q = I t</b> — charge (coulombs) = current (amps) × time (seconds). A current of 1 amp means 1 coulomb of charge flows past a point every second. Doubling the current doubles the charge delivered in the same time.</p><h4>Why it matters</h4><p>This links to energy: the energy transferred is <b>E = Q V</b>, so the charge that flows, together with the potential difference, determines how much energy a component receives.</p>"
+    },
+    {
+      title:"The National Grid — why transformers matter",
+      subtitle:"Switch the step-up transformer on and off to see how transmission voltage affects energy wasted in the cables.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,170); host.appendChild(s);
+        el("text",{x:30,y:30,"font-size":11,fill:DIM},s).textContent="Power station";
+        el("rect",{x:20,y:40,width:40,height:40,rx:4,fill:AM},s);
+        // transmission line
+        el("line",{x1:60,y1:60,x2:260,y2:60,stroke:LINE,"stroke-width":3},s);
+        el("text",{x:265,y:30,"font-size":11,fill:DIM},s).textContent="Homes";
+        el("rect",{x:262,y:40,width:40,height:40,rx:4,fill:"#4a76d4"},s);
+        const heatGroup=el("g",{},s);
+        const trafo=el("rect",{x:95,y:46,width:18,height:28,rx:2,fill:"none",stroke:PH,"stroke-width":2},s);
+        const trafoLbl=el("text",{x:104,y:90,"text-anchor":"middle","font-size":9,fill:PH},s);
+        const out=readout(host); const c=controls(host);
+        let stepUp=true, raf=null, t=0;
+        // heat squiggles along line
+        const heats=[]; for(let i=0;i<6;i++){ heats.push(el("path",{d:"",stroke:"#e2554e","stroke-width":1.5,fill:"none",opacity:0},s)); }
+        function draw(){
+          trafoLbl.textContent = stepUp? "step-up" : "no transformer";
+          trafo.setAttribute("opacity", stepUp?1:0.25);
+          // when no transformer: high current → lots of heat (I²R)
+          const wasteOpacity = stepUp? 0.15 : 0.9;
+          heats.forEach((h,i)=>h.setAttribute("opacity",wasteOpacity));
+          out.innerHTML = stepUp
+            ? "<b>Step-up transformer ON:</b> high voltage → low current → very little energy wasted as heat (P = I²R)."
+            : "<b>No transformer:</b> low voltage → high current → large energy losses heating the cables.";
+        }
+        function loop(){ t+=0.05; heats.forEach((h,i)=>{ const x=70+i*32; const y=60; h.setAttribute("d","M"+x+" "+y+" q4 "+(Math.sin(t+i)*5)+" 8 0 q4 "+(-Math.sin(t+i)*5)+" 8 0"); }); raf=requestAnimationFrame(loop); }
+        btn(c,"Step-up ON",b=>{ stepUp=true; draw(); setActive(b);});
+        const bOff=btn(c,"No transformer",b=>{ stepUp=false; draw(); setActive(b);});
+        const bOn=c.querySelectorAll(".anim-btn")[0];
+        function setActive(active){ c.querySelectorAll(".anim-btn").forEach(x=>x.classList.remove("active")); active.classList.add("active"); }
+        bOn.classList.add("active");
+        draw(); loop();
+        return ()=>{ if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>The National Grid transmits electricity across long distances. <span class='keyword'>Step-up transformers</span> raise the voltage to very high values (e.g. 400,000 V) for transmission, and step-down transformers lower it again for safe use in homes.</p><h4>The physics</h4><p>The power wasted heating the cables is <b>P = I² R</b>. Transmitting at high <span class='keyword'>voltage</span> means a low <span class='keyword'>current</span> for the same power (since P = VI), and because the loss depends on current <em>squared</em>, even a modest drop in current hugely reduces wasted energy.</p><h4>Why it matters</h4><p>Without step-up transformers, so much energy would be lost as heat in the cables that long-distance transmission would be hopelessly inefficient. Transformers only work with alternating current (a.c.), which is one reason mains electricity is a.c.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  PARTICLE — extra: gas pressure & temperature
+  // ═══════════════════════════════════════════════════════════════════════
+  add("particle", [
+    {
+      title:"Gas pressure and temperature",
+      subtitle:"Heat the gas and watch the particles speed up, hitting the walls harder and more often.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(280,200); host.appendChild(s);
+        const bx=40,by=20,bw=200,bh=160;
+        el("rect",{x:bx,y:by,width:bw,height:bh,rx:4,fill:"none",stroke:LINE,"stroke-width":2},s);
+        const gauge=el("text",{x:bx+bw/2,y:by-6,"text-anchor":"middle","font-size":11,fill:AM},s);
+        const N=18, parts=[];
+        for(let i=0;i<N;i++){ parts.push({x:bx+10+Math.random()*(bw-20),y:by+10+Math.random()*(bh-20),vx:(Math.random()-0.5),vy:(Math.random()-0.5),el:el("circle",{r:6,fill:PH},s)}); }
+        const out=readout(host); const c=controls(host);
+        let speed=1, raf=null, hits=0, hitWindow=0;
+        slider(c,"Temperature",0.3,3,1,0.1,v=>{speed=v;return v<1?"cold":v<2?"warm":"hot";});
+        function loop(){
+          hitWindow++;
+          parts.forEach(p=>{
+            p.x+=p.vx*speed*2; p.y+=p.vy*speed*2;
+            if(p.x<bx+6){p.x=bx+6;p.vx*=-1;hits++;} if(p.x>bx+bw-6){p.x=bx+bw-6;p.vx*=-1;hits++;}
+            if(p.y<by+6){p.y=by+6;p.vy*=-1;hits++;} if(p.y>by+bh-6){p.y=by+bh-6;p.vy*=-1;hits++;}
+            p.el.setAttribute("cx",p.x); p.el.setAttribute("cy",p.y);
+          });
+          if(hitWindow>=30){ const pressure=Math.round(hits/hitWindow*10); gauge.textContent="pressure ≈ "+pressure+" units"; out.innerHTML="Temperature: <b>"+(speed<1?"cold":speed<2?"warm":"hot")+"</b><br>Faster particles → harder, more frequent wall collisions → <b>higher pressure</b>."; hits=0; hitWindow=0; }
+          raf=requestAnimationFrame(loop);
+        }
+        loop();
+        return ()=>{ if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Gas particles move randomly in all directions. When they hit the walls of the container they exert a force — and force over an area is <span class='keyword'>pressure</span>. Heating the gas makes the particles move <span class='keyword'>faster</span>.</p><h4>The physics</h4><p>Raising the temperature increases the average <span class='keyword'>kinetic energy</span> of the particles. They hit the walls both <span class='keyword'>harder</span> and <span class='keyword'>more often</span>, so (at constant volume) the pressure rises. Temperature in kelvin is directly proportional to average kinetic energy.</p><h4>Why it matters</h4><p>This explains why a sealed can heated up can burst, and why car tyre pressure rises on a hot day or after a long drive. Cooling the gas reverses the effect.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  FORCES — extra: stopping distance / terminal velocity
+  // ═══════════════════════════════════════════════════════════════════════
+  add("forces", [
+    {
+      title:"Stopping distance — thinking + braking",
+      subtitle:"Change the speed and road conditions to see how thinking and braking distances add up.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,150); host.appendChild(s);
+        el("line",{x1:10,y1:100,x2:310,y2:100,stroke:LINE,"stroke-width":2},s);
+        const car=el("rect",{x:10,y:80,width:30,height:18,rx:3,fill:PH},s);
+        const thinkBar=el("rect",{x:10,y:108,height:8,fill:AM,opacity:0.8},s);
+        const brakeBar=el("rect",{x:10,y:120,height:8,fill:"#e2554e",opacity:0.8},s);
+        el("text",{x:12,y:135,"font-size":9,fill:AM},s).textContent="thinking";
+        el("text",{x:90,y:135,"font-size":9,fill:"#e2554e"},s).textContent="braking";
+        const out=readout(host); const c=controls(host);
+        let speed=13, wet=false, tired=false;
+        function upd(){
+          // thinking distance ∝ speed; braking ∝ speed²
+          const react=tired?0.9:0.6;
+          const think=speed*react;
+          let mu=wet?0.012:0.0065;
+          const brake=speed*speed*mu;
+          const scale=2.6;
+          thinkBar.setAttribute("width",Math.min(150,think*scale)); thinkBar.setAttribute("x",10);
+          brakeBar.setAttribute("width",Math.min(170,brake*scale)); brakeBar.setAttribute("x",10+Math.min(150,think*scale));
+          out.innerHTML="Speed <b>"+speed+" m/s</b>"+(wet?" · wet road":"")+(tired?" · tired driver":"")+"<br>Thinking <b>"+think.toFixed(1)+" m</b> + Braking <b>"+brake.toFixed(1)+" m</b> = Stopping <b>"+(think+brake).toFixed(1)+" m</b>";
+        }
+        slider(c,"Speed (m/s)",5,30,13,1,v=>{speed=v;upd();return v+" m/s";});
+        btn(c,"Wet road",b=>{wet=!wet;b.classList.toggle("active",wet);upd();});
+        btn(c,"Tired driver",b=>{tired=!tired;b.classList.toggle("active",tired);upd();});
+        upd();
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>The total <span class='keyword'>stopping distance</span> of a car is made of two parts: the <span class='keyword'>thinking distance</span> (how far it travels during the driver's reaction time) plus the <span class='keyword'>braking distance</span> (how far it travels while the brakes act).</p><h4>The physics</h4><ul><li>Thinking distance is <span class='keyword'>proportional to speed</span> — double the speed, double the thinking distance.</li><li>Braking distance is proportional to <span class='keyword'>speed squared</span> — double the speed, <em>four times</em> the braking distance, because the kinetic energy (½mv²) that the brakes must remove rises with v².</li></ul><h4>Real world</h4><p>Thinking distance increases with tiredness, alcohol, drugs or distractions. Braking distance increases on wet or icy roads, with worn tyres or poor brakes. This is why speed limits matter so much — stopping distance grows rapidly with speed.</p>"
+    },
+    {
+      title:"Terminal velocity — a falling skydiver",
+      subtitle:"Watch the forces balance. The skydiver speeds up, then reaches a steady terminal velocity.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,220); host.appendChild(s);
+        const sky=el("circle",{cx:90,cy:40,r:10,fill:PH},s);
+        // weight + drag arrows
+        const wArrow=el("line",{x1:90,y1:50,x2:90,y2:80,stroke:AM,"stroke-width":4,"marker-end":"url(#d1)"},s);
+        const dArrow=el("line",{x1:90,y1:30,x2:90,y2:30,stroke:"#e2554e","stroke-width":4,"marker-end":"url(#d2)"},s);
+        const defs=el("defs",{},s);
+        [["d1",AM],["d2","#e2554e"]].forEach(([id,cc])=>{ const mk=el("marker",{id:id,markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"},defs); el("path",{d:"M0 0 L6 3 L0 6 Z",fill:cc},mk); });
+        // speed graph
+        const ox=170,oy=190,gw=130,gh=150;
+        el("line",{x1:ox,y1:oy,x2:ox+gw,y2:oy,stroke:LINE},s); el("line",{x1:ox,y1:oy,x2:ox,y2:oy-gh,stroke:LINE},s);
+        el("text",{x:ox+gw,y:oy+12,"text-anchor":"end","font-size":9,fill:DIM},s).textContent="time";
+        el("text",{x:ox-4,y:oy-gh+4,"text-anchor":"end","font-size":9,fill:DIM},s).textContent="speed";
+        const trace=el("path",{d:"M"+ox+" "+oy,stroke:PH,"stroke-width":2,fill:"none"},s);
+        const out=readout(host); const c=controls(host);
+        let v=0, t=0, raf=null, running=false, chuteOpen=false, pts=[];
+        const g=9.8, m=80; let k=0.25; const vt=()=>Math.sqrt(m*g/k);
+        function loop(){
+          if(!running)return;
+          const drag=k*v*v, w=m*g, net=w-drag, a=net/m;
+          v+=a*0.05; if(v<0)v=0; t+=0.05;
+          // skydiver bob
+          sky.setAttribute("cy",40+Math.sin(t*3)*2);
+          // arrows: weight fixed, drag grows with v²
+          const dLen=Math.min(40,drag/ (m*g) *40);
+          dArrow.setAttribute("y1",30); dArrow.setAttribute("y2",30-dLen);
+          // graph
+          pts.push([t, v]); if(pts.length>200)pts.shift();
+          const vmax=vt()*1.1;
+          let d="M";
+          pts.forEach((p,i)=>{ const x=ox+Math.min(gw,p[0]/12*gw); const y=oy-Math.min(gh,p[1]/vmax*gh); d+=(i?" L":"")+x.toFixed(1)+" "+y.toFixed(1); });
+          trace.setAttribute("d",d);
+          out.innerHTML="Speed: <b>"+v.toFixed(1)+" m/s</b> "+(Math.abs(v-vt())<0.5?"(terminal velocity reached)":"")+"<br>Weight "+(net>0.5?">":"=")+" drag → "+(net>0.5?"still accelerating":"forces balanced");
+          if(t>12){ running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); }
+          raf=requestAnimationFrame(loop);
+        }
+        const startBtn=btn(c,"Jump!",b=>{ if(b.textContent==="Reset"){v=0;t=0;pts=[];trace.setAttribute("d","M"+ox+" "+oy);b.textContent="Jump!";return;} running=true;b.textContent="Falling…";b.classList.add("active");raf=requestAnimationFrame(loop); });
+        btn(c,"Open parachute",b=>{ chuteOpen=!chuteOpen; k=chuteOpen?2.5:0.25; b.classList.toggle("active",chuteOpen); sky.setAttribute("fill",chuteOpen?AM:PH); });
+        return ()=>{ running=false; if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>When a skydiver jumps, their <span class='keyword'>weight</span> pulls them down and they accelerate. As they speed up, <span class='keyword'>air resistance</span> (drag) increases. Eventually drag grows until it exactly balances weight — the resultant force is zero, so they stop accelerating and fall at a steady <span class='keyword'>terminal velocity</span>.</p><h4>The physics</h4><p>At first weight > drag, so there is a resultant downward force and the skydiver accelerates (Newton's 2nd law). Drag rises with speed, so the resultant force shrinks until weight = drag and acceleration = 0. Opening a parachute greatly increases drag, so they decelerate to a new, much lower terminal velocity — safe for landing.</p><h4>Key idea</h4><p>Terminal velocity is reached whenever the resistive force grows to balance the driving force. It applies to anything falling through a fluid, from raindrops to coffee filters.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  WAVES — extra: refraction / EM spectrum
+  // ═══════════════════════════════════════════════════════════════════════
+  add("waves", [
+    {
+      title:"Refraction — light bending in glass",
+      subtitle:"Change the angle of the incoming ray and watch it bend as it enters and leaves the glass block.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(300,220); host.appendChild(s);
+        // glass block
+        el("rect",{x:90,y:70,width:120,height:80,fill:"#39e0c4",opacity:0.12,stroke:LINE},s);
+        el("text",{x:150,y:115,"text-anchor":"middle","font-size":11,fill:DIM},s).textContent="glass";
+        // normal
+        el("line",{x1:90,y1:40,x2:90,y2:180,stroke:DIM,"stroke-width":1,"stroke-dasharray":"4 4"},s);
+        const inc=el("line",{x1:0,y1:0,x2:90,y2:90,stroke:AM,"stroke-width":2.5,"marker-end":"url(#ra)"},s);
+        const refr=el("line",{x1:90,y1:90,x2:210,y2:120,stroke:AM,"stroke-width":2.5},s);
+        const exit=el("line",{x1:210,y1:120,x2:300,y2:140,stroke:AM,"stroke-width":2.5,"marker-end":"url(#ra)"},s);
+        const defs=el("defs",{},s); const mk=el("marker",{id:"ra",markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"},defs); el("path",{d:"M0 0 L6 3 L0 6 Z",fill:AM},mk);
+        const out=readout(host); const c=controls(host);
+        const n=1.5, entryY=90, entryX=90;
+        slider(c,"Angle of incidence (°)",10,70,40,1,deg=>{
+          const i=deg*Math.PI/180;
+          // incoming ray from upper-left to entry point
+          const ix=entryX-90, iy=entryY-90*Math.tan(Math.PI/2 - 0)*0; // simpler: compute start point
+          const sx=entryX-120*Math.sin(i), sy=entryY-120*Math.cos(i);
+          inc.setAttribute("x1",sx); inc.setAttribute("y1",sy); inc.setAttribute("x2",entryX); inc.setAttribute("y2",entryY);
+          // refracted angle via Snell: sin r = sin i / n
+          const r=Math.asin(Math.sin(i)/n);
+          const exitX=210; const dx=exitX-entryX; const ey=entryY+dx*Math.tan(r);
+          refr.setAttribute("x1",entryX); refr.setAttribute("y1",entryY); refr.setAttribute("x2",exitX); refr.setAttribute("y2",ey);
+          // exiting ray bends back to original angle
+          const ox2=exitX+90*Math.sin(i), oy2=ey+90*Math.cos(i);
+          exit.setAttribute("x1",exitX); exit.setAttribute("y1",ey); exit.setAttribute("x2",ox2); exit.setAttribute("y2",oy2);
+          out.innerHTML="Angle in <b>"+deg+"°</b> → angle in glass <b>"+Math.round(r*180/Math.PI)+"°</b><br>Light bends <b>towards</b> the normal entering the denser glass.";
+          return deg+"°";
+        });
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>When light passes from air into glass, it slows down and changes direction — this is <span class='keyword'>refraction</span>. Entering the denser glass, the ray bends <span class='keyword'>towards the normal</span>; leaving it again, the ray bends <span class='keyword'>away from the normal</span> and emerges parallel to the original direction.</p><h4>The physics</h4><p>Refraction happens because light travels more slowly in the denser medium. The greater the change in speed, the more the ray bends. The <span class='keyword'>normal</span> is the construction line drawn at 90° to the surface — all angles are measured from it.</p><h4>Why it matters</h4><p>Refraction is how lenses focus light (in glasses, cameras and the eye) and why a straw looks bent in a glass of water. If the angle inside the glass is large enough, the light can't escape at all — total internal reflection, used in optical fibres.</p>"
+    }
+  ]);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MAGNETISM — extra: electromagnet / generator effect
+  // ═══════════════════════════════════════════════════════════════════════
+  add("magnetism", [
+    {
+      title:"The generator effect — inducing a voltage",
+      subtitle:"Move the magnet in and out of the coil. A voltage is induced only while the magnet is moving.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,180); host.appendChild(s);
+        // coil
+        for(let i=0;i<5;i++){ el("ellipse",{cx:200+i*8,cy:90,rx:6,ry:30,fill:"none",stroke:DIM,"stroke-width":2},s); }
+        el("text",{x:220,y:140,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="coil";
+        // meter
+        el("circle",{cx:280,cy:90,r:18,fill:"#1b2533",stroke:PH,"stroke-width":2},s);
+        const needle=el("line",{x1:280,y1:90,x2:280,y2:76,stroke:"#e2554e","stroke-width":2},s);
+        el("text",{x:280,y:120,"text-anchor":"middle","font-size":9,fill:DIM},s).textContent="voltmeter";
+        // magnet (draggable horizontally)
+        const mag=el("g",{},s);
+        el("rect",{x:40,y:78,width:30,height:24,fill:"#e2554e"},mag); el("text",{x:55,y:95,"text-anchor":"middle","font-size":11,fill:"#fff","font-weight":700},mag).textContent="N";
+        el("rect",{x:70,y:78,width:30,height:24,fill:"#4a76d4"},mag); el("text",{x:85,y:95,"text-anchor":"middle","font-size":11,fill:"#fff","font-weight":700},mag).textContent="S";
+        const out=readout(host);
+        let magX=0, lastX=0, vel=0, raf=null, drag=false, startX=0, startMag=0;
+        function pt(ev){ const r=s.getBoundingClientRect(); const tt=ev.touches?ev.touches[0]:ev; return (tt.clientX-r.left)*(320/r.width); }
+        s.addEventListener("mousedown",e=>{ drag=true; startX=pt(e); startMag=magX; });
+        s.addEventListener("mousemove",e=>{ if(drag){ magX=Math.max(0,Math.min(110,startMag+(pt(e)-startX))); } });
+        if(window.addEventListener) window.addEventListener("mouseup",()=>drag=false);
+        s.addEventListener("touchstart",e=>{ drag=true; startX=pt(e); startMag=magX; e.preventDefault(); },{passive:false});
+        s.addEventListener("touchmove",e=>{ if(drag){ magX=Math.max(0,Math.min(110,startMag+(pt(e)-startX))); e.preventDefault(); } },{passive:false});
+        s.addEventListener("touchend",()=>drag=false);
+        function loop(){
+          mag.setAttribute("transform","translate("+magX+",0)");
+          vel=magX-lastX; lastX=magX;
+          const induced=Math.max(-1,Math.min(1,vel*0.25));
+          needle.setAttribute("transform","rotate("+(induced*60)+" 280 90)");
+          out.innerHTML = Math.abs(vel)>0.3
+            ? "Magnet moving → voltage induced (<b>"+(induced>0?"+":"")+induced.toFixed(2)+"</b>). Needle deflects."
+            : "Magnet still → <b>no voltage</b>. The field through the coil isn't changing.";
+          raf=requestAnimationFrame(loop);
+        }
+        const c=controls(host);
+        out.innerHTML="<b>Drag the magnet</b> in and out of the coil.";
+        loop();
+        return ()=>{ drag=false; if(raf)cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>Moving a magnet into or out of a coil of wire <span class='keyword'>induces a voltage</span> (potential difference) across the coil — this is the <span class='keyword'>generator effect</span>. A voltage appears <em>only while the magnet is moving</em>; when it's still, nothing is induced.</p><h4>The physics</h4><p>A voltage is induced whenever the <span class='keyword'>magnetic field through the coil changes</span>. Moving the magnet faster, using a stronger magnet, or adding more turns to the coil all increase the induced voltage. Reversing the direction of motion reverses the voltage — the needle deflects the other way.</p><h4>Why it matters</h4><p>This is how <span class='keyword'>generators</span> and <span class='keyword'>dynamos</span> produce electricity — by spinning a magnet near a coil (or a coil near a magnet), they continuously change the field and generate alternating current. It's the reverse of the motor effect.</p>"
+    }
+  ]);
+
+  console.log("[animations2] GCSE Physics wave-2 animations added (atomic, space + extras for energy, electricity, particle, forces, waves, magnetism).");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
@@ -14036,6 +15259,7 @@ function render(){
   $("cardsView").classList.toggle("hidden", !(inLearn && curMode==="cards"));
   $("quizView").classList.toggle("hidden", !(inLearn && curMode==="quiz"));
   $("videosView").classList.toggle("hidden", !(inLearn && curMode==="videos"));
+  $("animView").classList.toggle("hidden", !(inLearn && curMode==="anim"));
   // progress
   $("statsView").classList.toggle("hidden", curSection!=="progress");
   // avatar view is owned by the rewards module
@@ -14044,6 +15268,7 @@ function render(){
   if(inLearn){
     if(curMode==="cards") renderCards();
     else if(curMode==="quiz") renderQuiz();
+    else if(curMode==="anim") renderAnimations();
     else if(curMode==="videos") renderVideos();
   } else if(curSection==="progress"){ (window.renderStats||renderStats)(); }
   renderSideFoot();
@@ -14089,6 +15314,39 @@ function renderVideos(){
     html += '<p class="vid-note">'+linked+'</p>';
   }
   body.innerHTML=html;
+}
+
+// ── ANIMATIONS ───────────────────────────────────────────────────────────
+// window.ANIMATIONS[courseKey][topicKey] = [ {title, build(host), explain} , ... ]
+// build(host) injects an interactive SVG/HTML widget into `host`.
+let _animCleanups=[];
+function clearAnimations(){ _animCleanups.forEach(fn=>{ try{fn();}catch(e){} }); _animCleanups=[]; }
+function renderAnimations(){
+  clearAnimations();
+  const course=COURSES[curCourse];
+  $("animTitle").textContent=(course.subject||course.name)+" — animations";
+  const reg=(window.ANIMATIONS||{})[curCourse]||{};
+  const list=reg[curTopic]||[];
+  const body=$("animBody");
+  if(!list.length){
+    $("animMeta").textContent="";
+    body.innerHTML='<div class="vid-empty"><div class="big">No animations here yet</div>Interactive animations for this topic haven\'t been added yet. They\'re being rolled out topic by topic — flashcards, exam questions and videos are ready to use in the meantime.</div>';
+    return;
+  }
+  $("animMeta").textContent=list.length+(list.length===1?" animation":" animations");
+  body.innerHTML="";
+  list.forEach((anim,i)=>{
+    const wrap=document.createElement("div"); wrap.className="anim-set";
+    const h=document.createElement("h3"); h.textContent=anim.title; wrap.appendChild(h);
+    if(anim.subtitle){ const st=document.createElement("p"); st.className="anim-sub"; st.textContent=anim.subtitle; wrap.appendChild(st); }
+    const stage=document.createElement("div"); stage.className="anim-stage"; wrap.appendChild(stage);
+    const exp=document.createElement("div"); exp.className="anim-explain"; exp.innerHTML=anim.explain||""; wrap.appendChild(exp);
+    body.appendChild(wrap);
+    try{
+      const cleanup=anim.build(stage);
+      if(typeof cleanup==="function") _animCleanups.push(cleanup);
+    }catch(e){ stage.innerHTML='<div class="anim-err">This animation could not load.</div>'; }
+  });
 }
 
 // small avatar + level summary at the foot of the sidebar
