@@ -13624,29 +13624,32 @@ window.COURSES.aqa_alevel_pe = {
         const keBar=bar(260,"KE",PH);
         const out=readout(host);
         const c=controls(host);
-        let h=170, running=false, raf=null, y=30, v=0, t0=null;
-        const g=9.8, mass=0.5, topY=30, groundY=198;
+        // Physics in REAL units so GPE + KE is genuinely conserved.
+        const g=9.8, mass=0.5, H=5.0;                 // drop height 5.0 m
+        const topY=30, groundY=198, pxPerM=(groundY-topY)/H;
+        const Etot=mass*g*H;                          // total (constant) energy
+        let height=H, v=0, running=false, raf=null, t0=null;
+        const SLOW=0.45;                              // slow-motion factor for visibility
         function draw(){
-          const height=(groundY-y)/(groundY-topY)*h; // metres represented
+          const y=groundY-height*pxPerM;
           ball.setAttribute("cy",y);
-          const ge=mass*g*height, ke=0.5*mass*v*v, tot=mass*g*h||1;
-          geBar.setAttribute("height", Math.max(0,ge/(mass*g*h)*160)); geBar.setAttribute("y",200-ge/(mass*g*h)*160);
-          const keMax=mass*g*h;
-          keBar.setAttribute("height", Math.max(0,Math.min(160,ke/keMax*160))); keBar.setAttribute("y",200-Math.min(160,ke/keMax*160));
-          out.innerHTML="Height: <b>"+height.toFixed(1)+" m</b> · Speed: <b>"+v.toFixed(1)+" m/s</b><br>GPE: <b>"+ge.toFixed(1)+" J</b> · KE: <b>"+ke.toFixed(1)+" J</b>";
+          const ge=mass*g*height, ke=0.5*mass*v*v;
+          geBar.setAttribute("height", Math.max(0,ge/Etot*160)); geBar.setAttribute("y",200-ge/Etot*160);
+          keBar.setAttribute("height", Math.max(0,Math.min(160,ke/Etot*160))); keBar.setAttribute("y",200-Math.min(160,ke/Etot*160));
+          out.innerHTML="Height: <b>"+height.toFixed(1)+" m</b> · Speed: <b>"+v.toFixed(1)+" m/s</b><br>GPE: <b>"+ge.toFixed(1)+" J</b> + KE: <b>"+ke.toFixed(1)+" J</b> = <b>"+(ge+ke).toFixed(1)+" J</b>";
         }
         function loop(ts){
           if(!running) return;
-          if(!t0) t0=ts; const dt=Math.min(0.05,(ts-t0)/1000); t0=ts;
-          v+=g*dt; y+=v*dt*18;
-          if(y>=groundY){ y=groundY; v=0; running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); }
+          if(!t0) t0=ts; let dt=Math.min(0.05,(ts-t0)/1000); t0=ts; dt*=SLOW;
+          v+=g*dt; height-=v*dt;
+          if(height<=0){ height=0; v=Math.sqrt(2*g*H); running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); }
           draw(); if(running) raf=requestAnimationFrame(loop);
         }
         const startBtn=btn(c,"Drop",b=>{
-          if(b.textContent==="Reset"){ y=topY; v=0; draw(); b.textContent="Drop"; return; }
+          if(b.textContent==="Reset"){ height=H; v=0; draw(); b.textContent="Drop"; return; }
           running=true; t0=null; b.textContent="Falling…"; b.classList.add("active"); raf=requestAnimationFrame(loop);
         });
-        y=topY; v=0; draw();
+        height=H; v=0; draw();
         return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
       },
       explain:"<h4>What's happening</h4><p>As the ball falls, energy is transferred from its <span class='keyword'>gravitational potential store</span> to its <span class='keyword'>kinetic store</span>. The total energy stays the same (ignoring air resistance) — this is <span class='keyword'>conservation of energy</span>.</p><h4>The physics</h4><p>At the top the ball has maximum GPE (<b>E = m g h</b>) and zero KE. As it falls, h decreases so GPE falls, while speed increases so KE (<b>E = ½ m v²</b>) rises. Just before impact, almost all the GPE has become KE.</p><h4>Real world</h4><p>With air resistance, some energy is transferred to the thermal store of the surroundings, so the ball arrives slightly slower than the ideal calculation predicts.</p>"
@@ -13716,35 +13719,38 @@ window.COURSES.aqa_alevel_pe = {
       build:function(host){
         const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
         const s=svg(320,210); host.appendChild(s);
-        // graph axes
-        const ox=50, oy=140, gw=240, gh=110;
-        el("line",{x1:ox,y1:oy,x2:ox+gw,y2:oy,stroke:LINE,"stroke-width":1.5},s); // x
-        el("line",{x1:ox,y1:oy,x2:ox,y2:oy-gh,stroke:LINE,"stroke-width":1.5},s); // y up
-        el("line",{x1:ox,y1:oy,x2:ox-0,y2:oy+0,stroke:LINE},s);
-        el("text",{x:ox+gw,y:oy+16,"text-anchor":"end","font-size":11,fill:DIM},s).textContent="V →";
-        el("text",{x:ox-8,y:oy-gh+4,"text-anchor":"end","font-size":11,fill:DIM},s).textContent="I";
-        // the characteristic curve (S-shape through origin)
-        let d="M"+ox+" "+oy;
-        for(let i=0;i<=40;i++){ const V=(i/40)*4-2; const I=Math.cbrt(V)*0.9; const x=ox+gw/2+(V/2)*(gw/2); const y=oy-(I/1.2)*(gh*0.45)-0; d+=" L"+x.toFixed(1)+" "+(y).toFixed(1); }
+        // graph axes with the ORIGIN IN THE CENTRE (curve is symmetric: conducts both ways)
+        const ox=50, gw=240, cyG=100, gh=80;     // cyG = y of the I=0 axis; gh = half-height
+        const cxG=ox+gw/2;                         // x of the V=0 axis
+        el("line",{x1:ox,y1:cyG,x2:ox+gw,y2:cyG,stroke:LINE,"stroke-width":1.5},s);          // x-axis (V)
+        el("line",{x1:cxG,y1:cyG-gh,x2:cxG,y2:cyG+gh,stroke:LINE,"stroke-width":1.5},s);      // y-axis (I)
+        el("text",{x:ox+gw,y:cyG-6,"text-anchor":"end","font-size":11,fill:DIM},s).textContent="V →";
+        el("text",{x:cxG+8,y:cyG-gh+4,"font-size":11,fill:DIM},s).textContent="I";
+        const Vmax=2, Imax=Math.cbrt(Vmax)*0.9;
+        function gX(V){ return cxG + (V/Vmax)*(gw/2); }
+        function gY(I){ return cyG - (I/Imax)*gh; }
+        // the characteristic curve (S-shape through the origin)
+        let d="";
+        for(let i=0;i<=60;i++){ const V=(i/60)*2*Vmax-Vmax; const I=Math.cbrt(V)*0.9; d+=(i?" L":"M")+gX(V).toFixed(1)+" "+gY(I).toFixed(1); }
         el("path",{d:d,stroke:PH,"stroke-width":2.5,fill:"none"},s);
-        // moving point on curve
-        const pt=el("circle",{cx:ox+gw/2,cy:oy,r:5,fill:AM},s);
-        // lamp
-        el("circle",{cx:160,cy:30,r:0,fill:"none"},s);
+        // moving point on the curve
+        const pt=el("circle",{cx:gX(0),cy:gY(0),r:5,fill:AM},s);
+        // lamp symbol
         const lampGlow=el("circle",{cx:285,cy:40,r:14,fill:AM,opacity:0},s);
         el("circle",{cx:285,cy:40,r:12,fill:"none",stroke:AM,"stroke-width":2},s);
-        el("text",{x:285,y:62,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="lamp";
+        el("line",{x1:276,y1:31,x2:294,y2:49,stroke:AM,"stroke-width":1.5},s);
+        el("line",{x1:294,y1:31,x2:276,y2:49,stroke:AM,"stroke-width":1.5},s);
+        el("text",{x:285,y:64,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="lamp";
         const out=readout(host);
         const c=controls(host);
         let V=0;
         slider(c,"Voltage (V)",-2,2,0,0.1,x=>{
           V=x; const I=Math.cbrt(V)*0.9;
-          const px=ox+gw/2+(V/2)*(gw/2); const py=oy-(I/1.2)*(gh*0.45);
-          pt.setAttribute("cx",px); pt.setAttribute("cy",py);
+          pt.setAttribute("cx",gX(V).toFixed(1)); pt.setAttribute("cy",gY(I).toFixed(1));
           lampGlow.setAttribute("opacity", Math.min(0.8,Math.abs(I)*0.7));
           lampGlow.setAttribute("r", 14+Math.abs(I)*6);
-          const Rr = V!==0 ? Math.abs(V/I) : 0;
-          out.innerHTML="V = <b>"+V.toFixed(1)+" V</b> · I = <b>"+I.toFixed(2)+" A</b><br>Resistance ≈ <b>"+(V!==0?Rr.toFixed(1):"—")+" Ω</b> (rises as it heats)";
+          const Rr = Math.abs(x)>0.001 ? Math.abs(V/I) : 0;
+          out.innerHTML="V = <b>"+V.toFixed(1)+" V</b> · I = <b>"+I.toFixed(2)+" A</b><br>Resistance ≈ <b>"+(Math.abs(x)>0.001?Rr.toFixed(1):"—")+" Ω</b> (rises as it heats up)";
           return x.toFixed(1)+" V";
         });
         return ()=>{};
@@ -13948,24 +13954,27 @@ window.COURSES.aqa_alevel_pe = {
           spring.setAttribute("d",d);
           massBox.setAttribute("y", top+len); massLbl.setAttribute("y", top+len+16);
         }
+        // extension as a function of force (linear up to the elastic limit, then softer)
+        function extOf(f){ return f<=limit ? f/k : limit/k + (f-limit)/(k*0.4); }
+        const Fmax=16;                       // matches slider max
+        const Emax=extOf(Fmax);              // largest extension shown → defines x-scale
+        function gX(e){ return ox + (e/Emax)*gw; }   // extension → graph x
+        function gY(f){ return oy - (f/Fmax)*gh; }   // force → graph y
         function upd(F){
-          let ext=F/k; let beyond=false;
-          if(F>limit){ ext=limit/k + (F-limit)/(k*0.4); beyond=true; } // non-linear past limit
+          const beyond = F>limit;
+          const ext=extOf(F);
           drawSpring(ext*40);
-          massLbl.textContent=(F/9.8*1000>=1000?(F/9.8).toFixed(1)+"kg":Math.round(F/9.8*1000)+"g");
-          // graph: linear to limit then curves
-          let d="M"+ox+" "+oy; const N=40;
-          for(let i=0;i<=N;i++){ const f=(i/N)*F; let e=f<=limit? f/k : limit/k+(f-limit)/(k*0.4);
-            const gx=ox+(e/ (12/k))* (gw/ (12/0.4)); // scale
-            const X=ox+ e*200; const Y=oy- f*(gh/12);
-            d+=" L"+X.toFixed(1)+" "+Y.toFixed(1); }
+          massLbl.textContent=(F/9.8>=1?(F/9.8).toFixed(1)+"kg":Math.round(F/9.8*1000)+"g");
+          // force–extension line: plot force (y) against extension (x)
+          let d="M"+gX(0).toFixed(1)+" "+gY(0).toFixed(1); const N=40;
+          for(let i=1;i<=N;i++){ const f=(i/N)*F; d+=" L"+gX(extOf(f)).toFixed(1)+" "+gY(f).toFixed(1); }
           gline.setAttribute("d",d);
-          const eF = F<=limit? F/k : limit/k+(F-limit)/(k*0.4);
-          gdot.setAttribute("cx",ox+eF*200); gdot.setAttribute("cy",oy-F*(gh/12));
+          gdot.setAttribute("cx",gX(ext).toFixed(1)); gdot.setAttribute("cy",gY(F).toFixed(1));
+          // vertical marker at the limit of proportionality (only once exceeded)
           limitLine.setAttribute("opacity", beyond?1:0);
-          limitLine.setAttribute("x1",ox+(limit/k)*200); limitLine.setAttribute("x2",ox+(limit/k)*200);
-          limitLine.setAttribute("y2",oy-gh);
-          out.innerHTML="Force: <b>"+F.toFixed(1)+" N</b> · Extension: <b>"+(eF*100).toFixed(1)+" cm</b>"+(beyond?"<br><span style='color:#e2554e'>Past the elastic limit — no longer proportional!</span>":"<br>F = k × e (proportional)");
+          limitLine.setAttribute("x1",gX(limit/k).toFixed(1)); limitLine.setAttribute("x2",gX(limit/k).toFixed(1));
+          limitLine.setAttribute("y1",oy); limitLine.setAttribute("y2",(oy-gh).toFixed(1));
+          out.innerHTML="Force: <b>"+F.toFixed(1)+" N</b> · Extension: <b>"+(ext*100).toFixed(1)+" cm</b>"+(beyond?"<br><span style='color:#e2554e'>Past the elastic limit — no longer proportional!</span>":"<br>F = k × e (proportional)");
         }
         slider(c,"Force / weight (N)",0,16,2,0.5,x=>{ upd(x); return x+" N"; });
         upd(2);
@@ -13992,7 +14001,9 @@ window.COURSES.aqa_alevel_pe = {
         const mS=slider(c,"Mass (kg)",0.5,10,2,0.5,val=>{M=val;upd();return val+" kg";});
         function upd(){ const a=F/M; out.innerHTML="F = <b>"+F+" N</b>, m = <b>"+M+" kg</b><br>Acceleration a = F/m = <b>"+a.toFixed(1)+" m/s²</b>"; arrow.setAttribute("x2",70+Math.min(60,F*3)); }
         function loop(){ if(!running) return; const a=F/M; v+=a*0.02; x+=v*0.6; if(x>250){x=20;v=0;} trolley.setAttribute("x",x); w1.setAttribute("cx",x+12); w2.setAttribute("cx",x+38); arrow.setAttribute("x1",x+50); arrow.setAttribute("x2",x+50+Math.min(60,F*3)); raf=requestAnimationFrame(loop); }
-        const startBtn=btn(c,"Push",b=>{ if(running){running=false;b.textContent="Push";b.classList.remove("active");} else {running=true;b.textContent="Reset";b.classList.add("active");raf=requestAnimationFrame(loop);} if(b.textContent==="Push"){x=20;v=0;trolley.setAttribute("x",x);} });
+        function resetTrolley(){ x=20; v=0; trolley.setAttribute("x",x); w1.setAttribute("cx",x+12); w2.setAttribute("cx",x+38); arrow.setAttribute("x1",x+50); arrow.setAttribute("x2",x+50+Math.min(60,F*3)); }
+        const startBtn=btn(c,"Push",b=>{ if(running){ running=false; b.textContent="Push"; b.classList.remove("active"); } else { running=true; b.textContent="Pause"; b.classList.add("active"); raf=requestAnimationFrame(loop); } });
+        btn(c,"Reset",()=>{ running=false; startBtn.textContent="Push"; startBtn.classList.remove("active"); resetTrolley(); });
         upd();
         return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
       },
@@ -14040,20 +14051,44 @@ window.COURSES.aqa_alevel_pe = {
         const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
         const s=svg(300,220); host.appendChild(s);
         el("rect",{x:10,y:10,width:280,height:200,rx:6,fill:"#0e1722",stroke:LINE},s);
-        // barrier (diagonal)
-        el("line",{x1:150,y1:20,x2:280,y2:150,stroke:AM,"stroke-width":4},s);
-        el("text",{x:230,y:100,"font-size":10,fill:AM,transform:"rotate(45 230 100)"},s).textContent="barrier";
-        // incoming wavefronts (vertical lines moving right), reflected ones move down
-        const inc=[], ref=[];
-        for(let i=0;i<5;i++){ inc.push(el("line",{x1:20+i*26,y1:20,x2:20+i*26,y2:200,stroke:PH,"stroke-width":2,opacity:0.8},s)); }
+        // vertical barrier on the right
+        const barX=235;
+        el("rect",{x:barX,y:10,width:55,height:200,fill:AM,opacity:0.18},s);
+        el("line",{x1:barX,y1:10,x2:barX,y2:210,stroke:AM,"stroke-width":4},s);
+        el("text",{x:barX+27,y:115,"text-anchor":"middle","font-size":10,fill:AM,transform:"rotate(90 "+(barX+27)+" 115)"},s).textContent="barrier";
+        // normal (horizontal, at 90° to the barrier) through the hit point
+        const hitY=110;
+        el("line",{x1:barX-120,y1:hitY,x2:barX,y2:hitY,stroke:DIM,"stroke-width":1,"stroke-dasharray":"4 4"},s);
+        // Incident wavefronts approach at 45°; reflected leave at 45° the other side.
+        // Wavefronts are short line segments perpendicular to their travel direction.
+        // travel dir incident = (cos -45, sin? ) — we send them down-right toward barrier.
+        const inc=[], ref=[], N=5, gap=34;
+        for(let i=0;i<N;i++){ inc.push(el("line",{stroke:PH,"stroke-width":2,opacity:0.85},s)); }
+        for(let i=0;i<N;i++){ ref.push(el("line",{stroke:PH,"stroke-width":2,opacity:0.5},s)); }
         let raf=null, t=0;
+        const len=26;                          // half-length of each wavefront segment
         function loop(){
-          t+=1.1;
-          inc.forEach((l,i)=>{ let x=20+((i*26+t)% 130); l.setAttribute("x1",x); l.setAttribute("x2",x); l.setAttribute("y2", Math.min(200, x<150? 200 : 200)); });
+          t+=0.9;
+          for(let i=0;i<N;i++){
+            // incident: travels along direction (1,1)/√2 toward barrier; phase offset per front
+            let p=((t + i*gap) % (N*gap));      // distance travelled along the ray
+            // start well up-and-left of the hit point
+            const cx = barX - (N*gap) + p;       // x of front centre approaching barrier
+            const cy = hitY - (barX - cx);       // 45° line: as x increases toward barrier, y rises to hitY
+            // draw front perpendicular to travel dir (perp of (1,1) is (1,-1))
+            inc[i].setAttribute("x1", cx-len*0.707); inc[i].setAttribute("y1", cy+len*0.707);
+            inc[i].setAttribute("x2", cx+len*0.707); inc[i].setAttribute("y2", cy-len*0.707);
+            inc[i].setAttribute("opacity", cx<barX-4 ? 0.85 : 0);   // hide once it reaches barrier
+            // reflected: leaves barrier along (-1,1)/√2 (mirror in the vertical barrier)
+            const rp = p;                          // mirror travels back out by same amount
+            const rx = barX - rp;
+            const ry = hitY + (barX - rx);
+            ref[i].setAttribute("x1", rx-len*0.707); ref[i].setAttribute("y1", ry-len*0.707);
+            ref[i].setAttribute("x2", rx+len*0.707); ref[i].setAttribute("y2", ry+len*0.707);
+            ref[i].setAttribute("opacity", (rx<barX-4 && ry<205) ? 0.5 : 0);
+          }
           raf=requestAnimationFrame(loop);
         }
-        // reflected fronts: draw a few static-ish diagonal lines that pulse
-        for(let i=0;i<4;i++){ ref.push(el("line",{x1:160+i*20,y1:200,x2:280,y2:80+i*20,stroke:PH,"stroke-width":2,opacity:0.35},s)); }
         loop();
         return ()=>{ if(raf) cancelAnimationFrame(raf); };
       },
@@ -14618,21 +14653,28 @@ window.COURSES.aqa_alevel_pe = {
         const refr=el("line",{x1:90,y1:90,x2:210,y2:120,stroke:AM,"stroke-width":2.5},s);
         const exit=el("line",{x1:210,y1:120,x2:300,y2:140,stroke:AM,"stroke-width":2.5,"marker-end":"url(#ra)"},s);
         const defs=el("defs",{},s); const mk=el("marker",{id:"ra",markerWidth:8,markerHeight:8,refX:6,refY:3,orient:"auto"},defs); el("path",{d:"M0 0 L6 3 L0 6 Z",fill:AM},mk);
+        // second normal at the far (exit) face so the exit bend is clear
+        el("line",{x1:210,y1:40,x2:210,y2:180,stroke:DIM,"stroke-width":1,"stroke-dasharray":"4 4"},s);
         const out=readout(host); const c=controls(host);
-        const n=1.5, entryY=90, entryX=90;
+        const n=1.5, entryY=90, entryX=90, exitX=210, blockBot=150;
         slider(c,"Angle of incidence (°)",10,70,40,1,deg=>{
           const i=deg*Math.PI/180;
-          // incoming ray from upper-left to entry point
-          const ix=entryX-90, iy=entryY-90*Math.tan(Math.PI/2 - 0)*0; // simpler: compute start point
+          // incoming ray arriving at the entry point on the left face
           const sx=entryX-120*Math.sin(i), sy=entryY-120*Math.cos(i);
           inc.setAttribute("x1",sx); inc.setAttribute("y1",sy); inc.setAttribute("x2",entryX); inc.setAttribute("y2",entryY);
-          // refracted angle via Snell: sin r = sin i / n
+          // refracted angle inside glass via Snell's law: sin r = sin i / n
           const r=Math.asin(Math.sin(i)/n);
-          const exitX=210; const dx=exitX-entryX; const ey=entryY+dx*Math.tan(r);
-          refr.setAttribute("x1",entryX); refr.setAttribute("y1",entryY); refr.setAttribute("x2",exitX); refr.setAttribute("y2",ey);
-          // exiting ray bends back to original angle
-          const ox2=exitX+90*Math.sin(i), oy2=ey+90*Math.cos(i);
-          exit.setAttribute("x1",exitX); exit.setAttribute("y1",ey); exit.setAttribute("x2",ox2); exit.setAttribute("y2",oy2);
+          // refracted ray travels until it reaches the far face (x=exitX),
+          // clamped so it can't run past the bottom of the block
+          let ex=exitX, ey=entryY+(exitX-entryX)*Math.tan(r);
+          if(ey>blockBot){ ey=blockBot; ex=entryX+(blockBot-entryY)/Math.tan(r); }
+          refr.setAttribute("x1",entryX); refr.setAttribute("y1",entryY); refr.setAttribute("x2",ex); refr.setAttribute("y2",ey);
+          // exit ray emerges parallel to the incident ray (parallel-sided block)
+          const showExit = ex>=exitX-0.5; // only when it leaves through the right face
+          if(showExit){
+            const ox2=ex+90*Math.sin(i), oy2=ey+90*Math.cos(i);
+            exit.setAttribute("x1",ex); exit.setAttribute("y1",ey); exit.setAttribute("x2",ox2); exit.setAttribute("y2",oy2); exit.setAttribute("opacity",1);
+          } else { exit.setAttribute("opacity",0); }
           out.innerHTML="Angle in <b>"+deg+"°</b> → angle in glass <b>"+Math.round(r*180/Math.PI)+"°</b><br>Light bends <b>towards</b> the normal entering the denser glass.";
           return deg+"°";
         });
