@@ -15231,6 +15231,111 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ============================================================
+//  FUNCTIONAL SKILLS MATHS — FLASHCARD REWRITE
+//  Replaces spec-point cards with active-recall cards: the front
+//  poses a question/mini-problem; the back gives the method + answer.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C) return;
+  function setCards(ck,tk,cards){ const t=C[ck]&&C[ck].topics[tk]; if(t) t.cards=cards; }
+
+  // ═══════════════ LEVEL 1 ═══════════════
+  setCards("edexcel_fs_maths_l1","fs1_number",[
+    ["How do you find ¾ of £20?","Divide by the bottom number, then multiply by the top: £20 ÷ 4 = £5, then × 3 = £15."],
+    ["How do you work out 20% of £45?","10% is £4.50 (divide by 10), so 20% is double that = £9. Or multiply £45 × 0.2 = £9."],
+    ["What is 3 + 4 × 2? Why?","11. BIDMAS says multiply first (4 × 2 = 8), then add 3 → 11. Not 14."],
+    ["A recipe for 4 needs 600 g rice. How much for 6 people?","Find one person's share: 600 ÷ 4 = 150 g. Then × 6 = 900 g."],
+    ["The temperature is −3 °C and rises 8 °C. What is it now?","Count 8 up from −3 on a number line: −3 → 0 is 3, then 5 more → +5 °C."],
+    ["What is ¾ as a decimal and a percentage?","3 ÷ 4 = 0.75 = 75%. Learn ½=0.5=50%, ¼=0.25=25%, ⅒=0.1=10% too."],
+    ["A box of 100 screws is £4. What do 1,000 cost?","1,000 is 10 × 100, so multiply the price by 10: £4 × 10 = £40."],
+    ["How do you multiply a number by 100?","Move every digit two places to the left (it gets bigger): 3.5 × 100 = 350."],
+    ["How do you check £9.20 × 35 is about right?","Estimate: £9 × 35 ≈ £315, so an answer near £322 is sensible. Round first, then compare."],
+    ["A shop sells 3 pens for £1.20. What do 12 cost?","12 ÷ 3 = 4 sets; 4 × £1.20 = £4.80. (Or one pen = 40p, × 12.)"],
+  ]);
+
+  setCards("edexcel_fs_maths_l1","fs1_measures",[
+    ["How do you find the area of a rectangle 5 m by 3 m?","Area = length × width = 5 × 3 = 15 m² (square metres)."],
+    ["How do you find the perimeter of a rectangle 8 m by 6 m?","Add all sides, or 2 × (length + width) = 2 × (8 + 6) = 28 m."],
+    ["How do you change 1.5 kg into grams?","1 kg = 1,000 g, so multiply by 1,000: 1.5 × 1,000 = 1,500 g."],
+    ["A film starts 19:45 and lasts 2 h 30 min. When does it end?","Add 2 h → 21:45, then 30 min → 22:15. Use the 24-hour clock."],
+    ["How do you work out simple interest of 4% on £500 for one year?","Interest = amount × rate = £500 × 0.04 = £20."],
+    ["How do you find the volume of a box 40 × 30 × 20 cm?","Volume = length × width × height = 40 × 30 × 20 = 24,000 cm³."],
+    ["A map scale is 1:50,000. A road is 4 cm on the map. How far is it really?","Multiply by the scale: 4 × 50,000 = 200,000 cm = 2,000 m = 2 km."],
+    ["A £60 coat has 15% off. How much do you save?","15% of £60: 10% = £6, 5% = £3, so 15% = £9 saved."],
+    ["How do you find the area of an L-shaped room?","Split it into rectangles, find each area, then add them together."],
+    ["How many tins of paint (each covers 12 m²) for a 40 m² wall?","40 ÷ 12 = 3.3…, so round UP to 4 tins — you can't buy part of a tin."],
+  ]);
+
+  setCards("edexcel_fs_maths_l1","fs1_data",[
+    ["How do you find the mean of 5, 8, 6, 9, 7?","Add them (= 35) then divide by how many there are (5): 35 ÷ 5 = 7."],
+    ["How do you find the range of 12, 18, 9, 15, 20?","Largest − smallest = 20 − 9 = 11."],
+    ["What is the mode of 6, 7, 7, 8, 7, 9?","The most common value: 7 (it appears three times)."],
+    ["A bag has 3 red, 2 blue, 5 green. What is P(red)?","P = reds ÷ total = 3 ÷ 10 = 3/10."],
+    ["What do the numbers 0 and 1 mean on a probability scale?","0 = impossible, 1 = certain. ½ means an even chance. Nothing can be more than 1."],
+    ["A pie chart shows half the circle for 'drive to work'. What % is that?","Half the circle = half the people = 50%."],
+    ["How do you find how many of 60 people chose tea if ¼ did?","¼ of 60 = 60 ÷ 4 = 15 people."],
+    ["What kind of chart shows how something changes over time?","A line graph. Bar charts compare categories; pie charts show proportions of a whole."],
+  ]);
+
+  setCards("edexcel_fs_maths_l1","fs1_problems",[
+    ["How do you tackle a money problem with income and costs?","Add up all money in (income) and all money out (costs). Money left = income − costs."],
+    ["How do you decide which pack is 'better value'?","Work out the price for the SAME amount (e.g. per 100 g or per item) for each, then pick the smaller unit price."],
+    ["A taxi is £3 plus £1.20 per mile. How do you find a 7-mile fare?","Fixed part + rate × miles = 3 + 1.20 × 7 = 3 + 8.40 = £11.40 (multiply before adding)."],
+    ["You need 180 seats and each coach holds 52. How many coaches?","180 ÷ 52 = 3.4…, round UP to 4 — you can't book part of a coach."],
+    ["Why should you estimate before doing a calculation?","Rounding first gives a rough answer to check against. If your worked answer is far off, re-check it."],
+  ]);
+
+  // ═══════════════ LEVEL 2 ═══════════════
+  setCards("edexcel_fs_maths_l2","fs2_number",[
+    ["How do you work out a percentage increase, e.g. £24,000 to £25,800?","Change ÷ original × 100 = 1,800 ÷ 24,000 × 100 = 7.5%."],
+    ["A coat is £63 after 30% off. How do you find the original price?","£63 is 70% of the original, so divide: 63 ÷ 0.7 = £90 (reverse percentage)."],
+    ["How do you write 18 out of 24 as a percentage?","Part ÷ whole × 100 = 18 ÷ 24 × 100 = 75%."],
+    ["How do you share £450 in the ratio 4:5?","4 + 5 = 9 parts; 450 ÷ 9 = £50 per part; shares are 4×50 = £200 and 5×50 = £250."],
+    ["A job takes 3 workers 8 days. How long for 4 workers?","Inverse proportion: total work = 3 × 8 = 24 worker-days; 24 ÷ 4 = 6 days."],
+    ["How do you add VAT at 20% to a £85 bill?","20% of £85 = £17; total = 85 + 17 = £102. Or × 1.2 = £102."],
+    ["What is ⅔ + ¼? How?","Common denominator 12: 8/12 + 3/12 = 11/12."],
+    ["How do you apply two changes: +10% then −10% to £40?","Do them in turn: £40 × 1.1 = £44, then £44 × 0.9 = £39.60. They do NOT cancel out."],
+    ["How do you convert £240 to euros at £1 = €1.15?","Multiply: 240 × 1.15 = €276. (To go back to £, divide.)"],
+    ["What is 2 + 3² × 2? Why?","20. BIDMAS: index first 3²=9, then × 2 = 18, then + 2 = 20."],
+  ]);
+
+  setCards("edexcel_fs_maths_l2","fs2_measures",[
+    ["How do you find average speed for 150 miles in 2.5 hours?","Speed = distance ÷ time = 150 ÷ 2.5 = 60 mph."],
+    ["How do you work out £1,000 at 5% compound interest for 2 years?","Multiply by 1.05 each year: 1,000 × 1.05 = 1,050; 1,050 × 1.05 = £1,102.50."],
+    ["What is the area of a triangle with base 10 cm, height 6 cm?","Area = ½ × base × height = ½ × 10 × 6 = 30 cm²."],
+    ["What is the area of a circle radius 5 cm? (π ≈ 3.14)","Area = π r² = 3.14 × 5² = 3.14 × 25 = 78.5 cm². (This formula is NOT given in the exam.)"],
+    ["How do you find density from mass 240 g and volume 30 cm³?","Density = mass ÷ volume = 240 ÷ 30 = 8 g/cm³."],
+    ["What is the volume of a cylinder radius 4 cm, height 10 cm? (π ≈ 3.14)","Volume = π r² h = 3.14 × 16 × 10 = 502.4 cm³."],
+    ["How do you convert between miles and km (5 miles ≈ 8 km)?","km → miles: ÷ 8 × 5. miles → km: ÷ 5 × 8. e.g. 8 km ≈ 5 miles."],
+    ["A plumber charges £40 call-out + £28/hour. How much for 3 hours?","Fixed + rate × time = 40 + 28 × 3 = 40 + 84 = £124."],
+    ["The angles in a triangle are 90°, 35° and x. How do you find x?","They add up to 180°: x = 180 − 90 − 35 = 55°."],
+    ["How do you find real distance from a 1:25 scale drawing of 12 cm?","Multiply by the scale: 12 × 25 = 300 cm = 3 m."],
+  ]);
+
+  setCards("edexcel_fs_maths_l2","fs2_data",[
+    ["What's the difference between mean, median and mode?","Mean = total ÷ count. Median = middle value (in order). Mode = most common value."],
+    ["When is the median a better average than the mean?","When there is an outlier (a very high or low value) that would pull the mean away from what's typical."],
+    ["How do you find the mean from a frequency table?","Multiply each value by its frequency, add these up, then divide by the total frequency."],
+    ["How do you work out a pie-chart angle for a category?","(category frequency ÷ total) × 360°. e.g. 50 out of 200 = ¼ × 360 = 90°."],
+    ["What does positive and negative correlation look like?","Positive: both rise together. Negative: one rises as the other falls. Shown by the trend of points/line of best fit."],
+    ["How do you find the probability of two independent events both happening?","Multiply their probabilities: P(A and B) = P(A) × P(B). e.g. two heads = ½ × ½ = ¼."],
+    ["If the mean of 5 numbers is 12, what is their total?","Total = mean × count = 12 × 5 = 60. (Rearrange mean = total ÷ count.)"],
+    ["How do you compare two data sets fairly?","Compare an average (typical value) AND the range (spread). Same mean but smaller range = more consistent."],
+  ]);
+
+  setCards("edexcel_fs_maths_l2","fs2_problems",[
+    ["How do you compare paying cash vs a finance deal (deposit + instalments)?","Work out the total of deposit + all instalments, then compare with the cash price. Cheapest total wins."],
+    ["Why don't +10% then −10% cancel out?","The second % acts on the new amount, not the original: £40 → £44 → £39.60, not back to £40."],
+    ["How do you find the best buy between different pack sizes?","Find the cost per same unit (per kg, per litre, per 100 g) for each, then choose the lowest."],
+    ["When you get 4.6 tins/vehicles/etc., what do you do?","Round UP to the next whole number — you can't buy 0.6 of a tin or book 0.6 of a minibus."],
+    ["How do you break down a multi-step problem?","Split it into stages, solve each in order keeping track of units, combine them, then check the answer is sensible."],
+  ]);
+
+  console.log("[fs_flashcards_rewrite.js] Functional Skills flashcards rewritten as active-recall questions.");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
