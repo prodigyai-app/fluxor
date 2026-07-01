@@ -1597,6 +1597,15 @@ ocr_alevel: {
 
     const type=o.type||'series';
     const labs=o.labels||[];
+    // Decide which symbol a label represents. Lamps: anything containing "lamp" or "bulb".
+    function isLamp(lab){ return /lamp|bulb/i.test(lab||''); }
+    // Draw the right component at (x,y) on a horizontal wire, given a label.
+    function comp(x,y,lab){
+      if(lab==='A') return ammeter(x,y);
+      if(isLamp(lab)) return lamp(x,y,lab);
+      if(/^C/.test(lab||'')) return capacitor(x,y,lab);
+      return res(x,y,32,lab);
+    }
 
     // ── SERIES circuit ──────────────────────────────────────────────────
     if(type==='series'){
@@ -1607,10 +1616,7 @@ ocr_alevel: {
       const topW=R-L; const step=(topW-60)/comps.length;
       comps.forEach((lab,i)=>{
         const x=L+40+step*i+step/2;
-        if(lab.startsWith('L')) s+=lamp(x,T,lab);
-        else if(lab==='A')      s+=ammeter(x,T);
-        else if(lab.startsWith('C')) s+=capacitor(x,T,lab);
-        else                    s+=res(x,T,32,lab);
+        s+=comp(x,T,lab);
       });
       if(o.ammeter) s+=ammeter(cx,B);
       if(o.voltmeter){ // voltmeter across last resistor
@@ -1622,27 +1628,30 @@ ocr_alevel: {
 
     // ── PARALLEL two-branch ─────────────────────────────────────────────
     else if(type==='parallel'){
-      // outer rectangle
-      s+=wires([L,T],[R,T],[R,B],[L,B],[L,T]);
-      s+=cell(L,cy,false); s+=wire(L,T,L,cy-15); s+=wire(L,cy+15,L,B);
-      // junction posts
-      const jx1=L+60, jx2=R-20;
-      s+=wire(L,T,jx1,T); s+=wire(jx2,T,R,T);
-      s+=wire(L,B,jx1,B); s+=wire(jx2,B,R,B);
-      // two branches
-      const m1y=T+30, m2y=B-30;
-      s+=wire(jx1,T,jx1,B); s+=wire(jx2,T,jx2,B);
-      // branch 1
-      const b1x=jx1+20+(jx2-jx1-40)/2;
-      if(labs[0]&&labs[0].startsWith('L')) s+=lamp(b1x,m1y,labs[0]);
-      else s+=res(b1x,m1y,36,labs[0]||'R₁');
-      s+=wire(jx1,m1y,b1x-18,m1y); s+=wire(b1x+18,m1y,jx2,m1y);
-      // branch 2
-      const b2x=b1x;
-      if(labs[1]&&labs[1].startsWith('L')) s+=lamp(b2x,m2y,labs[1]);
-      else s+=res(b2x,m2y,36,labs[1]||'R₂');
-      s+=wire(jx1,m2y,b2x-18,m2y); s+=wire(b2x+18,m2y,jx2,m2y);
-      if(o.ammeter) s+=ammeter(cx,B);
+      // Left rail carries the cell; right rail returns to it. Branches hang between two bus posts.
+      const jxL=L+50, jxR=R-30;                 // x of the two vertical bus bars
+      const branches = labs.length ? labs.slice() : ['R₁','R₂'];
+      const n = branches.length;
+      // top & bottom rails from cell to the bus posts
+      s+=cell(L,cy,false);
+      s+=wire(L,cy-15,L,T); s+=wire(L,T,jxL,T);          // up and across (top)
+      s+=wire(L,cy+15,L,B); s+=wire(L,B,jxL,B);          // down and across (bottom)
+      s+=wire(jxR,T,R,T); s+=wire(R,T,R,B); s+=wire(R,B,jxR,B); // right return path
+      // vertical bus bars spanning all branch rows
+      const topRow=T+ (n>1?6:0), botRow=B-(n>1?6:0);
+      const rowGap = n>1 ? (botRow-topRow)/(n-1) : 0;
+      const rowY = i => n>1 ? topRow + rowGap*i : cy;
+      s+=wire(jxL,rowY(0),jxL,rowY(n-1));
+      s+=wire(jxR,rowY(0),jxR,rowY(n-1));
+      // each branch: wire from left bus, component in middle, wire to right bus
+      const midX=(jxL+jxR)/2;
+      branches.forEach((lab,i)=>{
+        const y=rowY(i);
+        s+=wire(jxL,y,midX-18,y);
+        s+=comp(midX,y,lab);
+        s+=wire(midX+18,y,jxR,y);
+      });
+      if(o.ammeter) s+=ammeter((L+jxL)/2,B);
     }
 
     // ── SERIES + PARALLEL (one resistor in series, two in parallel) ────
@@ -14737,6 +14746,491 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ── Circuit diagram corrections: fix mismatched/empty diagrams ──────────────
+(function(){
+  const C=window.COURSES; if(!C) return;
+  const D=(d,o)=>({d,o:o||{}});
+  function setDiag(ck,tk,needle,spec){
+    const t=C[ck]&&C[ck].topics[tk]; if(!t) return;
+    const q=t.quiz.find(q=>String(q[0]).includes(needle));
+    if(q) q[4]=spec;
+  }
+  // GCSE: three identical lamps in parallel → 3 lamps
+  ["aqa_gcse","combined_physics"].forEach(ck=>{
+    setDiag(ck,"electricity","Three identical lamps are connected in parallel",
+      D('circuit',{type:'parallel',labels:['Lamp','Lamp','Lamp']}));
+    setDiag(ck,"electricity","Three identical lamps in parallel",
+      D('circuit',{type:'parallel',labels:['Lamp','Lamp','Lamp']}));
+  });
+  // A-level m4_circuits corrections
+  setDiag("ocr_alevel","m4_circuits","conducts current freely one way but blocks it the other",
+    D('circuit',{type:'iv-setup',component:'diode',labels:['Rvar','Diode']}));
+  setDiag("ocr_alevel","m4_circuits","Two resistors of 4 Ω and 6 Ω are connected in series",
+    D('circuit',{type:'series',labels:['4 Ω','6 Ω'],ammeter:true}));
+  setDiag("ocr_alevel","m4_circuits","Three 9.0 Ω resistors are connected in parallel",
+    D('circuit',{type:'parallel',labels:['9 Ω','9 Ω','9 Ω']}));
+  setDiag("ocr_alevel","m4_circuits","Three identical resistors each R are connected in parallel",
+    D('circuit',{type:'parallel',labels:['R','R','R']}));
+  setDiag("ocr_alevel","m4_circuits","In a potential divider, a 6.0 kΩ and a 2.0 kΩ resistor are in series",
+    D('circuit',{type:'potential-divider',labels:['6 kΩ','2 kΩ','Vout']}));
+  console.log("[circuit_fixes] mismatched circuit diagrams corrected.");
+})();
+</script>
+<script>
+// ============================================================
+//  FUNCTIONAL SKILLS MATHEMATICS — Pearson Edexcel
+//  Level 1 (QN 603/4267/5) and Level 2 (QN 603/4268/7)
+//  Three content areas per level:
+//    1. Using numbers & the number system
+//    2. Using common measures, shape & space
+//    3. Handling information & data
+//  Questions are functional/contextual (real-world) per the spec style.
+//  Formula sheet link not provided by Pearson (formulae given in-paper),
+//  so calculation questions are self-contained.
+// ============================================================
+(function(){
+  if(!window.COURSES){ console.error("COURSES not loaded before functional_skills.js"); return; }
+
+  // ─────────────────────────────────────────────────────────
+  //  LEVEL 1
+  // ─────────────────────────────────────────────────────────
+  window.COURSES.edexcel_fs_maths_l1 = {
+    name: "Functional Skills Maths — Level 1 (Edexcel)",
+    subject: "Maths — Level 1",
+    level: "Functional Skills",
+    topics: {
+
+      fs1_number: {
+        name: "Numbers & the number system",
+        cards: [
+          ["Read, write and order large numbers.","Numbers up to one million. Compare using place value: the digit furthest left has the greatest value. e.g. 84,210 > 48,210 because 8 ten-thousands > 4 ten-thousands."],
+          ["Positive and negative numbers.","Negative numbers are below zero (e.g. temperatures, bank balances). On a number line, −5 is colder/lower than −2. To find a change, count the steps along the line."],
+          ["Multiply and divide by 10, 100, 1000.","Each ×10 moves digits one place left (value bigger); each ÷10 moves them one place right (value smaller). e.g. 3.5 × 100 = 350; 47 ÷ 10 = 4.7."],
+          ["Order of operations (BIDMAS).","Brackets, Indices, Division/Multiplication, Addition/Subtraction. e.g. 3 + 4 × 2 = 3 + 8 = 11 (not 14)."],
+          ["Fractions of a quantity.","To find a fraction of an amount: divide by the denominator, multiply by the numerator. e.g. ¾ of 20 = (20 ÷ 4) × 3 = 15."],
+          ["Percentages of a quantity.","'Per cent' means 'out of 100'. 10% = ÷10; 25% = ÷4; 50% = ÷2. e.g. 20% of £45 = £45 × 0.2 = £9."],
+          ["Equivalences: fractions, decimals, percentages.","½ = 0.5 = 50%; ¼ = 0.25 = 25%; ¾ = 0.75 = 75%; ⅒ = 0.1 = 10%. Learn these by heart."],
+          ["Simple ratio and direct proportion.","A ratio shares amounts in given parts. For a recipe scaled up, multiply every ingredient by the same number (direct proportion)."],
+          ["Rounding and estimating.","Round to a whole number or 1–2 decimal places. To estimate, round each number first, then calculate. Useful for checking answers are sensible."],
+          ["Simple formulae in words.","A rule written in words, e.g. 'cost = price per hour × number of hours'. Substitute the numbers to find the answer."],
+        ],
+        quiz: [
+          ["A car park charges a £2 fixed fee plus £1.50 per hour. Using cost = 2 + 1.50 × hours, the cost of parking for 4 hours is:",["£8.00","£6.00","£14.00","£7.50"],0,"Cost = 2 + 1.50 × 4 = 2 + 6 = £8.00. Follow order of operations: multiply first, then add."],
+          ["A shop has 1,250 items. A delivery adds 875 more. The total number of items is:",["2,125","2,025","1,925","2,135"],0,"1,250 + 875 = 2,125."],
+          ["The temperature at 6 am is −3 °C. By noon it has risen by 8 °C. The temperature at noon is:",["5 °C","−11 °C","11 °C","−5 °C"],0,"−3 + 8 = 5 °C. Count 8 steps up the number line from −3."],
+          ["A recipe for 4 people needs 600 g of rice. For 6 people you need:",["900 g","800 g","1,000 g","720 g"],0,"600 ÷ 4 = 150 g per person; 150 × 6 = 900 g (direct proportion)."],
+          ["A jacket costs £80. In a sale it is reduced by 25%. The sale price is:",["£60","£55","£20","£75"],0,"25% of £80 = £20 reduction; £80 − £20 = £60."],
+          ["A worker earns £9.20 per hour and works 35 hours. Their weekly pay is:",["£322.00","£312.00","£330.00","£320.00"],0,"£9.20 × 35 = £322.00."],
+          ["Which of these is equal to ¾?",["0.75","0.34","0.7","0.43"],0,"¾ = 3 ÷ 4 = 0.75 = 75%."],
+          ["A number rounded to the nearest whole number is 7. Which of these could it be?",["6.8","7.6","6.4","7.51"],0,"6.8 rounds to 7. (7.6 → 8, 6.4 → 6, 7.51 → 8.)"],
+          ["A box of 100 screws costs £4. The cost of 1,000 screws at the same rate is:",["£40","£400","£14","£44"],0,"1,000 is 10 × 100, so cost = £4 × 10 = £40."],
+          ["Work out 3 + 6 × 2 − 4:",["11","14","10","8"],0,"BIDMAS: 6 × 2 = 12 first, then 3 + 12 − 4 = 11."],
+          ["A phone bill is £18 per month. The cost for a full year is:",["£216","£206","£180","£226"],0,"£18 × 12 = £216."],
+          ["½ of a 2.4 litre bottle of juice has been drunk. The amount left is:",["1.2 litres","0.8 litres","1.4 litres","0.6 litres"],0,"½ of 2.4 = 1.2 litres remain."],
+          ["A shop sells pens at 3 for £1.20. The cost of 12 pens is:",["£4.80","£3.60","£14.40","£4.20"],0,"12 ÷ 3 = 4 sets; 4 × £1.20 = £4.80. (Or £0.40 each × 12.)"],
+        ]
+      },
+
+      fs1_measures: {
+        name: "Common measures, shape & space",
+        cards: [
+          ["Converting units of length, weight, capacity.","1 km = 1,000 m; 1 m = 100 cm; 1 kg = 1,000 g; 1 litre = 1,000 ml. Multiply or divide by 1,000 / 100 to convert."],
+          ["Time calculations.","60 seconds = 1 minute; 60 minutes = 1 hour; 24 hours = 1 day. Use the 24-hour clock for timetables; be careful crossing the hour."],
+          ["Money: simple interest.","Simple interest = amount × rate × number of years. e.g. 5% of £200 for 2 years = £200 × 0.05 × 2 = £20."],
+          ["Discounts.","A discount is a reduction. 10% off £30 = £3 off, so you pay £27. Multiples of 5% are common at Level 1."],
+          ["Perimeter.","The distance all the way around a shape. Add up every side. For a rectangle: perimeter = 2 × (length + width)."],
+          ["Area of rectangles.","Area = length × width, measured in square units (cm², m²). For combined (L-shaped) figures, split into rectangles, find each area, then add."],
+          ["Volume of cubes and cuboids.","Volume = length × width × height, in cubic units (cm³, m³). A cube has all sides equal."],
+          ["Scales on maps and drawings.","A scale like 1:100 means 1 cm on the drawing = 100 cm in real life. Multiply the map distance by the scale to get the real distance."],
+          ["2-D and 3-D shapes.","Know squares, rectangles, triangles, circles; cubes, cuboids, cylinders. Recognise line symmetry and right angles."],
+          ["Angles and direction.","A right angle = 90°; a straight line = 180°; a full turn = 360°. Compass directions: N, E, S, W."],
+        ],
+        quiz: [
+          ["A room is 5 m long and 3 m wide. The area of the floor is:",["15 m²","16 m²","8 m²","15 m"],0,"Area = length × width = 5 × 3 = 15 m²."],
+          ["A rectangular garden is 8 m long and 6 m wide. The length of fencing needed to go all the way around is:",["28 m","48 m","14 m","24 m"],0,"Perimeter = 2 × (8 + 6) = 2 × 14 = 28 m."],
+          ["A recipe needs 1.5 kg of flour. How many grams is this?",["1,500 g","150 g","15,000 g","15 g"],0,"1 kg = 1,000 g, so 1.5 kg = 1,500 g."],
+          ["A film starts at 19:45 and lasts 2 hours 30 minutes. It finishes at:",["22:15","21:15","22:75","21:45"],0,"19:45 + 2 h = 21:45; + 30 min = 22:15."],
+          ["£500 is saved at 4% simple interest per year. The interest earned in one year is:",["£20","£40","£4","£25"],0,"4% of £500 = £500 × 0.04 = £20."],
+          ["A storage box is a cuboid 40 cm long, 30 cm wide and 20 cm high. Its volume is:",["24,000 cm³","90 cm³","2,400 cm³","240 cm³"],0,"Volume = 40 × 30 × 20 = 24,000 cm³."],
+          ["A map has a scale of 1:50,000. A road measures 4 cm on the map. The real distance is:",["2 km","200 m","20 km","2 m"],0,"4 cm × 50,000 = 200,000 cm = 2,000 m = 2 km."],
+          ["A jug holds 2 litres. It is filled with 750 ml of water. The amount needed to fill it completely is:",["1,250 ml","1,350 ml","1,150 ml","2,750 ml"],0,"2 litres = 2,000 ml; 2,000 − 750 = 1,250 ml."],
+          ["A coat priced £60 has 15% off. The amount saved is:",["£9","£15","£45","£6"],0,"15% of £60 = £60 × 0.15 = £9."],
+          ["A square tile has a side of 25 cm. Its perimeter is:",["100 cm","625 cm","50 cm","75 cm"],0,"A square has 4 equal sides: 25 × 4 = 100 cm."],
+          ["A wall is 6 m wide and 2.5 m high. The area to be painted is:",["15 m²","8.5 m²","17 m²","12 m²"],0,"Area = 6 × 2.5 = 15 m²."],
+          ["A delivery van leaves at 08:20 and arrives at 11:05. The journey took:",["2 h 45 min","3 h 45 min","2 h 25 min","2 h 85 min"],0,"08:20 to 11:05 = 2 h 45 min (40 min to 09:00, then 2 h 5 min)."],
+          ["An L-shaped room splits into a 4 m × 3 m rectangle and a 2 m × 2 m rectangle. Its total area is:",["16 m²","12 m²","20 m²","14 m²"],0,"(4 × 3) + (2 × 2) = 12 + 4 = 16 m²."],
+        ]
+      },
+
+      fs1_data: {
+        name: "Handling information & data",
+        cards: [
+          ["Tables, charts and graphs.","Read values carefully from the axis or key. Bar charts compare categories; line graphs show change over time; pie charts show proportions of a whole."],
+          ["Drawing bar charts.","Equal-width bars with gaps; a clear scale starting at 0; labelled axes and a title. The bar height shows the value."],
+          ["Mean (average).","Mean = total of the values ÷ how many values there are. e.g. mean of 4, 6, 8 = 18 ÷ 3 = 6."],
+          ["Range.","Range = largest value − smallest value. It shows how spread out the data is."],
+          ["Pie charts.","The whole circle (360°) represents the total. A bigger slice means a bigger proportion. Half the circle = 50% of the total."],
+          ["Probability scale.","Probability runs from 0 (impossible) to 1 (certain). ½ means an even chance. Can be written as a fraction, decimal or percentage."],
+          ["Simple probability.","Probability = number of ways it can happen ÷ total number of equally likely outcomes. e.g. one red ball in 4 = ¼."],
+          ["Grouped data.","Data sorted into class groups (e.g. 0–9, 10–19). Useful when there are many different values; shown as a grouped frequency table or chart."],
+        ],
+        quiz: [
+          ["The number of cars sold each day was: 5, 8, 6, 9, 7. The mean number sold per day is:",["7","6","8","35"],0,"Mean = (5+8+6+9+7) ÷ 5 = 35 ÷ 5 = 7."],
+          ["Test scores were 12, 18, 9, 15, 20. The range is:",["11","9","20","29"],0,"Range = largest − smallest = 20 − 9 = 11."],
+          ["A bag has 3 red, 2 blue and 5 green counters. The probability of picking a red counter at random is:",["3/10","1/3","3/7","1/5"],0,"Total = 3 + 2 + 5 = 10; P(red) = 3/10."],
+          ["On a probability scale, an event that is certain to happen has a probability of:",["1","0","½","100"],0,"Certain = 1; impossible = 0."],
+          ["A pie chart shows that half the circle represents people who drive to work. This means the percentage who drive is:",["50%","180%","25%","360%"],0,"Half the circle = half the total = 50%."],
+          ["A spinner has 8 equal sections, 2 of them red. The probability of landing on red is:",["1/4","2/8 = 1/3","1/8","2/6"],0,"P(red) = 2/8 = 1/4."],
+          ["The temperatures over 4 days were 12°, 15°, 11°, 14°. The mean temperature is:",["13°","12°","14°","52°"],0,"(12+15+11+14) ÷ 4 = 52 ÷ 4 = 13°."],
+          ["A bar chart shows sales of 20, 35, 15 and 30 over four weeks. The total sales were:",["100","90","110","80"],0,"20 + 35 + 15 + 30 = 100."],
+          ["Which value is impossible as a probability?",["1.5","0.5","0","1"],0,"Probability must be between 0 and 1, so 1.5 is impossible."],
+          ["A fair coin is flipped. The probability of getting heads is:",["½","1","¼","0"],0,"Two equally likely outcomes (heads or tails), so P(heads) = ½."],
+          ["The ages of five people are 21, 34, 28, 41, 26. The range of ages is:",["20","41","21","26"],0,"Range = 41 − 21 = 20."],
+          ["In a survey of 60 people, ¼ chose tea. The number who chose tea is:",["15","20","30","12"],0,"¼ of 60 = 60 ÷ 4 = 15."],
+        ]
+      }
+
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  //  LEVEL 2
+  // ─────────────────────────────────────────────────────────
+  window.COURSES.edexcel_fs_maths_l2 = {
+    name: "Functional Skills Maths — Level 2 (Edexcel)",
+    subject: "Maths — Level 2",
+    level: "Functional Skills",
+    topics: {
+
+      fs2_number: {
+        name: "Numbers & the number system",
+        cards: [
+          ["Numbers of any size; negatives.","Read, write, order and compare positive and negative numbers of any size. Recognise the value of each digit by place value."],
+          ["Checking with estimation.","Round each number to 1 significant figure, then calculate, to check an answer is sensible. e.g. 312 × 19 ≈ 300 × 20 = 6,000."],
+          ["Substituting into formulae.","Replace the letters with numbers and work out, following BIDMAS. Formulae may be in words or symbols."],
+          ["Fractions, decimals, percentages equivalence.","Convert freely: ⅗ = 0.6 = 60%; ⅛ = 0.125 = 12.5%. Divide numerator by denominator to get the decimal, ×100 for the percentage."],
+          ["Percentage of an amount; one amount as a % of another.","% of amount: multiply by the decimal. One as a % of another: (part ÷ whole) × 100. e.g. 18 out of 24 = 18/24 × 100 = 75%."],
+          ["Percentage change & reverse percentages.","% change = (change ÷ original) × 100. Reverse: if £60 is the price after 20% off, original = £60 ÷ 0.8 = £75."],
+          ["Fractions: add, subtract, compare.","Use a common denominator to add or compare. Convert mixed numbers to improper fractions to calculate, then simplify."],
+          ["Ratio, direct and inverse proportion.","Direct: as one increases, the other increases in the same ratio. Inverse: as one increases, the other decreases (e.g. more workers → less time)."],
+          ["Order of operations with indices.","BIDMAS including powers. e.g. 2 + 3² × 2 = 2 + 9 × 2 = 2 + 18 = 20."],
+          ["Decimals to three places.","Add, subtract, multiply and divide decimals; order and approximate them. Line up the decimal points when adding or subtracting."],
+        ],
+        quiz: [
+          ["A worker's salary rises from £24,000 to £25,800. The percentage increase is:",["7.5%","8%","1.8%","18%"],0,"Change = £1,800; (1,800 ÷ 24,000) × 100 = 7.5%."],
+          ["A coat costs £63 after a 30% discount. Its original price was:",["£90","£81.90","£93","£70"],0,"£63 is 70% of the original; original = 63 ÷ 0.7 = £90 (reverse percentage)."],
+          ["18 out of 24 students passed a test. As a percentage, the pass rate was:",["75%","72%","18%","80%"],0,"(18 ÷ 24) × 100 = 75%."],
+          ["Using the formula P = 2(l + w) with l = 7.5 and w = 4.5, the value of P is:",["24","12","27","21"],0,"P = 2 × (7.5 + 4.5) = 2 × 12 = 24."],
+          ["A job takes 3 workers 8 days. At the same rate, the number of days for 4 workers is:",["6 days","10.7 days","12 days","5 days"],0,"Inverse proportion: total work = 3 × 8 = 24 worker-days; 24 ÷ 4 = 6 days."],
+          ["Work out 5 + 2 × 3² :",["23","63","21","441"],0,"BIDMAS: 3² = 9 first; 2 × 9 = 18; 5 + 18 = 23."],
+          ["An investment of £2,000 grows by 6% in a year. Its value after one year is:",["£2,120","£2,060","£2,600","£2,012"],0,"6% of £2,000 = £120; £2,000 + £120 = £2,120."],
+          ["A money prize of £450 is shared between two people in the ratio 4:5. The larger share is:",["£250","£200","£225","£270"],0,"4 + 5 = 9 parts; £450 ÷ 9 = £50 per part; larger = 5 × £50 = £250."],
+          ["Estimate 412 × 0.49 by rounding:",["About 200","About 400","About 20","About 800"],0,"412 ≈ 400, 0.49 ≈ 0.5; 400 × 0.5 = 200."],
+          ["⅔ + ¼ = ",["11/12","3/6","2/8","5/7"],0,"Common denominator 12: 8/12 + 3/12 = 11/12."],
+          ["VAT at 20% is added to a bill of £85. The total to pay is:",["£102","£105","£68","£170"],0,"20% of £85 = £17; £85 + £17 = £102."],
+          ["A price falls from £48 to £36. The percentage decrease is:",["25%","12%","33%","20%"],0,"Change = £12; (12 ÷ 48) × 100 = 25%."],
+          ["£1 = €1.15. The number of euros you get for £240 is:",["€276","€208.70","€255","€264"],0,"240 × 1.15 = €276."],
+        ]
+      },
+
+      fs2_measures: {
+        name: "Common measures, shape & space",
+        cards: [
+          ["Compound interest.","Interest each year is calculated on the new (growing) total. £1,000 at 5% for 2 years: yr1 → £1,050, yr2 → £1,102.50. Use × (1 + rate) each year."],
+          ["Compound measures: speed, density, rates.","Speed = distance ÷ time; Density = mass ÷ volume; rate of pay = pay ÷ hours. Rearrange to find any missing quantity."],
+          ["Metric ↔ imperial conversions.","Use a conversion factor or graph. e.g. 1 inch ≈ 2.5 cm; 1 kg ≈ 2.2 lb; 5 miles ≈ 8 km."],
+          ["Area of triangles and circles.","Triangle = ½ × base × height. Circle area = π r²; circumference = π d. (Triangle and circle formulae are NOT given in the exam.)"],
+          ["Composite and non-rectangular shapes.","Split into known shapes (rectangles, triangles, parts of circles), find each area, then add or subtract."],
+          ["Volume and surface area of 3-D shapes.","Cylinder volume = π r² h. Surface area = add the areas of all faces. (Cylinder formula must be recalled; others are given.)"],
+          ["Scale drawings.","Calculate real dimensions from a scale, or create a scale diagram from real measurements. Keep units consistent."],
+          ["Coordinates in 2-D.","Points written as (x, y); x across first, then y up. Negative coordinates lie left of or below the origin."],
+          ["Plans and elevations.","A plan is the view from above; elevations are the views from the front and side. Used to represent 3-D objects in 2-D."],
+          ["Angles in 2-D and 3-D shapes.","Angles on a straight line = 180°; around a point = 360°; in a triangle = 180°; in a quadrilateral = 360°."],
+        ],
+        quiz: [
+          ["A car travels 150 miles in 2.5 hours. Its average speed is:",["60 mph","75 mph","375 mph","50 mph"],0,"Speed = distance ÷ time = 150 ÷ 2.5 = 60 mph."],
+          ["£1,000 is invested at 5% compound interest. Its value after 2 years is:",["£1,102.50","£1,100.00","£1,050.00","£1,110.00"],0,"Yr1: 1,000 × 1.05 = 1,050; Yr2: 1,050 × 1.05 = £1,102.50."],
+          ["A triangle has base 10 cm and height 6 cm. Its area is:",["30 cm²","60 cm²","16 cm²","30 cm"],0,"Area = ½ × base × height = ½ × 10 × 6 = 30 cm²."],
+          ["A circle has radius 5 cm. Using π ≈ 3.14, its area is approximately:",["78.5 cm²","31.4 cm²","15.7 cm²","25 cm²"],0,"Area = π r² = 3.14 × 5² = 3.14 × 25 = 78.5 cm²."],
+          ["A metal block has mass 240 g and volume 30 cm³. Its density is:",["8 g/cm³","0.125 g/cm³","270 g/cm³","210 g/cm³"],0,"Density = mass ÷ volume = 240 ÷ 30 = 8 g/cm³."],
+          ["A cylinder has radius 4 cm and height 10 cm. Using π ≈ 3.14, its volume is approximately:",["502.4 cm³","125.6 cm³","251.2 cm³","160 cm³"],0,"Volume = π r² h = 3.14 × 16 × 10 = 502.4 cm³."],
+          ["A distance of 8 km is approximately how many miles? (5 miles ≈ 8 km)",["5 miles","8 miles","13 miles","10 miles"],0,"8 km ≈ 5 miles using the conversion 5 miles ≈ 8 km."],
+          ["A plumber charges £40 call-out plus £28 per hour. The cost of a 3-hour job is:",["£124","£84","£108","£148"],0,"40 + 28 × 3 = 40 + 84 = £124."],
+          ["A scale drawing uses 1:25. A wall drawn 12 cm long is really:",["3 m","300 m","30 cm","2.5 m"],0,"12 × 25 = 300 cm = 3 m."],
+          ["The angles in a triangle are 90°, 35° and x. The value of x is:",["55°","65°","45°","125°"],0,"Angles in a triangle sum to 180°; x = 180 − 90 − 35 = 55°."],
+          ["A field is a rectangle 50 m by 30 m with a semicircular end of diameter 30 m added. Using π ≈ 3.14, the extra semicircle area is about:",["353 m²","707 m²","225 m²","1,500 m²"],0,"Semicircle area = ½ × π r² = ½ × 3.14 × 15² = ½ × 706.5 ≈ 353 m²."],
+          ["A runner completes 12 km in 50 minutes. Their average speed in km per hour is:",["14.4 km/h","12 km/h","10 km/h","24 km/h"],0,"50 min = 5/6 hour; 12 ÷ (5/6) = 12 × 6/5 = 14.4 km/h."],
+          ["The point (−3, 2) lies in which position relative to the origin?",["Left of and above the origin","Right and above","Left and below","Right and below"],0,"x = −3 is to the left; y = 2 is above. So left and above the origin."],
+        ]
+      },
+
+      fs2_data: {
+        name: "Handling information & data",
+        cards: [
+          ["Mean, median, mode and range.","Mean = total ÷ count. Median = middle value when ordered. Mode = most common value. Range = largest − smallest."],
+          ["Choosing the right average.","The mean uses all data but is affected by extreme values. The median is better when there are outliers. The mode is used for most-common (e.g. shoe size)."],
+          ["Comparing data sets.","Compare an average (typical value) AND the range (spread/consistency). e.g. same mean but smaller range = more consistent."],
+          ["Mean from a frequency table.","Mean = Σ(value × frequency) ÷ Σ(frequency). Multiply each value by how often it occurs, total these, divide by the total frequency."],
+          ["Scatter graphs and correlation.","Plot pairs of data. Positive correlation: both rise together. Negative: one rises as the other falls. A line of best fit shows the trend."],
+          ["Pie charts (constructing).","Each category's angle = (its frequency ÷ total) × 360°. The whole circle (360°) is the total."],
+          ["Grouped frequency & charts.","Group continuous data into equal class intervals; represent with a grouped frequency table or a suitable diagram."],
+          ["Probability of combined events.","List outcomes or use a table. P(A and B) for independent events = P(A) × P(B). Probabilities of all outcomes sum to 1."],
+        ],
+        quiz: [
+          ["Daily sales were £120, £150, £150, £200, £180. The median sale is:",["£150","£160","£200","£80"],0,"Order: 120, 150, 150, 180, 200; the middle (3rd) value is £150."],
+          ["The data set 4, 7, 7, 9, 13 has a mode of:",["7","8","9","7.5"],0,"The mode is the most common value: 7 appears twice."],
+          ["Two machines have the same mean output but machine A has range 5 and machine B has range 20. Which is more consistent?",["Machine A","Machine B","They are equal","Cannot tell"],0,"A smaller range means less spread, so machine A is more consistent."],
+          ["A frequency table: value 1 (×2), value 2 (×3), value 3 (×5). The mean is:",["2.3","2","3","10"],0,"Σ(value×freq) = 2 + 6 + 15 = 23; total freq = 10; mean = 23 ÷ 10 = 2.3."],
+          ["On a pie chart of 200 people, 50 chose cycling. The angle for cycling is:",["90°","50°","25°","100°"],0,"(50 ÷ 200) × 360 = 0.25 × 360 = 90°."],
+          ["A scatter graph shows that as temperature rises, sales of hot soup fall. This is:",["Negative correlation","Positive correlation","No correlation","Strong positive correlation"],0,"One variable rises while the other falls — negative correlation."],
+          ["Two fair coins are flipped. The probability of getting two heads is:",["1/4","1/2","1/3","3/4"],0,"P(H and H) = ½ × ½ = ¼ (independent events)."],
+          ["Salaries (£000s): 22, 24, 25, 26, 95. Which average best represents a typical salary?",["Median","Mean","Range","Mode"],0,"The £95k value is an outlier that inflates the mean; the median (25) is more representative."],
+          ["The mean of five numbers is 12. Their total is:",["60","17","12","5"],0,"Total = mean × count = 12 × 5 = 60."],
+          ["A bag has 4 red and 6 blue beads. The probability of NOT picking red is:",["6/10","4/10","1/6","4/6"],0,"P(not red) = P(blue) = 6/10 (= 3/5)."],
+          ["Times (minutes): 8, 11, 9, 14, 8. The range is:",["6","8","14","11"],0,"Range = 14 − 8 = 6."],
+          ["A spinner has outcomes scoring 1, 2, 3, 4 with equal chance. The probability of scoring an even number is:",["1/2","1/4","2/3","3/4"],0,"Even outcomes are 2 and 4: 2 out of 4 = 1/2."]
+        ]
+      }
+
+    }
+  };
+
+  console.log("[functional_skills.js] Functional Skills Maths Level 1 & Level 2 added.");
+})();
+</script>
+<script>
+// ============================================================
+//  FUNCTIONAL SKILLS MATHS — EXPANSION PACK
+//  Appends more contextual exam-style questions to L1 & L2.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C) return;
+  function push(ck,tk,qs){ const t=C[ck]&&C[ck].topics[tk]; if(t) t.quiz.push(...qs); }
+
+  // ═══════════════ LEVEL 1 ═══════════════
+
+  push("edexcel_fs_maths_l1","fs1_number",[
+    ["A football stadium holds 42,500 people. At a match 38,650 attended. The number of empty seats was:",["3,850","4,150","3,950","4,850"],0,"42,500 − 38,650 = 3,850."],
+    ["A baker uses 250 g of butter per cake. The butter needed for 8 cakes is:",["2,000 g","1,750 g","2,250 g","258 g"],0,"250 × 8 = 2,000 g (= 2 kg)."],
+    ["⅖ of the 30 students in a class walk to school. The number who walk is:",["12","15","6","10"],0,"⅖ of 30 = (30 ÷ 5) × 2 = 12."],
+    ["A TV originally £350 is reduced by 10%. The new price is:",["£315","£340","£35","£310"],0,"10% of £350 = £35; £350 − £35 = £315."],
+    ["A worker is paid £11 per hour and works 6 hours on Saturday at 'time and a half' (£16.50/hour). Saturday's pay is:",["£99","£66","£96","£110"],0,"£16.50 × 6 = £99."],
+    ["Which of these decimals is the largest?",["0.7","0.07","0.27","0.717 rounded to 0.71"],3,"0.71 > 0.7 > 0.27 > 0.07. Compare place by place after the decimal point."],
+    ["A delivery driver drives 85 miles on Monday, 92 on Tuesday and 78 on Wednesday. The total distance was:",["255 miles","245 miles","265 miles","250 miles"],0,"85 + 92 + 78 = 255 miles."],
+    ["A 1.5 litre bottle of cola is shared equally between 6 glasses. Each glass gets:",["250 ml","300 ml","200 ml","150 ml"],0,"1.5 litres = 1,500 ml; 1,500 ÷ 6 = 250 ml."],
+    ["A shop buys mugs at £2 each and sells them at £3.50. The profit on selling 20 mugs is:",["£30","£70","£40","£20"],0,"Profit per mug = £1.50; 20 × £1.50 = £30."],
+    ["Work out 24 ÷ (2 + 4) × 3:",["12","4","36","18"],0,"BIDMAS: brackets (2+4)=6; 24 ÷ 6 = 4; 4 × 3 = 12."],
+    ["A monthly gym membership is £29. Over 6 months the total cost is:",["£174","£164","£180","£170"],0,"£29 × 6 = £174."],
+    ["50% of a number is 36. The number is:",["72","18","86","144"],0,"If half is 36, the whole is 36 × 2 = 72."],
+  ]);
+
+  push("edexcel_fs_maths_l1","fs1_measures",[
+    ["A bedroom floor is 4 m by 3.5 m. The area of carpet needed is:",["14 m²","15 m²","7.5 m²","14.5 m²"],0,"Area = 4 × 3.5 = 14 m²."],
+    ["A path is 12 m long and 1.5 m wide. Its area is:",["18 m²","13.5 m²","27 m²","18.5 m²"],0,"Area = 12 × 1.5 = 18 m²."],
+    ["A bus leaves at 14:50 and the journey takes 1 hour 25 minutes. It arrives at:",["16:15","16:05","15:15","16:25"],0,"14:50 + 1 h = 15:50; + 25 min = 16:15."],
+    ["A water tank holds 200 litres. How many millilitres is this?",["200,000 ml","20,000 ml","2,000 ml","200 ml"],0,"1 litre = 1,000 ml; 200 × 1,000 = 200,000 ml."],
+    ["£300 is saved at 3% simple interest per year. The interest after one year is:",["£9","£30","£3","£90"],0,"3% of £300 = £300 × 0.03 = £9."],
+    ["A box measures 50 cm × 40 cm × 25 cm. Its volume is:",["50,000 cm³","115 cm³","5,000 cm³","2,000 cm³"],0,"50 × 40 × 25 = 50,000 cm³."],
+    ["A model is built to a scale of 1:20. A real car 4 m long appears on the model as:",["20 cm","80 cm","2 cm","200 cm"],0,"4 m = 400 cm; 400 ÷ 20 = 20 cm."],
+    ["A recipe needs 0.75 kg of potatoes. In grams this is:",["750 g","75 g","7,500 g","7.5 g"],0,"0.75 kg = 0.75 × 1,000 = 750 g."],
+    ["A sofa priced £800 has 20% off in a sale. The amount saved is:",["£160","£200","£80","£640"],0,"20% of £800 = £160."],
+    ["A rectangular field is 120 m by 80 m. The distance around its edge (perimeter) is:",["400 m","9,600 m","200 m","440 m"],0,"Perimeter = 2 × (120 + 80) = 2 × 200 = 400 m."],
+    ["A train departs at 09:35 and arrives at 12:20. The journey time was:",["2 h 45 min","3 h 15 min","2 h 55 min","2 h 85 min"],0,"09:35 → 12:35 would be 3 h, but arrival is 12:20, so 2 h 45 min."],
+    ["A tin of paint covers 12 m². The number of tins needed to paint a 40 m² wall is:",["4","3","5","4.5"],0,"40 ÷ 12 = 3.33, so 4 tins are needed (you cannot buy part of a tin)."],
+  ]);
+
+  push("edexcel_fs_maths_l1","fs1_data",[
+    ["The number of goals in five matches was 1, 3, 2, 0, 4. The mean number of goals was:",["2","3","10","1"],0,"(1+3+2+0+4) ÷ 5 = 10 ÷ 5 = 2."],
+    ["Daily rainfall (mm) was 4, 9, 2, 7, 3. The range is:",["7","9","2","11"],0,"Range = 9 − 2 = 7."],
+    ["A bag contains 4 red, 4 blue and 2 yellow sweets. The probability of picking a yellow sweet is:",["1/5","2/8","1/10","1/4"],0,"Total = 10; P(yellow) = 2/10 = 1/5."],
+    ["A weather forecast says there is a 0.8 probability of rain. This means rain is:",["Likely","Unlikely","Impossible","Certain"],0,"0.8 is close to 1, so rain is likely."],
+    ["A pie chart of 80 people shows a quarter chose football. The number who chose football is:",["20","40","25","8"],0,"¼ of 80 = 20."],
+    ["A six-sided dice is rolled. The probability of rolling a 5 is:",["1/6","1/5","5/6","1/2"],0,"One '5' out of six equally likely faces: 1/6."],
+    ["Five parcels weigh 2, 5, 3, 4 and 6 kg. The mean weight is:",["4 kg","5 kg","3 kg","20 kg"],0,"(2+5+3+4+6) ÷ 5 = 20 ÷ 5 = 4 kg."],
+    ["A bar chart shows visitors of 40, 55, 35 and 70 over four days. The total number of visitors was:",["200","180","210","190"],0,"40 + 55 + 35 + 70 = 200."],
+    ["A spinner has 5 equal sections numbered 1–5. The probability of spinning an even number is:",["2/5","3/5","1/2","1/5"],0,"Even numbers are 2 and 4: 2 out of 5 = 2/5."],
+    ["In a survey of 40 people, ⅛ said they cycle. The number who cycle is:",["5","8","10","4"],0,"⅛ of 40 = 40 ÷ 8 = 5."],
+    ["The most common (mode) shoe size from 6, 7, 7, 8, 7, 9 is:",["7","8","6","9"],0,"The mode is the most frequent value: 7 appears three times."],
+    ["An event has probability 0. This means it is:",["Impossible","Certain","Likely","Even chance"],0,"A probability of 0 means the event cannot happen."],
+  ]);
+
+  // ═══════════════ LEVEL 2 ═══════════════
+
+  push("edexcel_fs_maths_l2","fs2_number",[
+    ["A salary of £28,000 is increased by 4.5%. The new salary is:",["£29,260","£29,120","£28,450","£32,500"],0,"4.5% of £28,000 = £1,260; £28,000 + £1,260 = £29,260."],
+    ["A laptop costs £540 including 20% VAT. The price before VAT was:",["£450","£432","£520","£448"],0,"£540 is 120% of the pre-VAT price; £540 ÷ 1.2 = £450."],
+    ["A recipe uses flour and sugar in the ratio 5:2. If 700 g of flour is used, the sugar needed is:",["280 g","350 g","250 g","200 g"],0,"700 ÷ 5 = 140 per part; sugar = 2 × 140 = 280 g."],
+    ["Express 27 out of 45 as a percentage:",["60%","54%","27%","62%"],0,"(27 ÷ 45) × 100 = 60%."],
+    ["A shop offers '⅓ off'. A coat priced £75 now costs:",["£50","£25","£45","£55"],0,"⅓ of £75 = £25 off; £75 − £25 = £50."],
+    ["Work out 40 − 6 × 2 + 3²:",["37","71","31","43"],0,"BIDMAS: 3²=9, 6×2=12; 40 − 12 + 9 = 37."],
+    ["A car loses 15% of its £12,000 value in a year. Its value after one year is:",["£10,200","£1,800","£11,985","£10,800"],0,"15% of £12,000 = £1,800; £12,000 − £1,800 = £10,200."],
+    ["¾ − ⅖ = ",["7/20","1/2","2/7","1/20"],0,"Common denominator 20: 15/20 − 8/20 = 7/20."],
+    ["£900 is shared in the ratio 2:3:4. The largest share is:",["£400","£300","£200","£450"],0,"2+3+4 = 9 parts; £900 ÷ 9 = £100; largest = 4 × £100 = £400."],
+    ["A price increases from £250 to £290. The percentage increase is:",["16%","40%","14%","11.5%"],0,"Change = £40; (40 ÷ 250) × 100 = 16%."],
+    ["Estimate 6.1 × 19.8 by rounding to whole numbers:",["About 120","About 60","About 200","About 12"],0,"6.1 ≈ 6, 19.8 ≈ 20; 6 × 20 = 120."],
+    ["£1 = $1.25. The number of pounds you get for $200 is:",["£160","£250","£175","£140"],0,"To convert dollars to pounds, divide: 200 ÷ 1.25 = £160."],
+  ]);
+
+  push("edexcel_fs_maths_l2","fs2_measures",[
+    ["A train travels 240 km in 3 hours. Its average speed is:",["80 km/h","720 km/h","60 km/h","120 km/h"],0,"Speed = distance ÷ time = 240 ÷ 3 = 80 km/h."],
+    ["£2,000 is invested at 3% compound interest. Its value after 2 years is:",["£2,121.80","£2,120.00","£2,060.00","£2,180.00"],0,"Yr1: 2,000 × 1.03 = 2,060; Yr2: 2,060 × 1.03 = £2,121.80."],
+    ["A triangular sail has base 4 m and height 5 m. Its area is:",["10 m²","20 m²","9 m²","12 m²"],0,"Area = ½ × base × height = ½ × 4 × 5 = 10 m²."],
+    ["A circular pond has radius 3 m. Using π ≈ 3.14, its area is approximately:",["28.26 m²","18.84 m²","9.42 m²","6.28 m²"],0,"Area = π r² = 3.14 × 9 = 28.26 m²."],
+    ["A gold bar has mass 600 g and volume 31 cm³ (approx). Its density to the nearest whole number is about:",["19 g/cm³","20 g/cm³","18 g/cm³","2 g/cm³"],0,"Density = 600 ÷ 31 ≈ 19.35 ≈ 19 g/cm³."],
+    ["A cylinder has radius 5 cm and height 8 cm. Using π ≈ 3.14, its volume is approximately:",["628 cm³","251.2 cm³","125.6 cm³","200 cm³"],0,"Volume = π r² h = 3.14 × 25 × 8 = 628 cm³."],
+    ["A distance of 100 km is approximately how many miles? (5 miles ≈ 8 km)",["62.5 miles","160 miles","80 miles","50 miles"],0,"100 ÷ 8 × 5 = 62.5 miles."],
+    ["An electrician charges a £35 call-out plus £42 per hour. A 2.5-hour job costs:",["£140","£105","£192.50","£77"],0,"35 + 42 × 2.5 = 35 + 105 = £140."],
+    ["A map scale is 1:25,000. Two towns are 6 cm apart on the map. The real distance is:",["1.5 km","150 m","15 km","2.5 km"],0,"6 × 25,000 = 150,000 cm = 1,500 m = 1.5 km."],
+    ["The angles round a point are 90°, 130°, x and 50°. The value of x is:",["90°","80°","100°","70°"],0,"Angles round a point sum to 360°; x = 360 − 90 − 130 − 50 = 90°."],
+    ["A worker is paid £13.50 per hour and earns £472.50 in a week. The number of hours worked was:",["35","30","36","40"],0,"472.50 ÷ 13.50 = 35 hours (rate of pay rearranged)."],
+    ["A cyclist covers 45 km in 1 hour 30 minutes. Their average speed is:",["30 km/h","45 km/h","67.5 km/h","22.5 km/h"],0,"1 h 30 min = 1.5 h; 45 ÷ 1.5 = 30 km/h."],
+  ]);
+
+  push("edexcel_fs_maths_l2","fs2_data",[
+    ["House prices (£000s): 180, 195, 210, 185, 800. The best average to describe a typical price is the:",["Median","Mean","Range","Mode"],0,"The £800k value is an outlier inflating the mean; the median is more representative."],
+    ["The values 6, 9, 9, 12, 14 have a median of:",["9","10","9.5","8"],0,"Ordered already; the middle (3rd) value is 9."],
+    ["A frequency table: score 1 (×4), score 2 (×4), score 3 (×2). The mean score is:",["1.8","2","1.5","10"],0,"Σ(value×freq) = 4 + 8 + 6 = 18; total freq = 10; mean = 18 ÷ 10 = 1.8."],
+    ["On a pie chart of 360 customers, 90 chose online shopping. The angle for online shopping is:",["90°","45°","120°","60°"],0,"(90 ÷ 360) × 360 = 90°."],
+    ["A scatter graph shows hours studied against test score, with points rising together. This shows:",["Positive correlation","Negative correlation","No correlation","Inverse proportion"],0,"As one rises the other rises — positive correlation."],
+    ["Two dice are rolled. The probability of both showing a 6 is:",["1/36","1/6","2/12","1/12"],0,"Independent events: 1/6 × 1/6 = 1/36."],
+    ["The mean of six numbers is 15. One number is removed and the new mean of the remaining five is 16. The number removed was:",["10","15","16","11"],0,"Original total = 6 × 15 = 90; new total = 5 × 16 = 80; removed = 90 − 80 = 10."],
+    ["A set of data: 3, 5, 5, 7, 20. Which statement is true?",["The mean is greater than the median","The median is greater than the mean","Mean equals median","There is no mode"],0,"Mean = 40 ÷ 5 = 8; median = 5. The outlier 20 pulls the mean above the median."],
+    ["The probability it rains is 0.3. The probability it does NOT rain is:",["0.7","0.3","1.3","0.5"],0,"Probabilities sum to 1: 1 − 0.3 = 0.7."],
+    ["Times (mins): 22, 25, 25, 28, 30, 25. The mode is:",["25","26","30","22"],0,"The mode is the most frequent value: 25 appears three times."],
+    ["A survey of 200 people: 120 prefer tea. Expressed as a percentage, this is:",["60%","40%","12%","120%"],0,"(120 ÷ 200) × 100 = 60%."],
+    ["A bag has 5 red, 3 green and 2 blue balls. The probability of picking red or blue is:",["7/10","5/10","2/10","1/2"],0,"P(red or blue) = (5 + 2)/10 = 7/10."],
+  ]);
+
+  console.log("[functional_skills_expand.js] FS Maths L1 & L2 expanded with more questions.");
+})();
+</script>
+<script>
+// ============================================================
+//  FUNCTIONAL SKILLS MATHS — BREADTH & DEPTH PACK
+//  Adds a "Multi-step problem solving" topic to each level and
+//  tops up the three content-area topics with more questions.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C) return;
+  function push(ck,tk,qs){ const t=C[ck]&&C[ck].topics[tk]; if(t) t.quiz.push(...qs); }
+  function addTopic(ck,tk,topic){ if(C[ck]&&!C[ck].topics[tk]) C[ck].topics[tk]=topic; }
+
+  // ══════════════════ LEVEL 1 — new problem-solving topic ══════════════════
+  addTopic("edexcel_fs_maths_l1","fs1_problems",{
+    name:"Multi-step problem solving",
+    cards:[
+      ["Working through multi-step problems.","Read carefully, decide what each step needs, do them in order and keep track of units. Check your answer is sensible at the end (the 'reasonableness' check)."],
+      ["Budgeting.","Add up all the money coming in (income) and all going out (costs). Money left = income − costs. A negative result means overspending."],
+      ["Best value.","To compare, work out the cost of the same amount (e.g. price per 100 g, or price per item) for each option, then choose the smaller unit cost."],
+      ["Checking answers.","Estimate first by rounding, then compare to your calculated answer. If they are far apart, re-check your working."],
+      ["Reading real documents.","Payslips, bills, timetables and recipes contain the numbers you need. Pick out the relevant figures before you calculate."],
+    ],
+    quiz:[
+      ["Sam earns £320 a week and spends £95 on rent, £60 on food and £40 on travel. The amount left each week is:",["£125","£195","£515","£105"],0,"Costs = 95+60+40 = £195; left = 320 − 195 = £125."],
+      ["A 6-pack of juice costs £2.40 and a single carton costs £0.45. Buying the 6-pack instead of 6 singles saves:",["£0.30","£0.45","£2.70","£0.15"],0,"6 singles = 6 × 0.45 = £2.70; saving = 2.70 − 2.40 = £0.30."],
+      ["A recipe for 4 makes enough for £6 of ingredients. Making enough for 10 people costs:",["£15","£12","£24","£18"],0,"£6 ÷ 4 = £1.50 per person; £1.50 × 10 = £15."],
+      ["A taxi charges £3 to start plus £1.20 per mile. A 7-mile trip costs:",["£11.40","£8.40","£10.20","£9.60"],0,"3 + 1.20 × 7 = 3 + 8.40 = £11.40."],
+      ["A painter buys 3 tins of paint at £14 each and a brush for £6. From £60, the change is:",["£12","£18","£8","£10"],0,"Cost = 3×14 + 6 = 42 + 6 = £48; change = 60 − 48 = £12."],
+      ["A 750 g bag of pasta costs £1.50 and a 1 kg bag costs £1.80. The better value per 100 g is:",["The 1 kg bag","The 750 g bag","They are the same","Cannot tell"],0,"750 g: 150 ÷ 7.5 = 20p per 100 g. 1 kg: 180 ÷ 10 = 18p per 100 g. The 1 kg bag is cheaper per 100 g."],
+      ["A family of 2 adults (£12 each) and 3 children (£7 each) visit a zoo. The total cost is:",["£45","£38","£57","£40"],0,"Adults 2×12 = 24; children 3×7 = 21; total = £45."],
+      ["A tank holds 40 litres and is ¼ full. To fill it completely you must add:",["30 litres","10 litres","20 litres","35 litres"],0,"¼ of 40 = 10 litres in it; need 40 − 10 = 30 litres more."],
+      ["A worker does a 5-day week, 7.5 hours a day, at £10/hour. Their weekly pay is:",["£375","£350","£300","£75"],0,"Hours = 5 × 7.5 = 37.5; pay = 37.5 × £10 = £375."],
+      ["Tiles are 20 cm squares. The number needed to cover a 2 m × 1 m wall is:",["50","10","25","100"],0,"Wall = 200 cm × 100 cm. Across: 200÷20 = 10; up: 100÷20 = 5; total 10 × 5 = 50 tiles."],
+      ["A phone contract is £15/month for 24 months, or £320 to buy outright. Over 24 months, buying outright saves:",["£40","£360","£15","£24"],0,"Contract = 15 × 24 = £360; saving = 360 − 320 = £40."],
+      ["A jug of squash uses 1 part concentrate to 4 parts water, making 1 litre. The amount of concentrate used is:",["200 ml","250 ml","100 ml","400 ml"],0,"1 + 4 = 5 parts = 1,000 ml; 1 part = 200 ml of concentrate."],
+      ["A coach seats 52. To take 180 people on a trip, the number of coaches needed is:",["4","3","3.5","5"],0,"180 ÷ 52 = 3.46, so 4 coaches are needed (round up — can't have part of a coach)."],
+      ["A shopper has £20. They buy items costing £6.50, £4.20 and £3.99. The change is:",["£5.31","£5.41","£14.69","£6.31"],0,"Total = 6.50+4.20+3.99 = £14.69; change = 20 − 14.69 = £5.31."],
+    ]
+  });
+
+  // top-ups to existing L1 topics
+  push("edexcel_fs_maths_l1","fs1_number",[
+    ["A charity collects £2,340 in week one and £1,875 in week two. The total collected was:",["£4,215","£4,115","£4,225","£3,215"],0,"2,340 + 1,875 = £4,215."],
+    ["30% of the 60 members of a club are new this year. The number of new members is:",["18","20","30","15"],0,"30% of 60 = 60 × 0.3 = 18."],
+    ["A number multiplied by 10 gives 4,530. The number is:",["453","45,300","4,540","4,520"],0,"4,530 ÷ 10 = 453."],
+    ["⅗ of a £45 prize is given away. The amount given away is:",["£27","£18","£15","£9"],0,"⅗ of 45 = (45÷5)×3 = 27."],
+    ["A pack of 6 eggs costs £1.32. The cost of one egg is:",["22p","26p","20p","24p"],0,"£1.32 ÷ 6 = £0.22 = 22p."],
+    ["The square of 8 is:",["64","16","24","88"],0,"8² = 8 × 8 = 64."],
+  ]);
+
+  push("edexcel_fs_maths_l1","fs1_measures",[
+    ["A garden bed is 3 m long and 1.2 m wide. Its area is:",["3.6 m²","4.2 m²","8.4 m²","3.2 m²"],0,"Area = 3 × 1.2 = 3.6 m²."],
+    ["A journey starts at 07:50 and takes 40 minutes. It ends at:",["08:30","08:20","07:90","08:40"],0,"07:50 + 40 min = 08:30."],
+    ["£250 earns 6% simple interest in a year. The interest is:",["£15","£6","£25","£150"],0,"6% of £250 = £15."],
+    ["A crate is 60 cm × 50 cm × 40 cm. Its volume is:",["120,000 cm³","150 cm³","12,000 cm³","1,200 cm³"],0,"60 × 50 × 40 = 120,000 cm³."],
+    ["3.2 kg is the same as:",["3,200 g","320 g","32,000 g","32 g"],0,"3.2 × 1,000 = 3,200 g."],
+    ["A £45 pair of shoes has ⅓ off. The saving is:",["£15","£30","£9","£12"],0,"⅓ of £45 = £15."],
+  ]);
+
+  push("edexcel_fs_maths_l1","fs1_data",[
+    ["Scores were 6, 8, 8, 10, 8. The mode is:",["8","6","10","7"],0,"The most common value is 8 (three times)."],
+    ["Ages were 14, 18, 12, 20, 16. The range is:",["8","20","6","32"],0,"Range = 20 − 12 = 8."],
+    ["A raffle has 50 tickets; you buy 5. Your probability of winning the single prize is:",["1/10","5/50 = 1/5","1/50","5/10"],0,"P(win) = 5/50 = 1/10."],
+    ["The mean of 3, 7, 5, 9 is:",["6","5","7","24"],0,"(3+7+5+9) ÷ 4 = 24 ÷ 4 = 6."],
+    ["A pie chart shows ¾ of 200 people prefer cars. The number preferring cars is:",["150","50","75","100"],0,"¾ of 200 = 150."],
+    ["A drawer has 3 black and 7 white socks. P(picking black) is:",["3/10","7/10","1/3","3/7"],0,"P(black) = 3/10."],
+  ]);
+
+  // ══════════════════ LEVEL 2 — new problem-solving topic ══════════════════
+  addTopic("edexcel_fs_maths_l2","fs2_problems",{
+    name:"Multi-step problem solving",
+    cards:[
+      ["Multi-step reasoning.","Level 2 problems often combine two content areas (e.g. money and measures). Break the problem into stages, complete each, then combine — and check the result is reasonable."],
+      ["Budgeting & financial decisions.","Compare total costs including interest, VAT, discounts and instalments. The cheapest headline price isn't always the best overall deal."],
+      ["Best buy with unit pricing.","Find the cost of the same unit (per litre, per 100 g, per item) for each option and compare. Watch for multi-buy offers and % extra free."],
+      ["Interpreting results in context.","After calculating, state what the answer means for the situation and whether rounding up or down makes sense (e.g. number of vehicles must round up)."],
+      ["Percentage change chains.","Applying two percentage changes in turn: work out the first, then apply the second to the new amount — do not simply add the percentages."],
+    ],
+    quiz:[
+      ["A sofa costs £900. It can be bought with a 10% deposit and 12 monthly payments of £70. The total paid this way, compared with £900 cash, is:",["£30 more","£30 less","the same","£90 more"],0,"Deposit = £90; instalments = 12×70 = £840; total = £930, which is £30 more than £900."],
+      ["A shop increases a £40 price by 10%, then reduces the new price by 10%. The final price is:",["£39.60","£40.00","£36.00","£44.00"],0,"£40 → +10% = £44 → −10% of 44 = £4.40 off = £39.60. Chained % changes don't cancel."],
+      ["Petrol costs £1.45 per litre. Filling a 45-litre tank costs:",["£65.25","£62.50","£46.45","£31.03"],0,"45 × 1.45 = £65.25."],
+      ["A worker earns £2,400 per month. They save 15% and spend £900 on rent. The amount left after saving and rent is:",["£1,140","£1,500","£360","£1,260"],0,"Saving = 15% of 2,400 = £360; left = 2,400 − 360 − 900 = £1,140."],
+      ["A 2 kg bag of rice costs £3.20 and a 5 kg bag costs £7.50. The better value per kg is:",["The 5 kg bag","The 2 kg bag","They are equal","Cannot tell"],0,"2 kg: 320÷2 = 160p/kg. 5 kg: 750÷5 = 150p/kg. The 5 kg bag is cheaper per kg."],
+      ["A car travels 315 miles using 35 litres of fuel. Its fuel economy is:",["9 miles/litre","11 miles/litre","8 miles/litre","10 miles/litre"],0,"315 ÷ 35 = 9 miles per litre."],
+      ["A £1,500 TV is bought on finance: 20% deposit then 10 payments of £130. The total paid is:",["£1,600","£1,300","£1,500","£1,800"],0,"Deposit = £300; instalments = 10×130 = £1,300; total = £1,600."],
+      ["A recipe for 6 uses 450 g flour. For 8 people the flour needed is:",["600 g","560 g","675 g","338 g"],0,"450 ÷ 6 = 75 g per person; 75 × 8 = 600 g."],
+      ["A tap fills a 240-litre bath at 8 litres per minute. The time to fill it is:",["30 minutes","20 minutes","32 minutes","28 minutes"],0,"240 ÷ 8 = 30 minutes."],
+      ["Paint covers 10 m² per litre. A room with 46 m² of wall needs (whole tins only):",["5 litres","4 litres","6 litres","4.6 litres"],0,"46 ÷ 10 = 4.6, so 5 litres are needed (round up)."],
+      ["A holiday costs £840. A 5% early-booking discount then a £30 booking fee gives a final cost of:",["£828","£810","£822","£840"],0,"5% of 840 = £42 off → £798; + £30 fee = £828."],
+      ["A worker's hourly rate rises from £12.00 to £12.90. The percentage increase is:",["7.5%","9%","0.9%","0.75%"],0,"Change = £0.90; (0.90 ÷ 12.00) × 100 = 7.5%."],
+      ["A minibus seats 15. For a group of 68, the number of minibuses needed is:",["5","4","4.5","6"],0,"68 ÷ 15 = 4.53, so 5 minibuses (round up)."],
+      ["A £60 monthly bill rises by 5%, then by a further 5% the next year. After two years the bill is:",["£66.15","£66.00","£63.00","£72.00"],0,"60 × 1.05 = 63; 63 × 1.05 = £66.15."],
+    ]
+  });
+
+  // top-ups to existing L2 topics
+  push("edexcel_fs_maths_l2","fs2_number",[
+    ["A £320 item is reduced by 25% then a further 10% off the reduced price. The final price is:",["£216","£208","£224","£210"],0,"320 × 0.75 = 240; 240 × 0.9 = £216 (chained percentages)."],
+    ["Express 0.375 as a fraction in its simplest form:",["3/8","375/1000","3/4","1/3"],0,"0.375 = 375/1000 = 3/8 (divide top and bottom by 125)."],
+    ["£1,750 is shared in the ratio 3:4. The smaller share is:",["£750","£1,000","£875","£700"],0,"3+4 = 7 parts; 1,750 ÷ 7 = £250; smaller = 3 × 250 = £750."],
+    ["Increase 240 by 35%:",["324","84","275","336"],0,"35% of 240 = 84; 240 + 84 = 324."],
+    ["Work out 2³ + 4 × 5:",["28","60","23","44"],0,"BIDMAS: 2³=8, 4×5=20; 8 + 20 = 28."],
+    ["A recipe uses sugar and butter in ratio 3:5. With 250 g of butter, the sugar needed is:",["150 g","417 g","125 g","200 g"],0,"250 ÷ 5 = 50 per part; sugar = 3 × 50 = 150 g."],
+  ]);
+
+  push("edexcel_fs_maths_l2","fs2_measures",[
+    ["A runner completes a 10 km race in 40 minutes. Their speed in km/h is:",["15 km/h","25 km/h","4 km/h","6.67 km/h"],0,"40 min = ⅔ h; 10 ÷ (2/3) = 15 km/h."],
+    ["£5,000 at 4% compound interest is worth how much after 2 years?",["£5,408","£5,400","£5,200","£5,416"],0,"5,000 × 1.04 = 5,200; 5,200 × 1.04 = £5,408."],
+    ["A triangle has base 12 cm and height 9 cm. Its area is:",["54 cm²","108 cm²","21 cm²","36 cm²"],0,"Area = ½ × 12 × 9 = 54 cm²."],
+    ["A circle has diameter 10 cm. Using π ≈ 3.14, its circumference is:",["31.4 cm","78.5 cm","15.7 cm","62.8 cm"],0,"Circumference = π × d = 3.14 × 10 = 31.4 cm."],
+    ["A block has mass 900 g and volume 100 cm³. Its density is:",["9 g/cm³","0.11 g/cm³","1,000 g/cm³","90 g/cm³"],0,"Density = 900 ÷ 100 = 9 g/cm³."],
+    ["A map scale is 1:50,000. A 3 cm distance on the map is really:",["1.5 km","150 m","15 km","500 m"],0,"3 × 50,000 = 150,000 cm = 1,500 m = 1.5 km."],
+  ]);
+
+  push("edexcel_fs_maths_l2","fs2_data",[
+    ["The numbers 8, 12, 15, 12, 20, 12 have a mode of:",["12","15","20","13.2"],0,"12 is the most frequent value (three times)."],
+    ["The mean of five numbers is 20. Four of them total 78. The fifth number is:",["22","20","18","100"],0,"Total = 5×20 = 100; fifth = 100 − 78 = 22."],
+    ["Frequency table: value 5 (×3), value 10 (×2), value 15 (×5). The mean is:",["11","10","30","3.6"],0,"Σ = 15+20+75 = 110; freq = 10; mean = 11."],
+    ["Two independent events have P = 0.4 and 0.5. The probability both happen is:",["0.2","0.9","0.1","0.45"],0,"P(both) = 0.4 × 0.5 = 0.2."],
+    ["On a pie chart of 720 people, a 60° sector represents how many people?",["120","60","180","240"],0,"(60 ÷ 360) × 720 = 120."],
+    ["Data: 4, 4, 6, 8, 100. Which is most affected by the outlier 100?",["The mean","The median","The mode","The smallest value"],0,"The mean uses every value, so it is pulled up strongly by the outlier; the median and mode are unaffected."],
+  ]);
+
+  console.log("[functional_skills_depth.js] FS Maths: problem-solving topics + top-ups added.");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
@@ -14810,7 +15304,7 @@ window.COURSES.aqa_alevel_pe = {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
