@@ -7444,7 +7444,7 @@ ocr_alevel: {
     ["Work out 348 + 175.", ["523","513","423","533"], 0, "348 + 175 = <b>523</b>."],
     ["Work out 600 − 247.", ["353","447","363","253"], 0, "600 − 247 = <b>353</b>."],
     ["Work out −6 + 10.", ["4","−16","16","−4"], 0, "−6 + 10 = <b>4</b>."],
-    ["Which of these is a prime number?", ["13","15","21","9"], 0, "13 has only factors 1 and 13, so it is <b>prime</b>."],
+    ["Which one of these is a prime number?", ["13","15","21","9"], 0, "13 has only factors 1 and 13, so it is <b>prime</b>."],
   ]);
   add("num_fractions",[
     ["What is 1/2 of 18?", ["9","6","36","12"], 0, "18 ÷ 2 = <b>9</b>."],
@@ -9091,7 +9091,7 @@ ocr_alevel: {
           ["Increase £40 by 10%.", ["£44","£50","£36","£4"], 0, "40 × 1.1 = <b>£44</b>."],
           ["The multiplier for a 25% increase is:", ["1.25","0.25","1.025","0.75"], 0, "<b>1.25</b>."],
           ["Decrease 80 by 50%.", ["40","30","130","8"], 0, "Half of 80 = <b>40</b>."],
-          ["Find 15% of 200.", ["30","15","20","45"], 0, "10% = 20, 5% = 10, total <b>30</b>."],
+          ["Find 35% of 80.", ["28","24","35","32"], 0, "10% = 8, so 30% = 24; add 5% = 4; total = <b>28</b>."],
           ["The multiplier for a 20% decrease is:", ["0.8","1.2","0.2","0.08"], 0, "100% − 20% = <b>0.8</b>."],
           ["A £60 coat is reduced by 10%. New price:", ["£54","£50","£66","£6"], 0, "60 × 0.9 = <b>£54</b>."],
           ["Find 75% of 40.", ["30","25","35","20"], 0, "¾ × 40 = <b>30</b>."],
@@ -9400,7 +9400,7 @@ ocr_alevel: {
     ["Which is a prime number?", ["17","21","27","9"], 0, "17 has only factors 1 and 17: <b>prime</b>."],
     ["The HCF of 18 and 24 is:", ["6","3","2","72"], 0, "Largest common factor is <b>6</b>."],
     ["The LCM of 3 and 5 is:", ["15","8","30","1"], 0, "Smallest shared multiple is <b>15</b>."],
-    ["Which is a square number?", ["49","45","50","60"], 0, "7 × 7 = <b>49</b>."],
+    ["Which number below is a perfect square?", ["49","45","50","60"], 0, "7 × 7 = <b>49</b>."],
     ["The factors of 10 are:", ["1, 2, 5, 10","1, 10","2, 5","1, 2, 10"], 0, "<b>1, 2, 5, 10</b>."],
     ["Which number is a cube number?", ["27","25","16","9"], 0, "3³ = <b>27</b>."],
   ]);
@@ -12018,7 +12018,7 @@ window.COURSES.aqa_alevel_pe = {
         quiz: [
           ["What is natural selection?",["Better-adapted individuals survive and reproduce, passing on their genes","Organisms choose which traits to develop","The strongest organism always survives","Random changes to DNA"],0,"Natural selection: variation + differential survival + reproduction = change in population over time."],
           ["What is the FIRST step in natural selection?",["Variation exists within the population","All individuals die","Individuals choose their characteristics","Mutations occur only in the best individuals"],0,"Variation is the raw material for natural selection — without it, all individuals would respond identically to selection pressure."],
-          ["What is a mutation?",["A random change in an organism's DNA","A characteristic passed from parent to offspring","A planned change in genes","A type of reproduction"],0,"Mutations are random, spontaneous changes in DNA sequence — they are the source of new genetic variation."],
+          ["Why are mutations important for evolution?",["They create new variation that natural selection can act on","They are always harmful to the organism","They are planned improvements to a species","They cannot be passed to offspring"],0,"Mutations create new alleles/variation; if a variant improves survival, natural selection makes it more common over generations."],
           ["Bacteria can evolve resistance to antibiotics quickly because...?",["They reproduce rapidly, so natural selection acts faster","They are larger than other organisms","They have no DNA","Antibiotics improve their genes"],0,"Fast reproduction means mutations that confer resistance spread through the population in a short time — a real-world demonstration of natural selection."],
           ["What is extinction?",["When all individuals of a species have died","When a species moves to a new habitat","When a species changes into another","When population size decreases"],0,"Extinction is irreversible — once all individuals of a species are gone, that species is permanently lost."],
           ["Why is biodiversity important?",["Diverse ecosystems are more stable and provide resources, medicines and services","All species are equally useful","Only a few species are needed for an ecosystem","Biodiversity has no measurable benefit"],0,"Biodiversity supports ecosystem stability and provides humans with food, medicines and other essential services."],
@@ -15336,6 +15336,247 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ============================================================
+//  CAMBRIDGE NATIONAL — ENGINEERING MANUFACTURE (OCR J823)
+//  Single COMBINED Level 1/Level 2 qualification (as awarded).
+//  Exam unit R014: Principles of Engineering Manufacture.
+//  Four topic areas, each tiered: recall (L1) → application/
+//  analysis/evaluation (L2). Flashcards are active-recall.
+//  Replaces the earlier split ocr_cnat_eng_l1 / _l2 courses.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C){ console.error("COURSES missing before cambridge_nationals_combined.js"); return; }
+  const D=(d,o)=>({d,o:o||{}});
+
+  // Remove the earlier split courses if present
+  delete C.ocr_cnat_eng_l1;
+  delete C.ocr_cnat_eng_l2;
+
+  C.ocr_cnat_eng = {
+    name: "Cambridge National Engineering Manufacture (Level 1/2, OCR)",
+    subject: "Engineering Manufacture (Level 1/2)",
+    level: "Cambridge Nationals",
+    topics: {
+
+      // ══════════════ TOPIC AREA 1: MANUFACTURING PROCESSES ══════════════
+      cn_processes: {
+        name: "Manufacturing processes",
+        cards: [
+          ["What are the four main categories of manufacturing process?","Wasting (removes material), addition/additive (adds material), forming/moulding (reshapes), and joining (fixes parts together)."],
+          ["What does a wasting (subtractive) process do? Give examples.","Removes material from a workpiece to reach the shape: drilling, turning, milling, laser/plasma cutting, filing."],
+          ["What happens in an additive process? Give an example.","Material is built up or added — 3D printing (additive manufacturing) builds layer by layer from CAD."],
+          ["What is a forming/moulding process? Give examples.","The material is reshaped without adding or removing it: casting, injection moulding, vacuum forming, forging, bending."],
+          ["Name four joining processes.","Welding, brazing, soldering, riveting; also adhesives and nuts/bolts (mechanical fixings)."],
+          ["What is milling used for?","A rotating multi-tooth cutter removes material to produce flat faces, slots, pockets and complex profiles."],
+          ["What is turning on a lathe used for?","The workpiece rotates against a single cutting tool to produce round/cylindrical features (shafts, pins)."],
+          ["Describe injection moulding.","Molten polymer is forced under high pressure into a closed mould, cooled, then ejected — for high-volume identical plastic parts."],
+          ["Describe vacuum forming.","A heated thermoplastic sheet is drawn over a mould by removing the air beneath — for open shells like trays and packaging."],
+          ["What is casting?","Molten metal is poured into a mould cavity where it solidifies to the shape — good for complex/hollow one-piece parts."],
+          ["Compare one-off, batch and mass production.","One-off: a single bespoke item (prototype), high unit cost. Batch: a set quantity then retool, flexible. Mass: continuous high volume, low unit cost, high setup cost."],
+          ["Why is CNC used instead of manual machining for volume?","It repeats programmed operations to tight tolerances — faster, more accurate and more consistent, with less scrap."],
+          ["When would you choose casting over machining for a complex shape?","Casting forms intricate/hollow shapes in one piece with little waste; machining internal features wastes material and is slow."],
+          ["Why is 3D printing ideal for prototypes but poor for mass production?","It makes complex one-offs straight from CAD with no tooling, but is slow per part and often weaker/rougher — uneconomic at high volume."],
+          ["What factors decide the best process for a product?","Quantity required, material, complexity, tolerance/finish needed, cost, and available equipment."],
+        ],
+        quiz: [
+          // L1 recall
+          ["Drilling a hole removes material. This is a:",["Wasting (subtractive) process","Addition process","Forming process","Joining process"],0,"Wasting/subtractive processes remove material — drilling, milling, turning."],
+          ["Which process builds a product up layer by layer?",["3D printing","Milling","Turning","Casting"],0,"3D printing (additive manufacturing) builds parts up in layers from a CAD model."],
+          ["Molten plastic forced into a mould under pressure describes:",["Injection moulding","Turning","Welding","Drilling"],0,"Injection moulding forces molten polymer into a mould for high-volume plastic parts."],
+          ["Which of these is a joining process?",["Brazing","Milling","Turning","Casting"],0,"Brazing joins metals with a filler; the others shape or remove material."],
+          ["On a lathe, the workpiece spins while a tool cuts it. This is:",["Turning","Milling","Forging","Moulding"],0,"Turning rotates the workpiece against a fixed tool to make round parts."],
+          ["A heated plastic sheet pulled over a mould by removing air beneath is:",["Vacuum forming","Injection moulding","Casting","Extrusion"],0,"Vacuum forming shapes a heated sheet over a mould using suction."],
+          ["Making a single unique prototype is called:",["One-off production","Mass production","Batch production","Continuous production"],0,"One-off production makes a single bespoke item."],
+          ["Casting involves:",["Pouring molten material into a mould to set","Cutting material away","Bending sheet metal","Bolting parts together"],0,"Casting pours molten metal into a mould where it solidifies."],
+          // L2 application/analysis
+          ["A company needs 50,000 identical detailed plastic housings with fine internal features. Best process:",["Injection moulding","Vacuum forming","3D print each one","One-off hand finishing"],0,"Injection moulding gives detailed 3D parts to tight tolerances at volume, spreading tooling cost over many parts."],
+          ["A designer needs one complex prototype fast, straight from CAD. Most suitable:",["3D printing","Mass-production injection moulding","Die casting","Batch turning"],0,"3D printing builds complex one-offs from CAD with no expensive tooling."],
+          ["Batch production is chosen over mass production mainly because it:",["Allows flexibility to make different products in set quantities","Is always cheaper per unit","Needs no setup between runs","Can only make one item"],0,"Batch makes a set quantity then retools for another product — more flexible than continuous mass production."],
+          ["A hollow, intricate metal part is needed in one piece. Compared with machining, casting is better because it:",["Forms complex internal shapes in one piece with less waste","Always gives a better finish","Needs no mould","Is only for plastics"],0,"Casting forms complex/hollow shapes in a single pour, avoiding heavy machining waste."],
+          ["Why does the unit cost of a mass-produced part fall as quantity rises?",["High setup/tooling cost is spread over many parts","Materials become free","Labour per part rises","Quality control is skipped"],0,"Fixed setup/tooling cost is divided across a large output, lowering cost per part.",D('pieChart',{values:[15,85],labels:['Setup cost per part','Material + running'],alt:'cost split falls as volume rises'})],
+          ["The main limitation of 3D printing for 100,000 parts is that it is:",["Slow per part and often weaker/rougher","Too accurate","Unable to use CAD","Only for metals"],0,"3D printing is slow per unit and parts can be weaker/rougher, making it uneconomic at very high volume."],
+          ["For a bespoke architectural metal piece needed only once, the best approach is:",["One-off production","Mass production with costly tooling","Injection moulding","Die casting"],0,"A single bespoke item suits one-off production; expensive tooling can't be justified for one part."],
+          ["Vacuum forming would NOT be suitable for making:",["A detailed solid gear with internal features","A plastic food tray","A simple shell casing","A blister pack"],0,"Vacuum forming only makes simple open shells from sheet; a detailed solid gear needs moulding or machining."],
+          ["Compared with three separate processes, choosing CNC machining for volume mainly improves:",["Repeatable accuracy and reduced scrap","The colour of parts","Raw material price","The number of operators needed to watch each cut"],0,"CNC repeats programmed operations precisely, giving consistent parts and less waste."],
+        ]
+      },
+
+      // ══════════════ TOPIC AREA 2: ENGINEERING MATERIALS ══════════════
+      cn_materials: {
+        name: "Engineering materials",
+        cards: [
+          ["What are the main categories of engineering material?","Metals (ferrous & non-ferrous), polymers (thermoplastic & thermosetting), ceramics, and composites."],
+          ["What is a ferrous metal? Give examples.","A metal containing iron — mild steel, cast iron, stainless steel. Most are magnetic and can rust (unless alloyed like stainless)."],
+          ["What is a non-ferrous metal? Give examples.","A metal with no iron — aluminium, copper, brass, titanium. They resist rusting and are often lighter."],
+          ["What is a thermoplastic? Give examples.","A plastic that softens when heated and can be reshaped repeatedly — acrylic (PMMA), polythene (PE), PVC, polypropylene."],
+          ["What is a thermosetting plastic? Give examples.","A plastic that sets hard permanently when heated and can't be remelted — epoxy resin, melamine, urea formaldehyde."],
+          ["What is a composite? Give examples.","Two or more materials combined for better properties — carbon fibre, fibreglass (GRP), MDF, reinforced concrete."],
+          ["Define strength.","The ability to withstand a force without breaking or permanently deforming."],
+          ["Define hardness.","The ability to resist scratching, indentation and surface wear."],
+          ["Define toughness.","The ability to absorb impact/energy without fracturing (e.g. hammers, gears)."],
+          ["Define malleability.","Can be pressed or hammered into shape (e.g. sheets) without cracking."],
+          ["Define ductility.","Can be drawn out into wires / stretched without breaking (e.g. copper)."],
+          ["Define corrosion resistance.","The ability to resist rusting or chemical attack — important for outdoor/wet uses."],
+          ["Why must material properties match the product's function?","The wrong strength, weight, hardness or corrosion resistance means the product fails in service or is uneconomic."],
+          ["Compare a thermoplastic and a thermoset for a saucepan handle.","A thermoset (e.g. melamine) is better — it resists heat and won't soften; a thermoplastic would deform when hot."],
+          ["Explain the trade-off of choosing aluminium instead of steel.","Aluminium is lighter and corrosion-resistant but less stiff/strong and dearer — chosen when weight matters more than cost."],
+        ],
+        quiz: [
+          // L1 recall
+          ["Which of these is a ferrous metal?",["Mild steel","Aluminium","Copper","Brass"],0,"Ferrous metals contain iron; mild steel is ferrous, the others are non-ferrous."],
+          ["A metal containing no iron is called:",["Non-ferrous","Ferrous","Composite","Thermosetting"],0,"Non-ferrous metals (aluminium, copper, brass) contain no iron and don't rust like ferrous metals."],
+          ["A plastic that can be melted and reshaped repeatedly is a:",["Thermoplastic","Thermosetting plastic","Composite","Ceramic"],0,"Thermoplastics soften on heating and can be reshaped many times."],
+          ["Carbon fibre and fibreglass are examples of:",["Composites","Ferrous metals","Thermoplastics","Ceramics"],0,"Composites combine two or more materials for improved properties."],
+          ["Resistance to scratching and surface wear is:",["Hardness","Ductility","Malleability","Density"],0,"Hardness is resistance to scratching, indentation and wear."],
+          ["A material hammered into thin sheets without cracking is:",["Malleable","Brittle","Ductile","Conductive"],0,"Malleable materials can be pressed/hammered into shape."],
+          ["Copper drawn into wires shows the property of:",["Ductility","Hardness","Brittleness","Toughness"],0,"Ductility is being drawn out into a wire without breaking."],
+          ["A plastic that sets hard permanently and can't be remelted is:",["Thermosetting plastic","Thermoplastic","Acrylic","Polythene"],0,"Thermosets set permanently when heated and can't be reshaped."],
+          // L2 application/analysis
+          ["A saucepan handle must not soften when hot. Best material:",["Thermosetting plastic","Thermoplastic","Low-melting-point metal","Untreated wood"],0,"Thermosets (e.g. melamine) resist heat and keep shape; thermoplastics soften."],
+          ["Carbon fibre is chosen for racing bikes mainly because it offers:",["High strength with very low weight","Lowest cost","High density","Poor stiffness"],0,"Composites like carbon fibre give excellent strength/stiffness for minimal weight, despite high cost."],
+          ["Choosing aluminium over steel for a drone frame trades off:",["Lighter and corrosion-resistant but less stiff and dearer","Heavier but cheaper","Stronger and cheaper","Magnetic and rusts more"],0,"Aluminium is lighter and corrosion-resistant but less stiff/strong and costs more than mild steel."],
+          ["A gear must resist sudden impact without shattering. The key property is:",["Toughness","Low density","Transparency","Ductility only"],0,"Toughness is the ability to absorb impact energy without fracturing."],
+          ["Selecting a material only on lowest price can be poor because:",["A material that fails in service costs more overall","Cheap materials are always strongest","Price never matters","Properties are irrelevant"],0,"A cheap material that fails causes replacement, recall and safety costs — suitability and durability matter too."],
+          ["For an outdoor railing that must not rust, best choice:",["Stainless steel or coated/treated metal","Untreated mild steel","Bare cast iron","Cardboard"],0,"Corrosion-resistant materials or protective finishes prevent rusting outdoors."],
+          ["Titanium is used in aerospace despite cost because it is:",["Strong, light and highly corrosion-resistant","Very heavy and weak","Cheap and brittle","A good insulator only"],0,"Titanium combines high strength, low weight and excellent corrosion resistance."],
+          ["The bar chart compares tensile strength. If bar A is much taller than bar B, material A is:",["Stronger in tension than B","Lighter than B","More ductile than B","Cheaper than B"],0,"A taller bar means a higher tensile strength value — A withstands more force before failing.",D('barChart',{values:[9,4],labels:['Material A','Material B'],alt:'tensile strength comparison'})],
+        ]
+      },
+
+      // ══════════════ TOPIC AREA 3: MANUFACTURING REQUIREMENTS ══════════════
+      cn_requirements: {
+        name: "Manufacturing requirements",
+        cards: [
+          ["What is a working (engineering) drawing used for?","It communicates the exact sizes, shapes, tolerances and details needed to manufacture the product accurately."],
+          ["What is a tolerance? Why is it needed?","The allowed variation from a stated size (e.g. 50 mm ± 0.5 mm). No part can be made exactly, so tolerances give the acceptable range."],
+          ["How does tolerance affect cost?","Tighter tolerances need more precise machines, more inspection and cause more scrap — so cost rises. Only specify tight tolerances where function requires them."],
+          ["What does PPE stand for and why is it used?","Personal Protective Equipment (goggles, gloves, ear defenders, boots) — worn to protect workers from hazards."],
+          ["What is the difference between a hazard and a risk?","A hazard is anything that could cause harm; risk is the chance it actually causes harm and how serious that harm is."],
+          ["What is a risk assessment?","Identifying hazards, deciding who could be harmed, and putting control measures in place to reduce the risk."],
+          ["State the hierarchy of control (order of reducing risk).","Eliminate, then substitute/reduce, then engineering controls/guards, then safe systems of work, and PPE as the last resort."],
+          ["Why is PPE the last line of defence?","It only protects the individual if used correctly and does not remove the hazard — controlling the hazard at source is better."],
+          ["What is a jig?","A device that holds the workpiece and guides the tool, improving accuracy, repeatability and speed."],
+          ["What is a template?","A shaped pattern used to mark out or check a shape, helping produce identical parts quickly."],
+          ["Why is quality control important?","It keeps parts within tolerance, catches faults early, reduces waste/rework, and ensures products are fit for purpose and safe."],
+          ["Why are in-tolerance parts important in batch/mass production?","They are interchangeable — any part will fit and function in assembly without hand-fitting."],
+          ["Why does accurate marking out and measuring reduce cost?","Getting sizes right first time avoids scrapping material and re-manufacturing."],
+          ["Why must manufacturers follow health & safety legislation?","To protect workers and others from harm, avoid legal penalties, and keep a responsible, productive workplace."],
+        ],
+        quiz: [
+          // L1 recall
+          ["A drawing states 50 mm ± 0.5 mm. The ± 0.5 mm is the:",["Tolerance","Scale","Hazard","Datum"],0,"Tolerance is the allowed variation from the stated size.",D('rectShape',{wLabel:'50 mm ± 0.5',hLabel:'20 mm',w:200,h:110,alt:'dimensioned part with tolerance'})],
+          ["Safety goggles, gloves and ear defenders are examples of:",["PPE","Jigs","Templates","Tolerances"],0,"PPE protects workers from hazards."],
+          ["Anything that could cause harm is a:",["Hazard","Risk assessment","Tolerance","Template"],0,"A hazard is anything with the potential to cause harm."],
+          ["A device that holds the work and guides the tool for accuracy is a:",["Jig","Hazard","Tolerance","Datum"],0,"A jig holds the workpiece and guides the tool for accurate, repeatable results."],
+          ["Checking that finished products meet the required standard is:",["Quality control","A hazard","Marking out","PPE"],0,"Quality control checks products against required standards and tolerances."],
+          ["A working drawing is used to:",["Show exact sizes and details for manufacture","Advertise the product","Record sales","List staff"],0,"Working drawings communicate the precise dimensions/details needed to make the product."],
+          ["A shaped pattern used to mark out identical parts quickly is a:",["Template","Tolerance","Hazard","Datum"],0,"A template is a pattern that helps produce identical shapes efficiently."],
+          ["A tolerance of ± 1 mm on a 100 mm part gives the acceptable range:",["99 mm to 101 mm","100 mm exactly","90 mm to 110 mm","1 mm to 100 mm"],0,"± 1 mm means up to 1 mm above or below 100 mm: 99–101 mm."],
+          // L2 application/analysis
+          ["Specifying a much tighter tolerance than needed will usually:",["Increase cost through more precise machining and checking","Reduce cost","Have no effect on cost","Weaken the material"],0,"Tighter tolerances demand more precise equipment, more inspection and more scrap — raising cost."],
+          ["In the hierarchy of control, the FIRST thing to try is to:",["Eliminate the hazard","Issue PPE","Put up a warning sign","Ignore it"],0,"Eliminating the hazard at source is most effective; PPE is the last resort."],
+          ["Which is MORE effective than issuing ear defenders?",["Using quieter machinery (engineering control)","Ignoring the noise","Working faster","Removing breaks"],0,"Reducing noise at source (engineering control) is higher in the hierarchy than PPE."],
+          ["A part is dimensioned 40 mm ± 0.2 mm. An acceptable measured size is:",["40.15 mm","40.3 mm","39.7 mm","41 mm"],0,"± 0.2 mm allows 39.8–40.2 mm; 40.15 mm is within range."],
+          ["A tolerance is written 25 mm +0.1/−0.3 mm. The acceptable range is:",["24.7 mm to 25.1 mm","25 mm to 25.4 mm","24.7 mm to 25.3 mm","25.1 mm only"],0,"+0.1 gives upper limit 25.1 mm; −0.3 gives lower limit 24.7 mm."],
+          ["Doing quality control DURING production (not just after) helps to:",["Detect faults early and reduce waste","Increase the reject rate","Skip inspection","Raise tolerances automatically"],0,"In-process checks catch faults early, keeping parts in tolerance and cutting waste/rework."],
+          ["Jigs and templates improve volume manufacture mainly by:",["Making every part accurate and repeatable","Slowing production","Increasing scrap","Removing the need for materials"],0,"They fix position and guide tools so parts are consistent — better accuracy, speed and repeatability."],
+          ["Keeping parts within tolerance in batch production ensures they are:",["Interchangeable and assemble correctly","All a different size","Never inspected","Wasted"],0,"In-tolerance parts are interchangeable so they fit and function in assembly."],
+        ]
+      },
+
+      // ══════════════ TOPIC AREA 4: DEVELOPMENTS ══════════════
+      cn_developments: {
+        name: "Developments in engineering manufacture",
+        cards: [
+          ["What is automation in manufacturing?","Using machines and control systems to carry out tasks with little human involvement (e.g. robotic assembly lines)."],
+          ["What are robots used for in manufacturing?","Repetitive or dangerous tasks — welding, painting, assembly, lifting — accurately and without tiring."],
+          ["What is CAD?","Computer Aided Design — software to create accurate 2D/3D product designs."],
+          ["What is CAM?","Computer Aided Manufacture — using computers to control the machines (e.g. CNC) that make the product."],
+          ["How has CAD/CAM changed manufacturing?","Designs are made digitally (CAD) and sent straight to machines (CAM/CNC) — more accurate, faster, easier to modify, fewer errors between design and make."],
+          ["Give one benefit and one drawback of automation.","Benefit: fast, consistent, safer, lower long-term labour cost. Drawback: high setup cost, job losses, and cost/skill to maintain and reprogram."],
+          ["When is the business case for automation strongest?","For high-volume production over a long period, so the high setup cost is recovered through fast, consistent output."],
+          ["What does sustainability mean in manufacturing?","Making products in a way that reduces environmental harm and conserves resources for the future."],
+          ["Name the 6 Rs of sustainable design.","Rethink, Refuse, Reduce, Reuse, Repair, Recycle."],
+          ["Why is recycling scrap important (environmentally and economically)?","Environmentally: less mining, landfill and energy. Economically: cheaper feedstock and possible scrap income."],
+          ["Give one social/ethical drawback of automation.","Job losses for some workers, and the need for retraining into higher-skilled maintenance/programming roles."],
+          ["Evaluate a 'lights-out' fully automated factory.","Very high investment and heavy reliance on the system: a breakdown halts production and skilled staff are needed to fix/reprogram it — but it is highly efficient at scale."],
+          ["How do modern developments help firms respond quickly to change?","CAD/CAM and CNC let designs be edited and machines reprogrammed rapidly, and flexible automation switches products with less downtime."],
+          ["Why does sustainability matter to modern manufacturers?","It cuts environmental harm and cost (energy, waste, materials), meets legislation and customer expectations, and conserves finite resources."],
+        ],
+        quiz: [
+          // L1 recall
+          ["Using machines to do tasks with little human involvement is:",["Automation","Casting","Marking out","Tolerancing"],0,"Automation uses machines/control systems to perform tasks with minimal human input."],
+          ["CAD stands for:",["Computer Aided Design","Computer Assisted Drilling","Central Automated Design","Computer Analysed Data"],0,"CAD = Computer Aided Design software."],
+          ["CAM stands for:",["Computer Aided Manufacture","Computer Automated Milling","Central Assembly Method","Controlled Assembly Machine"],0,"CAM = Computer Aided Manufacture, using computers to control making the product."],
+          ["A benefit of using robots on a production line is:",["Consistent quality and they don't tire","They are cheap to buy","They need no maintenance","They are creative"],0,"Robots repeat tasks accurately and consistently without fatigue."],
+          ["Making products while reducing harm to the environment is:",["Sustainability","Automation","Tolerancing","Casting"],0,"Sustainability means manufacturing in an environmentally responsible way."],
+          ["Which is one of the 6 Rs of sustainability?",["Recycle","Rotate","Refill","Rebuild"],0,"The 6 Rs are Rethink, Refuse, Reduce, Reuse, Repair, Recycle."],
+          ["Robots are especially useful for tasks that are:",["Repetitive or dangerous","Creative and artistic","Rare and unpredictable","Requiring human judgement"],0,"Robots excel at repetitive or hazardous tasks, keeping workers safe."],
+          ["CAD software is mainly used to:",["Create accurate designs of products","Weld metal","Pour castings","Sharpen tools"],0,"CAD designs products accurately in 2D/3D before manufacture."],
+          // L2 evaluation/analysis
+          ["The biggest drawback for a small firm introducing full automation is likely:",["The high initial set-up and equipment cost","That it slows production","That quality falls","That it needs no staff at all"],0,"Automation's main barrier is the large upfront investment, though it's fast and consistent afterwards."],
+          ["The strongest business case for automation is when production is:",["High volume over a long period","A single one-off item","Never repeated","Constantly changing daily"],0,"High, sustained volume lets the high setup cost be recovered through fast, consistent output."],
+          ["A risk of a fully automated 'lights-out' factory is that:",["A breakdown can halt all production","It can never make mistakes","It needs no maintenance","It employs more low-skilled workers"],0,"Heavy reliance on the system means a fault can stop everything; skilled staff are needed to fix/reprogram it."],
+          ["Choosing to repair a machine rather than replace it applies which of the 6 Rs?",["Repair","Refuse","Rethink","Recycle"],0,"Repairing extends product life, reducing waste and resource use."],
+          ["A key environmental benefit of recycling scrap metal is that it:",["Uses less energy and reduces mining and landfill","Always weakens the metal","Increases raw material use","Sends more waste to landfill"],0,"Recycling saves energy, reduces mining and cuts landfill.",D('pieChart',{values:[75,25],labels:['Recycled feedstock','New raw material'],alt:'material sourcing split'})],
+          ["A social drawback of increased automation is:",["Job losses for some workers","Cleaner air automatically","Cheaper raw materials","Better teamwork skills"],0,"Automation can displace workers — a key social/ethical consideration."],
+          ["Modern CAD/CAM helps firms respond to design changes quickly because:",["Files can be edited and machines reprogrammed rapidly","Every change needs new hand drawings","Machines cannot be reprogrammed","It removes the need for designers"],0,"Digital designs are quick to modify and download to CNC machines, cutting changeover time."],
+          ["The best overall evaluation of automation is that it is:",["Costly to set up but efficient and consistent for high volumes","Always the cheapest option","Only ever a disadvantage","Unsuitable for any modern factory"],0,"Automation needs high investment but pays off through speed, consistency and safety at high volume."],
+        ]
+      }
+
+    }
+  };
+
+  console.log("[cambridge_nationals_combined.js] Engineering Manufacture merged into ONE Level 1/2 course with diagrams.");
+})();
+</script>
+<script>
+// ── Quality pass: reduce "longest option = answer" tell ─────────────────────
+// For questions where the correct option is far longer than every distractor
+// AND carries a trailing "— explanation" or explanatory "(...)", move that
+// detail into the explanation field so the option itself is concise. This
+// removes a length cue without altering correctness.
+(function(){
+  const C=window.COURSES; if(!C) return;
+  function trim(ans){
+    let a=ans, moved="";
+    const dash=a.match(/^(.*?)\s+[—–-]\s+(.*)$/);
+    if(dash){ a=dash[1].trim(); moved=dash[2].trim(); return {a,moved}; }
+    const paren=a.match(/^(.*?)\s*\(([^)]*\b(?:is|are|as|which|because|so|prevent|prevents|equals|since|due|means|not|excess|rejecting|copied|transmitted|undefined)\b[^)]*)\)\s*$/i);
+    if(paren){ a=paren[1].trim(); moved=paren[2].trim(); return {a,moved}; }
+    return {a:ans,moved:""};
+  }
+  let fixed=0;
+  for(const c of Object.values(C)){
+    for(const t of Object.values(c.topics||{})){
+      (t.quiz||[]).forEach(q=>{
+        if(!Array.isArray(q[1])||q[1].length!==4) return;
+        const opts=q[1].map(String), ai=q[2];
+        const ansL=opts[ai].length;
+        const distMax=Math.max(...opts.filter((_,i)=>i!==ai).map(o=>o.length));
+        if(ansL>30 && ansL>distMax*1.8){
+          const {a,moved}=trim(opts[ai]);
+          if(moved && a.length>=3 && a.length<ansL){
+            const clash=opts.some((o,i)=>i!==ai && o.trim().toLowerCase()===a.toLowerCase());
+            if(!clash){
+              q[1][ai]=a;
+              // append moved detail to explanation if not already present
+              const expl=String(q[3]||"");
+              if(!expl.toLowerCase().includes(moved.substring(0,12).toLowerCase())){
+                q[3]=expl ? (expl.replace(/\s*$/,'')+" ("+moved+")") : moved;
+              }
+              fixed++;
+            }
+          }
+        }
+      });
+    }
+  }
+  console.log("[quality_pass] trimmed "+fixed+" verbose correct-answer options (detail moved to explanation).");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
@@ -15409,7 +15650,7 @@ window.COURSES.aqa_alevel_pe = {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2","ocr_cnat_eng"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
