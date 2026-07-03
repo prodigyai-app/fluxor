@@ -80,7 +80,14 @@
 
   .layout{display:flex;gap:24px;align-items:flex-start}
   .content{flex:1;min-width:0}
-  .sidebar{flex:none;width:184px;position:sticky;top:24px;display:flex;flex-direction:column;gap:18px}
+  .sidebar{flex:none;width:230px;position:sticky;top:24px;display:flex;flex-direction:column;gap:18px}
+  .picker{background:var(--panel);border:1px solid var(--cyan,#39e0c4);box-shadow:0 0 0 1px rgba(57,224,196,.12);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+  .picker-hint{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan,#39e0c4);font-weight:600}
+  .picker .field{display:flex;flex-direction:column;gap:5px}
+  .picker .field label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan,#39e0c4);font-weight:600}
+  .picker .field select{width:100%;border-color:var(--cyan,#39e0c4);box-shadow:0 0 0 1px rgba(57,224,196,.15)}
+  .modebar{margin-bottom:22px}
+  .modebar .tabs{display:inline-flex}
   .side-nav{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
   .side-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;color:var(--ink-dim);font-weight:500;font-size:15px;text-align:left;transition:.15s;width:100%}
   .side-btn .ic{font-size:18px;line-height:1}
@@ -127,15 +134,13 @@
   .anim-explain .keyword{color:var(--amber);font-weight:600}
   .anim-err{color:var(--ink-dim);font-style:italic;padding:20px}
 
-  .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:20px;background:var(--panel);
-    border:1px solid var(--line);border-radius:10px;margin-bottom:24px}
   .field{display:flex;flex-direction:column;gap:6px}
   .field label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-dim)}
   select{font-family:var(--mono);font-size:14px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);
     border-radius:var(--radius);padding:9px 12px;min-width:210px;cursor:pointer}
   select:hover{border-color:var(--phosphor-dim)}
 
-  .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel-2);padding:4px;border-radius:8px;border:1px solid var(--line)}
+  .tabs{display:flex;gap:4px;background:var(--panel-2);padding:4px;border-radius:8px;border:1px solid var(--line)}
   .tab{padding:8px 18px;border-radius:5px;font-weight:500;color:var(--ink-dim);transition:.15s}
   .tab.active{background:var(--phosphor);color:#06231d;font-weight:600}
   .tab:not(.active):hover{color:var(--ink)}
@@ -252,11 +257,6 @@
 .wiz-choice:hover{border-color:var(--cyan,#39e0c4)}
 .wiz-choice.selected{border-color:var(--cyan,#39e0c4);background:rgba(57,224,196,.12);color:var(--cyan,#39e0c4);font-weight:600}
 /* ---- clearer top selectors ---- */
-.controls{position:relative}
-.controls-hint{width:100%;font-family:var(--mono);font-size:12px;color:var(--cyan,#39e0c4);
-  letter-spacing:.04em;margin:-4px 0 10px 0;display:flex;align-items:center;gap:7px}
-.controls .field select{border-color:var(--cyan,#39e0c4);box-shadow:0 0 0 1px rgba(57,224,196,.15)}
-.controls .field label{color:var(--cyan,#39e0c4);font-weight:600}
   .modal input.shake{border-color:var(--amber);animation:fxshake .35s}
   @keyframes fxshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
@@ -272,10 +272,16 @@
     .layout{flex-direction:column} .sidebar{position:static;width:100%}
     .side-nav{flex-direction:row} .side-btn{flex:1;justify-content:center} .side-btn span:not(.ic){display:none}
     .side-foot{display:none}
+    /* picker sits in a tidy row on tablet */
+    .picker{flex-direction:row;flex-wrap:wrap;align-items:flex-end}
+    .picker-hint{width:100%}
+    .picker .field{flex:1;min-width:140px}
   }
   @media(max-width:680px){
-    .tabs{margin-left:0;width:100%} .tab{flex:1;text-align:center;padding:8px 6px}
-    .controls{flex-direction:column;align-items:stretch} select{min-width:0;width:100%}
+    .tabs{width:100%} .tab{flex:1;text-align:center;padding:8px 6px}
+    .modebar .tabs{display:flex}
+    .picker{flex-direction:column} .picker .field{width:100%}
+    select{min-width:0;width:100%}
     .heading{flex-wrap:wrap} .flashcard{height:320px} .face .q{font-size:19px}
   }
 </style>
@@ -318,15 +324,17 @@
       <button class="side-btn" data-nav="progress"><span class="ic">📊</span><span>Progress</span></button>
       <button class="side-btn" data-nav="avatar"><span class="ic">🧑‍🚀</span><span>Avatar</span></button>
     </nav>
+    <div class="picker" id="sidePicker">
+      <div class="picker-hint">Choose what to revise</div>
+      <div class="field"><label for="levelSel">Level</label><select id="levelSel"></select></div>
+      <div class="field"><label for="subjectSel">Subject</label><select id="subjectSel"></select></div>
+      <div class="field"><label for="topicSel">Topic</label><select id="topicSel"></select></div>
+    </div>
     <div class="side-foot" id="sideFoot"></div>
   </aside>
   <div class="content">
 
-  <div class="controls">
-    <div class="controls-hint">▸ Choose your Level, Subject &amp; Topic here — then pick Flashcards or Exam questions</div>
-    <div class="field"><label for="levelSel">Level</label><select id="levelSel"></select></div>
-    <div class="field"><label for="subjectSel">Subject</label><select id="subjectSel"></select></div>
-    <div class="field"><label for="topicSel">Topic</label><select id="topicSel"></select></div>
+  <div class="modebar">
     <div class="tabs" role="tablist">
       <button class="tab active" data-mode="cards" role="tab">Flashcards</button>
       <button class="tab" data-mode="quiz" role="tab">Exam questions</button>
@@ -16135,8 +16143,9 @@ function buildCardOrder(){
 
 function render(){
   const inLearn = curSection==="learn";
-  // the controls (dropdowns + tabs) only make sense in the Learn section
-  const controls=document.querySelector(".controls"); if(controls) controls.classList.toggle("hidden", !inLearn);
+  // the picker (dropdowns) and mode tabs only make sense in the Learn section
+  const picker=document.getElementById("sidePicker"); if(picker) picker.classList.toggle("hidden", !inLearn);
+  const modebar=document.querySelector(".modebar"); if(modebar) modebar.classList.toggle("hidden", !inLearn);
   // learn sub-views
   $("cardsView").classList.toggle("hidden", !(inLearn && curMode==="cards"));
   $("quizView").classList.toggle("hidden", !(inLearn && curMode==="quiz"));
