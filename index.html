@@ -145,6 +145,13 @@
   .tab.active{background:var(--phosphor);color:#06231d;font-weight:600}
   .tab:not(.active):hover{color:var(--ink)}
 
+  .quiz-length{display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+  .qlen{padding:7px 16px;border-radius:7px;font-weight:500;font-size:14px;color:var(--ink-dim);
+    background:var(--panel-2);border:1px solid var(--line);transition:.15s}
+  .qlen:hover{color:var(--ink);border-color:var(--phosphor-dim)}
+  .qlen.active{background:var(--phosphor);color:#06231d;font-weight:700;border-color:var(--phosphor)}
+  .qlen-shuffle{margin-left:auto;font-size:13px;padding:7px 14px}
+
   .heading{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
   .heading h2{font-size:26px;font-weight:700;letter-spacing:-.02em}
   .heading .meta{font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-left:auto}
@@ -372,6 +379,12 @@
 
   <section id="quizView" class="hidden">
     <div class="heading"><h2 id="quizTitle">Exam questions</h2><span class="meta" id="quizMeta"></span></div>
+    <div class="quiz-length" id="quizLength" role="tablist">
+      <button class="qlen" data-len="5">Random 5</button>
+      <button class="qlen" data-len="10">Random 10</button>
+      <button class="qlen" data-len="all">All questions</button>
+      <button class="btn-ghost btn qlen-shuffle" id="quizShuffle" title="Pick a new random set">🔀 New set</button>
+    </div>
     <div class="quiz" id="quizList"></div>
     <div class="scorebar">
       <div><span class="big" id="quizScore">0</span> <span class="lbl">/ <span id="quizTotal">0</span> correct</span></div>
@@ -15585,6 +15598,842 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ============================================================
+//  CAMBRIDGE NATIONAL — CREATIVE iMEDIA (OCR J834)
+//  Single COMBINED Level 1/Level 2 qualification (QN 603/7090/7).
+//  Examined unit R093: Creative iMedia in the media industry.
+//  Four topic areas:
+//    1. The media industry
+//    2. Factors influencing product design
+//    3. Pre-production planning
+//    4. Distribution considerations
+//  Each topic tiered: recall (L1) → application/analysis (L2).
+//  Flashcards are active-recall (question/command-word front).
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C){ console.error("COURSES missing before creative_imedia.js"); return; }
+
+  C.ocr_cnat_imedia = {
+    name: "Cambridge National Creative iMedia (Level 1/2, OCR)",
+    subject: "Creative iMedia (Level 1/2)",
+    level: "Cambridge Nationals",
+    topics: {
+
+      // ═══════════ TOPIC AREA 1: THE MEDIA INDUSTRY ═══════════
+      im_industry: {
+        name: "The media industry",
+        cards: [
+          ["Name the main sectors of the media industry.","Publishing, film, television, video/film, audio/radio, games, advertising/marketing, and web/interactive media."],
+          ["What does the publishing sector produce?","Print and digital products such as books, newspapers, magazines, comics, e-books and websites."],
+          ["What is a digital media product? Give examples.","A product created, viewed or used on a digital device — e.g. websites, apps, games, digital graphics, animations, videos, e-books."],
+          ["What is the difference between a job role and a job sector?","A sector is an area of the industry (e.g. games); a job role is a specific job within it (e.g. games designer, programmer)."],
+          ["Name three job roles in the media industry.","Examples: graphic designer, editor, animator, photographer, web developer, games designer, project manager, videographer."],
+          ["What does a graphic designer do?","Creates visual content — logos, layouts, graphics — combining images, text and colour to communicate a message to an audience."],
+          ["What is a freelancer?","A self-employed worker hired for individual projects, rather than being permanently employed by one company."],
+          ["What is the difference between hardware and software job roles?","Hardware roles work with physical equipment (cameras, computers); software roles use programs (editing, design, coding) to create products."],
+          ["What are the main types of media job: creative, technical and senior?","Creative (designers, artists), technical (developers, editors, camera operators), and senior/management (art director, project manager) roles."],
+          ["What does a project manager do in media production?","Plans and coordinates the project — schedules tasks, manages the team, budget and deadlines to deliver on time."],
+          ["Why does the media industry rely on freelancers?","Projects are often short-term and need specialist skills for a limited time, so hiring freelancers is flexible and cost-effective."],
+          ["What is the difference between an in-house team and outsourcing?","In-house work is done by the company's own staff; outsourcing gives the work to an external company or freelancer."],
+        ],
+        quiz: [
+          ["Which of these is a sector of the media industry?",["Games","Plumbing","Catering","Accountancy"],0,"Games is a media sector; the others are unrelated industries."],
+          ["A person who designs logos and layouts is a:",["Graphic designer","Sound engineer","Camera operator","Games tester"],0,"A graphic designer creates visual content such as logos and layouts."],
+          ["A self-employed worker hired for individual projects is a:",["Freelancer","Permanent employee","Apprentice","Intern"],0,"A freelancer is self-employed and hired per project."],
+          ["Books, magazines and newspapers are produced by the:",["Publishing sector","Film sector","Audio sector","Games sector"],0,"Publishing produces print and digital text-based products."],
+          ["Which is a digital media product?",["A website","A wooden chair","A cotton shirt","A brick wall"],0,"A website is created and used on a digital device."],
+          ["A person who plans schedules, budgets and coordinates a media team is a:",["Project manager","Illustrator","Photographer","Editor"],0,"A project manager coordinates the team, budget and deadlines."],
+          ["An animator would most likely work in which sector?",["Film and games","Publishing only","Radio only","Accountancy"],0,"Animators create moving graphics for film, TV and games."],
+          ["Giving media work to an external company rather than doing it in-house is called:",["Outsourcing","Freelancing","Publishing","Broadcasting"],0,"Outsourcing means using an external company/freelancer for the work."],
+          // L2
+          ["A small design studio wins a large project needing 3D animation, a skill it lacks. The best solution is to:",["Hire a freelance 3D animator for the project","Turn down all future work","Retrain all staff over two years first","Deliver the project without the animation"],0,"Hiring a freelancer gives the specialist skill flexibly for the length of the project."],
+          ["Why might a games company prefer permanent in-house programmers over freelancers?",["Ongoing long-term work needs consistent staff who know the codebase","Freelancers are always more expensive per hour","In-house staff never need managing","Permanent staff need no salary"],0,"For continuous, long-term development, permanent staff provide consistency and retained knowledge."],
+          ["A magazine publisher moves from print to a subscription website. This mainly shows the industry trend of:",["Convergence of print and digital media","A move away from all technology","Reducing its audience deliberately","Abandoning the publishing sector"],0,"Media convergence sees traditional print products delivered through digital platforms."],
+          ["An advertising campaign needs a logo, a video and a social-media plan. This is best delivered by:",["A team combining creative and technical roles","A single camera operator alone","Only the finance department","One freelance proofreader"],0,"Varied deliverables need a mix of creative and technical roles working together."],
+        ]
+      },
+
+      // ═══════════ TOPIC AREA 2: FACTORS INFLUENCING PRODUCT DESIGN ═══════════
+      im_design_factors: {
+        name: "Factors influencing product design",
+        cards: [
+          ["What is a client brief?","A document from the client setting out what they want — the requirements, purpose, audience, content, budget and deadline for the product."],
+          ["What is the difference between a formal and an informal brief?","A formal brief is a written, detailed document; an informal brief is spoken or loosely agreed (e.g. a conversation or email)."],
+          ["What is a target audience?","The specific group of people a product is aimed at, defined by factors like age, gender, interests, location or income."],
+          ["What is audience segmentation?","Dividing a broad audience into smaller groups by shared characteristics (demographics) so products can be targeted more precisely."],
+          ["What are demographics?","Measurable characteristics of an audience — age, gender, income, location, occupation, education — used to define target groups."],
+          ["What are media codes?","Techniques used to convey meaning in media — e.g. camera angles, colour, symbols, typography and sound."],
+          ["What is the difference between technical, symbolic and written codes?","Technical codes: how it's made (camera, lighting). Symbolic codes: meaning (colour, objects). Written codes: text/language used."],
+          ["What are conventions in media products?","Accepted, expected features of a product type — e.g. a newspaper front page has a masthead, headline and lead image."],
+          ["Why must a product be 'fit for purpose'?","It must meet the client's requirements and work for the target audience, doing the job it was designed to do effectively."],
+          ["How does the client's purpose influence design?","The purpose (inform, entertain, advertise, educate) shapes the content, style, tone and media codes chosen."],
+          ["Why is the choice of colour important in design?","Colours carry meaning and mood (symbolic code) and affect how the audience feels and whether the product appeals to them."],
+          ["What is house style?","A consistent set of design rules (fonts, colours, logo use) that keeps a brand's products recognisable and unified."],
+        ],
+        quiz: [
+          ["A document from a client stating what they want is a:",["Client brief","Mood board","Storyboard","Mind map"],0,"A client brief sets out the requirements, purpose, audience and constraints."],
+          ["The specific group of people a product is aimed at is the:",["Target audience","Client","Publisher","Distributor"],0,"The target audience is who the product is designed for."],
+          ["Age, gender, income and location are examples of:",["Demographics","Conventions","File formats","Codes of practice"],0,"Demographics are measurable characteristics used to define an audience."],
+          ["Camera angles and lighting are examples of:",["Technical codes","Written codes","Legal codes","File codes"],0,"Technical codes relate to how the product is made (camera, lighting)."],
+          ["Dividing an audience into smaller groups by shared traits is:",["Audience segmentation","Distribution","Convergence","Compression"],0,"Audience segmentation targets smaller, defined groups."],
+          ["The expected features of a product type (e.g. a masthead on a magazine) are called:",["Conventions","Demographics","Briefs","Codecs"],0,"Conventions are the accepted, expected features of a media product type."],
+          ["Using red to suggest danger or excitement is an example of a:",["Symbolic code","Technical code","File format","Legal requirement"],0,"Colour carrying meaning is a symbolic code."],
+          ["A consistent set of fonts, colours and logo rules for a brand is its:",["House style","Client brief","Target audience","Wireframe"],0,"House style keeps a brand's products consistent and recognisable."],
+          // L2
+          ["A brief is for a fun app aimed at 6–9 year-olds. The most suitable design uses:",["Bright colours, simple rounded fonts and playful images","Small serif text and muted greys","Dense technical paragraphs","A formal monochrome business layout"],0,"Bright colours and playful, simple visuals suit young children and match the purpose."],
+          ["A poster must appeal to both teenagers and pensioners. The designer should:",["Use clear, universal design that avoids alienating either group","Design only for teenagers","Use lots of teen slang throughout","Use tiny text only"],0,"A broad audience needs inclusive, clear design that works for all segments."],
+          ["A charity wants a serious, trustworthy tone. The best colour and type choice is:",["Calm blues/greens with a clean, readable font","Neon pink with a comic cartoon font","Clashing bright colours at random","Flashing animated text"],0,"Calm colours and a clean font convey seriousness and trust — matching the purpose."],
+          ["Following a client's house style when making a new leaflet ensures the product is:",["Consistent and recognisable as that brand","Completely different from their other products","Impossible to print","Aimed at a random audience"],0,"House style keeps all of a brand's products consistent and recognisable."],
+        ]
+      },
+
+      // ═══════════ TOPIC AREA 3: PRE-PRODUCTION PLANNING ═══════════
+      im_preproduction: {
+        name: "Pre-production planning",
+        cards: [
+          ["What is a mood board?","A collection of images, colours, fonts and textures gathered to explore and communicate the look and feel of a product."],
+          ["What is a mind map?","A diagram that branches out from a central idea to brainstorm and organise related thoughts and options."],
+          ["What is a visualisation diagram?","A rough drawing showing how a still image product (e.g. a poster or magazine cover) will look, with layout and content labelled."],
+          ["What is a storyboard?","A sequence of drawings showing shots/scenes of a video or animation, with notes on camera, timing, sound and action."],
+          ["What is a script?","A written document containing the dialogue, narration and directions for an audio or video product."],
+          ["What is a wireframe (for web/interactive)?","A simple layout diagram showing the structure and placement of elements on a web page or app screen, without final design."],
+          ["What is a work plan?","A schedule listing tasks, the order they're done, timings, milestones and resources needed to complete a project on time."],
+          ["What is the purpose of pre-production planning?","To plan a product before creating it — saving time and money, avoiding mistakes and making sure it meets the brief."],
+          ["What is a target audience profile used for in planning?","To keep the design focused on the intended users' needs, tastes and demographics throughout production."],
+          ["What are assets in a media project?","The content used to build a product — images, video clips, audio, graphics, text and fonts."],
+          ["What is version control / file naming for?","Keeping track of different saved versions of work using clear, consistent file names so nothing is lost or confused."],
+          ["What is a hardware and software list in planning?","A record of the equipment (cameras, computers) and programs (editing, design software) needed to make the product."],
+        ],
+        quiz: [
+          ["A collection of images, colours and fonts showing the 'look and feel' of a product is a:",["Mood board","Work plan","Script","Invoice"],0,"A mood board explores the intended look and feel."],
+          ["A sequence of drawings showing the shots of a video is a:",["Storyboard","Wireframe","Mood board","Mind map"],0,"A storyboard plans the shots/scenes of a video or animation."],
+          ["A simple layout diagram for a web page, without final design, is a:",["Wireframe","Storyboard","Script","Mood board"],0,"A wireframe shows the structure/placement of elements on a screen."],
+          ["The written dialogue and directions for a video are contained in the:",["Script","Wireframe","Work plan","Mood board"],0,"A script contains dialogue, narration and directions."],
+          ["A schedule of tasks, timings and milestones is a:",["Work plan","Mood board","Storyboard","Wireframe"],0,"A work plan schedules tasks and deadlines."],
+          ["A rough labelled drawing of how a poster will look is a:",["Visualisation diagram","Storyboard","Script","Wireframe"],0,"A visualisation diagram plans a still-image product's layout."],
+          ["Images, audio and video clips used to build a product are called:",["Assets","Briefs","Codecs","Demographics"],0,"Assets are the content used to create the product."],
+          ["The main purpose of pre-production planning is to:",["Plan before creating, saving time and avoiding mistakes","Skip straight to publishing","Increase the file size","Avoid meeting the brief"],0,"Planning first saves time/money and helps the product meet the brief."],
+          // L2
+          ["A team is planning a 30-second animated advert. The MOST useful pre-production document is a:",["Storyboard showing each shot and timing","Wireframe of a web page","Spreadsheet of staff salaries","Printed invoice"],0,"A storyboard plans the shots and timing of an animation/video."],
+          ["Before building a new website, the designer should first create a:",["Wireframe to plan page structure and navigation","Finished full-colour homepage only","Printed magazine","Radio script"],0,"A wireframe plans the layout and structure of web pages before design."],
+          ["Clear, consistent file naming during a project mainly helps to:",["Track versions and avoid losing or confusing work","Make files larger","Slow the project down","Hide work from the team"],0,"Consistent naming/version control keeps work organised and prevents loss."],
+          ["A work plan shows a task is behind schedule. The team should:",["Reallocate time/resources to meet the deadline","Ignore it and hope","Delete the work plan","Change the client brief secretly"],0,"A work plan lets the team spot slippage and adjust resources to hit the deadline."],
+        ]
+      },
+
+      // ═══════════ TOPIC AREA 4: DISTRIBUTION CONSIDERATIONS ═══════════
+      im_distribution: {
+        name: "Distribution considerations",
+        cards: [
+          ["What is a file format?","The way a file is encoded and saved, shown by its extension (e.g. .jpg, .png, .mp4) — it affects quality, size and compatibility."],
+          ["Name common image file formats and a key feature of each.","JPG: small, lossy, photos. PNG: supports transparency, lossless. GIF: few colours, animation. TIFF: high quality, large."],
+          ["What is the difference between lossy and lossless compression?","Lossy (e.g. JPG, MP3) permanently removes data to shrink the file. Lossless (e.g. PNG) keeps all data, so quality is preserved."],
+          ["What is compression and why is it used?","Reducing a file's size so it uses less storage and downloads/streams faster — important for web and mobile distribution."],
+          ["What is the difference between RGB and CMYK?","RGB (red-green-blue) is for screens/digital; CMYK (cyan-magenta-yellow-black) is for print."],
+          ["What is resolution and how does it affect a product?","The amount of detail in an image (pixels/dpi). Higher resolution = more detail and larger file; too low looks pixelated."],
+          ["Name platforms/methods used to distribute digital media.","Websites, app stores, social media, streaming services, email, physical media (USB/disc), and download."],
+          ["What is streaming vs downloading?","Streaming plays media over the internet in real time without keeping a copy; downloading saves the whole file to the device first."],
+          ["Why must file size be considered for online distribution?","Large files are slow to download/stream and use more bandwidth/data — so files are often compressed for the web."],
+          ["What is accessibility in distribution?","Making sure products can be used by everyone, including people with disabilities (e.g. subtitles, alt text, clear contrast)."],
+          ["Why choose the right file format for the platform?","Different platforms/uses need different formats (e.g. PNG for a web logo with transparency, CMYK PDF for print) to work correctly."],
+          ["What is metadata?","Information stored about a file (e.g. size, date, author, tags) that helps organise, search for and manage media assets."],
+        ],
+        quiz: [
+          ["Which file format supports transparency and lossless quality, ideal for a web logo?",["PNG","JPG","MP3","DOC"],0,"PNG supports transparency and is lossless — good for logos/graphics."],
+          ["JPG compression is:",["Lossy — it permanently removes data to shrink the file","Lossless — it keeps all data","Only for audio","Only for video"],0,"JPG is lossy, discarding data to reduce file size (fine for photos)."],
+          ["Which colour model is used for printing?",["CMYK","RGB","HTML","MIDI"],0,"CMYK (cyan-magenta-yellow-black) is used for print; RGB is for screens."],
+          ["Reducing a file's size so it downloads faster is called:",["Compression","Resolution","Segmentation","Convergence"],0,"Compression reduces file size for storage and faster transfer."],
+          ["Playing a video over the internet without saving it to your device is:",["Streaming","Downloading","Compressing","Archiving"],0,"Streaming plays media in real time without keeping a copy."],
+          ["The amount of detail in an image, measured in pixels or dpi, is its:",["Resolution","Format","Bitrate","Codec"],0,"Resolution is the level of detail; higher means more pixels."],
+          ["Which is a common way to distribute a mobile game?",["An app store","A printed leaflet","A radio broadcast","A billboard only"],0,"Apps/games are commonly distributed via app stores."],
+          ["Adding subtitles and alt text to a product improves its:",["Accessibility","File size only","Compression ratio","Frame rate"],0,"Subtitles and alt text make products usable by more people — accessibility."],
+          // L2
+          ["A designer must supply a logo for both a website and a printed brochure. The best approach is:",["PNG/RGB for web and a CMYK file for print","One low-res JPG for everything","A CMYK file for the website","Only a tiny GIF"],0,"Screens use RGB (PNG for transparency); print needs CMYK — different outputs need different files."],
+          ["A high-quality video is too large to stream smoothly. The best fix is to:",["Compress it to a suitable format and bitrate","Increase its resolution further","Convert it to a text file","Print it out"],0,"Compressing to an appropriate format/bitrate reduces size so it streams smoothly."],
+          ["A photo looks sharp on screen but pixelated when printed large. The likely cause is:",["Its resolution is too low for the print size","It uses too many colours","It was saved as PNG","It has subtitles"],0,"Low resolution means too few pixels to stay sharp when enlarged for print."],
+          ["Choosing to distribute a product via social media and streaming rather than disc mainly gives:",["Faster, wider reach to online audiences","A larger file size requirement","No need to consider file formats","A guaranteed print-quality result"],0,"Online distribution reaches large audiences quickly, which suits digital media products."],
+        ]
+      }
+
+    }
+  };
+
+  console.log("[creative_imedia.js] Cambridge National Creative iMedia (Level 1/2) added.");
+})();
+</script>
+<script>
+// ============================================================
+//  CREATIVE iMEDIA (R093) — BREADTH & DEPTH EXPANSION
+//  Adds more questions + cards across all four topic areas,
+//  including legislation, research, planning docs, hardware,
+//  and further Level 2 application/analysis.
+// ============================================================
+(function(){
+  const C=window.COURSES; const c=C&&C.ocr_cnat_imedia; if(!c) return;
+  function push(tk,qs){ if(c.topics[tk]) c.topics[tk].quiz.push(...qs); }
+  function cards(tk,cs){ if(c.topics[tk]) c.topics[tk].cards.push(...cs); }
+
+  // ═══════════ TOPIC 1: THE MEDIA INDUSTRY ═══════════
+  cards("im_industry",[
+    ["What is a multimedia product?","A product that combines two or more media types — e.g. text, images, audio, video and animation — such as a website or app."],
+    ["What is the difference between primary and secondary media?","Primary is content the company makes itself; secondary is content sourced from elsewhere (stock/third parties)."],
+    ["What does a video editor do?","Assembles and edits raw footage, adds transitions, effects, titles and audio to produce the finished video."],
+    ["What does a web developer do?","Builds and maintains websites, writing code and integrating content so the site works and looks correct."],
+    ["What is a contract of employment vs a freelance contract?","Employment: ongoing, with a salary, holiday and benefits. Freelance: per-project, self-employed, responsible for own tax/insurance."],
+  ]);
+  push("im_industry",[
+    ["A product combining text, images, audio and video is called:",["A multimedia product","A single-medium product","A print-only product","An analogue product"],0,"Multimedia combines two or more media types."],
+    ["Which job role writes and maintains the code behind a website?",["Web developer","Copywriter","Camera operator","Sound designer"],0,"A web developer builds and maintains websites with code."],
+    ["A person who assembles raw footage into a finished video is a:",["Video editor","Illustrator","Games tester","Proofreader"],0,"A video editor cuts and assembles footage into the final product."],
+    ["Content a company creates itself, rather than sourcing from elsewhere, is:",["Primary media","Secondary media","Stock media","Archived media"],0,"Primary media is original content made in-house; secondary is sourced elsewhere."],
+    ["A benefit to a company of using stock (secondary) images is that they are:",["Quick and cheaper than commissioning original photos","Always higher quality than any original","Free of any licence terms","Unique to that company"],0,"Stock content is fast and cost-effective, though not exclusive to the company."],
+    // L2
+    ["A start-up needs a website, a logo and a promo video but has a small budget. The best mix is likely:",["Freelancers for the video/logo and a template-based website","A large permanent multinational team","Only a permanent 20-person studio","No planning and outsource nothing"],0,"Freelancers for specialist one-off tasks plus efficient tools suits a small budget and short project."],
+    ["A streaming platform commissioning its own original series rather than licensing shows is investing in:",["Primary content it owns and controls","Only secondary content","Print publishing","Radio broadcasting"],0,"Producing original owned content is primary media, giving control and exclusivity."],
+    ["Why is teamwork with clear roles important on a large media project?",["Specialists focus on their strengths and work is coordinated to the deadline","One person should do everything alone","Roles slow every project down","It removes the need for a brief"],0,"Defined roles let specialists contribute efficiently while the project stays coordinated."],
+    ["A designer must choose between employment and freelancing. Freelancing suits them if they want:",["Variety of clients and flexible hours, accepting less security","Guaranteed monthly salary and paid holiday","No responsibility for their own tax","A single employer for life"],0,"Freelancing offers variety and flexibility but less security and self-managed tax — a genuine trade-off."],
+    ["A company posts a role needing both creative flair and coding skill for interactive ads. This is a:",["Hybrid creative-technical role","Purely administrative role","Finance-only role","Cleaning role"],0,"Interactive work often needs combined creative and technical skills in one role."],
+  ]);
+
+  // ═══════════ TOPIC 2: FACTORS INFLUENCING PRODUCT DESIGN ═══════════
+  cards("im_design_factors",[
+    ["What is primary research?","Research you carry out yourself to get new, first-hand information — e.g. surveys, questionnaires, interviews, focus groups."],
+    ["What is secondary research?","Using information that already exists, gathered by others — e.g. websites, books, reports, existing market data."],
+    ["What is qualitative vs quantitative data?","Quantitative is numerical (counts, ratings); qualitative is descriptive (opinions, comments, feelings)."],
+    ["What is client feedback used for in design?","To check the product meets the brief and to guide improvements before it is finished."],
+    ["What is accessibility in product design?","Designing so that everyone, including people with disabilities, can use the product (e.g. contrast, alt text, captions)."],
+    ["Why must designers consider the platform a product is viewed on?","A product must work on its intended device/screen size (phone, print, big screen), affecting layout, resolution and format."],
+  ]);
+  push("im_design_factors",[
+    ["Carrying out your own survey to gather new information is:",["Primary research","Secondary research","Distribution","Compression"],0,"Primary research is first-hand data you collect yourself."],
+    ["Using existing reports and websites for information is:",["Secondary research","Primary research","A client brief","A wireframe"],0,"Secondary research uses information already gathered by others."],
+    ["Numerical data such as '68% preferred blue' is:",["Quantitative data","Qualitative data","A demographic only","A file format"],0,"Quantitative data is numerical; qualitative is descriptive opinion."],
+    ["A focus group giving detailed opinions produces mainly:",["Qualitative data","Quantitative data","Metadata","Resolution data"],0,"Opinions and comments are qualitative (descriptive) data."],
+    ["Designing captions and good colour contrast improves a product's:",["Accessibility","File size","Compression ratio","Frame rate"],0,"Captions and contrast make products usable by more people — accessibility."],
+    ["Which is an example of a symbolic code conveying meaning?",["A crown to suggest luxury or royalty","A JPEG file","A survey result","A deadline"],0,"An object standing for an idea (crown = luxury) is a symbolic code."],
+    // L2
+    ["A designer wants honest, numerical evidence of which of two logos people prefer. Best method:",["A survey/questionnaire with a large sample (quantitative)","A single friend's opinion","Guesswork","Reading an unrelated book"],0,"A survey of many people gives measurable, comparable quantitative evidence."],
+    ["A magazine for a teenage audience underperforms with over-50s. This is acceptable because:",["The product is correctly targeted at its intended audience","It should appeal equally to everyone","Targeting is always a mistake","Audiences never matter"],0,"A product is designed for its target audience; not appealing to others is expected, not a fault."],
+    ["Before finalising a design, showing it to the client for feedback mainly helps to:",["Confirm it meets the brief and allow changes early","Increase the file size","Skip the planning stage","Avoid meeting the deadline"],0,"Early client feedback checks the brief is met and lets changes happen cheaply before completion."],
+    ["A game will be played mostly on phones. The design should therefore:",["Use touch-friendly controls and a layout that fits small screens","Assume a large cinema screen","Require a keyboard and mouse only","Ignore screen size"],0,"Designing for the target platform (mobile) means touch controls and a small-screen layout."],
+    ["Qualitative comments from users are most useful for:",["Understanding why people like or dislike a design","Counting exact percentages","Measuring file sizes","Timing a video precisely"],0,"Qualitative data explains reasons and feelings, adding the 'why' behind the numbers."],
+  ]);
+
+  // ═══════════ TOPIC 3: PRE-PRODUCTION PLANNING ═══════════
+  cards("im_preproduction",[
+    ["What is a flow chart used for in planning?","To map the steps, decisions and paths through an interactive product (e.g. a website or game) in order."],
+    ["What is a shot list?","A list of every shot needed for a video, with details like shot type, angle, location and content."],
+    ["What is a mind map best used for?","The early idea-generation (brainstorming) stage, branching from a central concept to explore options."],
+    ["Why record hardware and software requirements when planning?","So the right equipment and programs are available before production begins, avoiding delays."],
+    ["What is a test plan?","A planned set of checks to make sure the finished product works correctly and meets the brief."],
+    ["Why keep folders and files organised during a project?","So assets and versions can be found quickly, work isn't lost, and the team can collaborate efficiently."],
+  ]);
+  push("im_preproduction",[
+    ["A diagram mapping the paths and decisions through a website is a:",["Flow chart","Mood board","Shot list","Invoice"],0,"A flow chart maps steps and decision paths through an interactive product."],
+    ["A list of every shot needed for a video, with angles and content, is a:",["Shot list","Wireframe","Mind map","Work plan"],0,"A shot list details each shot to be filmed."],
+    ["Brainstorming ideas by branching from a central concept uses a:",["Mind map","Storyboard","Test plan","Invoice"],0,"A mind map is used for early idea generation."],
+    ["Planned checks to confirm a finished product works are a:",["Test plan","Mood board","Shot list","Client brief"],0,"A test plan sets out checks to confirm the product works and meets the brief."],
+    ["Recording the software and equipment needed before production helps to:",["Ensure resources are ready and avoid delays","Increase the file size","Skip the brief","Reduce accessibility"],0,"Listing hardware/software ensures everything needed is available before starting."],
+    ["Which document plans the visual layout of a still-image product like a poster?",["Visualisation diagram","Flow chart","Shot list","Script"],0,"A visualisation diagram plans the layout of a still image product."],
+    // L2
+    ["A team is planning an interactive quiz app with branching questions. The most useful document is a:",["Flow chart of the question paths and decisions","Shot list for filming","Radio script","Single mood board only"],0,"An interactive product with branching paths is best planned with a flow chart."],
+    ["A storyboard is preferred over a wireframe when planning a:",["Video or animation with a sequence of shots","Static web page layout","Colour palette only","Printed price list"],0,"Storyboards suit time-based products (video/animation); wireframes suit screen layouts."],
+    ["Following a work plan with milestones mainly helps a team to:",["Track progress and meet the deadline","Make the product inaccessible","Increase resolution","Avoid the client brief"],0,"A work plan with milestones lets the team monitor progress and stay on schedule."],
+    ["A test plan created during planning should check that the product:",["Works correctly and meets the brief's requirements","Has the largest possible file size","Ignores the target audience","Uses only one colour"],0,"A test plan verifies the product functions and meets the brief."],
+    ["Good version control (clear file names, saved iterations) is most valuable when:",["Several people work on the same project over time","Only one file is ever created","No changes are ever made","The project has no deadline"],0,"Version control prevents lost or confused work when a team iterates over time."],
+  ]);
+
+  // ═══════════ TOPIC 4: DISTRIBUTION CONSIDERATIONS + LEGISLATION ═══════════
+  cards("im_distribution",[
+    ["What is copyright?","A legal right that protects creators' work, meaning others cannot use it without permission or a licence."],
+    ["What is the purpose of a licence (e.g. royalty-free, Creative Commons)?","It sets out how someone else is allowed to legally use a piece of work, and any conditions or credit required."],
+    ["What is intellectual property (IP)?","Creations of the mind — designs, images, logos, music — that are owned and legally protected."],
+    ["What is the difference between a codec and a file format?","A file format is the container (.mp4); a codec is the method used to compress/decompress the media inside it."],
+    ["What is a certification/age rating and why does it matter?","A rating (e.g. PEGI for games) that tells audiences the suitable age — a legal/regulatory distribution requirement."],
+    ["Why must media producers comply with legislation?","To respect creators' rights, avoid legal action and fines, and protect audiences (e.g. from harmful or unrated content)."],
+    ["What is bandwidth and why does it matter for streaming?","The amount of data that can be transferred per second; low bandwidth means large files buffer or won't stream smoothly."],
+  ]);
+  push("im_distribution",[
+    ["The legal right that stops others using a creator's work without permission is:",["Copyright","A codec","A wireframe","A demographic"],0,"Copyright protects creators' work from unauthorised use."],
+    ["A PEGI rating on a game is an example of:",["An age/certification rating","A file format","A codec","A demographic"],0,"PEGI is an age rating — a regulatory distribution consideration."],
+    ["Designs, logos and music owned by their creator are their:",["Intellectual property","Bandwidth","Resolution","Metadata"],0,"Intellectual property (IP) covers protected creations of the mind."],
+    ["A licence such as royalty-free or Creative Commons tells you:",["How you may legally use someone's work","The exact file size","The screen resolution","The frame rate only"],0,"A licence sets out the permitted uses and any conditions/credit."],
+    ["The amount of data that can be transferred per second is:",["Bandwidth","Resolution","Compression","Copyright"],0,"Bandwidth is the data-transfer rate; low bandwidth causes buffering."],
+    ["An MP4 is a file format; the method used to compress the video inside it is the:",["Codec","Wireframe","Demographic","Masthead"],0,"A codec compresses/decompresses the media within a container format."],
+    ["Vector graphics are best for logos because they:",["Scale to any size without losing quality","Are always tiny in file size for photos","Cannot be resized","Only work in print"],0,"Vector images use maths, so they scale to any size without pixelation — ideal for logos."],
+    ["A raster (bitmap) image enlarged too much will:",["Become pixelated / blurry","Stay perfectly sharp forever","Turn into a vector","Gain resolution"],0,"Raster images are made of pixels, so over-enlarging makes them pixelated."],
+    // L2
+    ["A designer wants to use a photo found online in a commercial product. They should:",["Check the licence and get permission or use a licensed/royalty-free image","Use it freely — anything online is free","Ignore copyright","Only credit it if caught"],0,"Online images are usually copyrighted; a licence or permission is needed for legal use."],
+    ["A game contains strong violence. Before distribution it must:",["Receive an appropriate age rating (e.g. PEGI)","Be released with no rating","Hide its content type","Skip all regulation"],0,"Age ratings are a legal/regulatory requirement to inform and protect audiences."],
+    ["A logo must look sharp on a business card and a large banner. The best format is:",["A vector graphic","A small low-res JPG","A compressed GIF","A single-size bitmap"],0,"Vectors scale to any size without quality loss — right for logos used at many sizes."],
+    ["To distribute a large video to a global audience with varying internet speeds, a producer should:",["Offer compressed versions/adaptive streaming to suit different bandwidths","Only offer one huge uncompressed file","Post it on paper","Refuse to compress anything"],0,"Providing compressed/adaptive options lets viewers on different bandwidths stream smoothly."],
+    ["Crediting a Creative Commons image as required by its licence is important because:",["It is a legal condition of using the work","Credits are never needed","It increases the file size","It changes the resolution"],0,"Many licences legally require attribution; failing to credit breaches the licence."],
+  ]);
+
+  console.log("[creative_imedia_expand.js] iMedia breadth & depth added.");
+})();
+</script>
+<script>
+// ============================================================
+//  PEARSON EDEXCEL GCSE (9-1) BUSINESS (1BS0)
+//  Two themes, ten topic areas (matches the specification):
+//   Theme 1 — Investigating small business
+//     1.1 Enterprise & entrepreneurship
+//     1.2 Spotting a business opportunity
+//     1.3 Putting a business idea into practice
+//     1.4 Making the business effective
+//     1.5 Understanding external influences on business
+//   Theme 2 — Building a business
+//     2.1 Growing the business
+//     2.2 Making marketing decisions
+//     2.3 Making operational decisions
+//     2.4 Making financial decisions
+//     2.5 Making human resource decisions
+//  Active-recall flashcards; application/case-study style quiz
+//  questions with business calculations. Diagrams where useful.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C){ console.error("COURSES missing before edexcel_business.js"); return; }
+  const D=(d,o)=>({d,o:o||{}});
+
+  C.edexcel_gcse_business = {
+    name: "GCSE Business (Edexcel)",
+    subject: "Business",
+    level: "GCSE",
+    topics: {
+
+      // ═══════════ 1.1 ENTERPRISE & ENTREPRENEURSHIP ═══════════
+      biz_enterprise: {
+        name: "1.1 Enterprise & entrepreneurship",
+        cards: [
+          ["Why do new business ideas come about?","Changes in technology, changes in what consumers want, and products/services becoming obsolete."],
+          ["What is the difference between an original idea and adapting an existing one?","An original idea is brand new; adapting takes an existing product/service/idea and changes it to meet a need or gap."],
+          ["What does 'adding value' mean? Name ways to add value.","Making a product worth more than the cost of its inputs — through convenience, branding, quality, design and unique selling points (USPs)."],
+          ["What is the role of an entrepreneur?","To organise resources, make business decisions and take risks in setting up and running a business."],
+          ["What is the difference between risk and reward in business?","Risk: business failure, financial loss, lack of security. Reward: business success, profit and independence."],
+          ["What is the purpose of business activity?","To produce goods or services that meet customer needs, and to add value."],
+          ["What is a unique selling point (USP)?","A feature that makes a product or service different from and better than competitors' — a reason customers choose it."],
+        ],
+        quiz: [
+          ["A business sells hand-made cakes with unusual flavours no rival offers. This difference is its:",["Unique selling point (USP)","Cash flow","Market share","Fixed cost"],0,"A USP is the feature that sets a product apart from competitors."],
+          ["A person who organises resources, makes decisions and takes the risk of starting a business is a(n):",["Entrepreneur","Shareholder","Supplier","Customer"],0,"An entrepreneur organises resources, decides and takes risks."],
+          ["A café charges more for coffee served quickly near a station. This is mainly adding value through:",["Convenience","Branding","A loss","A liability"],0,"Convenience (fast, well-located service) adds value customers will pay more for."],
+          ["Which is a reward, rather than a risk, of running a business?",["Profit and independence","Business failure","Financial loss","Lack of security"],0,"Profit and independence are rewards; the others are risks."],
+          ["Smartphones made standalone satnav devices largely obsolete. This shows new ideas coming from:",["Products becoming obsolete","A fall in all technology","Rising fixed costs","Government subsidy"],0,"Products/services becoming obsolete creates gaps for new ideas."],
+          ["Adding a well-known logo and consistent style to raise a product's perceived value is adding value through:",["Branding","A variable cost","An overdraft","Depreciation"],0,"Branding raises perceived value and can justify a higher price."],
+          // application
+          ["A new phone app copies an existing idea but adds a feature rivals lack. This is best described as:",["Adapting an existing idea with a USP","A completely original invention","A fixed cost","A cash-flow forecast"],0,"It adapts an existing idea and differentiates with a unique selling point."],
+          ["An entrepreneur invests savings to open a shop, risking losing the money. This risk is offset by the potential:",["Reward of profit and independence","Guarantee of no loss","Removal of all competition","Elimination of costs"],0,"Risk of loss is taken in the hope of the reward — profit and independence."],
+        ]
+      },
+
+      // ═══════════ 1.2 SPOTTING A BUSINESS OPPORTUNITY ═══════════
+      biz_opportunity: {
+        name: "1.2 Spotting a business opportunity",
+        cards: [
+          ["What is market research and why is it done?","Gathering information about customers and competitors to make better decisions and reduce risk."],
+          ["What is the difference between primary and secondary research?","Primary is new, first-hand data you collect (surveys, interviews); secondary uses existing data (reports, websites, government stats)."],
+          ["What is the difference between quantitative and qualitative data?","Quantitative is numerical (figures, percentages); qualitative is opinion-based (views, reasons, feelings)."],
+          ["What is market segmentation?","Dividing a market into groups of similar customers (by age, income, location, lifestyle) to target them more effectively."],
+          ["What is a market map (positioning map)?","A diagram plotting products against two features (e.g. price vs quality) to show gaps in the market and competitor positions."],
+          ["Why is understanding customer needs important?","Meeting needs (price, quality, choice, convenience) makes customers buy and stay loyal, helping the business succeed."],
+          ["What is the difference between a want and a need in a market?","A need is essential; a want is desirable but not essential. Businesses aim to satisfy both to attract customers."],
+        ],
+        quiz: [
+          ["A business hands out its own questionnaire to shoppers. This is:",["Primary research","Secondary research","Market segmentation","A market map"],0,"Primary research is new, first-hand data collected by the business itself."],
+          ["Using government population statistics to plan is an example of:",["Secondary research","Primary research","A focus group","A USP"],0,"Secondary research uses existing data gathered by others."],
+          ["'72% of customers prefer online ordering' is an example of:",["Quantitative data","Qualitative data","A market map","A fixed cost"],0,"Numerical data is quantitative; opinions are qualitative."],
+          ["Dividing customers into groups by age and income is:",["Market segmentation","Market mapping","Primary research","Adding value"],0,"Segmentation splits a market into similar customer groups to target them."],
+          ["A diagram plotting brands on 'price' against 'quality' to find a gap is a:",["Market map","Cash-flow forecast","Break-even chart","Organisational chart"],0,"A market map (positioning map) plots products on two axes to reveal gaps.",D('scatter',{points:[[2,3],[7,8],[4,5],[8,3]],xLabel:'Price →',yLabel:'Quality →',alt:'market map of price vs quality'})],
+          ["A focus group discussing why they dislike a logo produces mainly:",["Qualitative data","Quantitative data","A market segment","A fixed cost"],0,"Opinions and reasons are qualitative data."],
+          // application
+          ["A start-up finds no rival sells cheap, high-quality gym wear. On a price/quality market map this is:",["A gap in the market to target","An overhead cost","A cash-flow problem","A liability"],0,"An empty area on the market map shows an unmet need — a gap to target."],
+          ["A business wants honest numerical evidence of which product people prefer. The best method is a:",["Large survey (quantitative)","Single friend's opinion","Guess","Look at last year's weather"],0,"A large survey gives measurable, comparable quantitative evidence."],
+        ]
+      },
+
+      // ═══════════ 1.3 PUTTING A BUSINESS IDEA INTO PRACTICE ═══════════
+      biz_practice: {
+        name: "1.3 Putting a business idea into practice",
+        cards: [
+          ["What are business aims and objectives?","Aims are long-term goals (e.g. survival, growth); objectives are specific, measurable targets that help achieve the aims."],
+          ["Give common aims/objectives of a new business.","Survival, profit, sales, market share, financial security, personal satisfaction and social/ethical goals."],
+          ["What is revenue and how is it calculated?","Income from sales. Revenue = selling price × quantity sold."],
+          ["What are fixed and variable costs?","Fixed costs don't change with output (e.g. rent); variable costs rise with output (e.g. materials). Total cost = fixed + variable."],
+          ["How is profit calculated?","Profit = total revenue − total costs. A positive figure is profit; a negative figure is a loss."],
+          ["What is the break-even point?","The level of output where total revenue = total costs, so the business makes neither a profit nor a loss."],
+          ["What is cash flow and why is it important?","The movement of money into and out of a business over time. Poor cash flow can cause a business to fail even if profitable."],
+          ["What is the difference between cash flow and profit?","Profit is revenue minus costs over a period; cash flow is the actual timing of money in and out. A profitable business can still run out of cash."],
+        ],
+        quiz: [
+          ["A business sells 200 items at £15 each. Its total revenue is:",["£3,000","£1,500","£215","£30"],0,"Revenue = price × quantity = 15 × 200 = £3,000."],
+          ["Which of these is a fixed cost?",["Rent","Raw materials","Packaging","Delivery per order"],0,"Rent doesn't change with output, so it is a fixed cost."],
+          ["A business has revenue of £8,000 and total costs of £5,500. Its profit is:",["£2,500","£13,500","£5,500","−£2,500"],0,"Profit = revenue − total costs = 8,000 − 5,500 = £2,500."],
+          ["The output at which total revenue equals total costs is the:",["Break-even point","Market share","Cash-flow peak","Profit margin"],0,"At break-even, revenue = costs, so there is neither profit nor loss.",D('graphSegments',{lines:[{label:'Total revenue'},{label:'Total costs'}],alt:'break-even chart where revenue and cost lines cross'})],
+          ["A profitable business still fails because it runs out of money to pay bills. This is a problem of:",["Cash flow","Market share","Branding","Segmentation"],0,"Cash flow is about the timing of money in/out; poor cash flow can cause failure despite profit."],
+          ["Total cost is worked out as:",["Fixed costs + variable costs","Revenue − profit","Price × quantity","Revenue + profit"],0,"Total cost = fixed costs + variable costs."],
+          // application/calculation
+          ["Fixed costs are £2,000, and each unit has a £5 variable cost and sells for £9. The break-even output is:",["500 units","400 units","1,000 units","250 units"],0,"Break-even = fixed costs ÷ (price − variable cost) = 2,000 ÷ (9−5) = 2,000 ÷ 4 = 500 units."],
+          ["A business sells 300 units at £12; fixed costs £1,500, variable cost £4/unit. Its profit is:",["£900","£3,600","£2,400","£1,200"],0,"Revenue = 3,600; total cost = 1,500 + (4×300)=2,700; profit = 3,600 − 2,700 = £900."],
+          ["A cash-flow forecast shows more cash going out than in next month. The owner should:",["Arrange finance or cut/delay outflows in advance","Ignore it","Increase all spending","Close immediately"],0,"Forecasting lets the owner act early — arrange an overdraft or reduce/delay outflows."],
+        ]
+      },
+
+      // ═══════════ 1.4 MAKING THE BUSINESS EFFECTIVE ═══════════
+      biz_effective: {
+        name: "1.4 Making the business effective",
+        cards: [
+          ["What is a sole trader?","A business owned and run by one person, who has unlimited liability (personally responsible for debts)."],
+          ["What is a partnership?","A business owned by 2+ partners who share responsibility, profits and (usually) unlimited liability."],
+          ["What is limited liability?","Owners (shareholders) are only liable for the money they invested — personal assets are protected if the business fails."],
+          ["What is the difference between unlimited and limited liability?","Unlimited: the owner is personally liable for all debts. Limited: liability is capped at the amount invested."],
+          ["What is a private limited company (Ltd)?","A business with limited liability whose shares are sold privately (not on the stock market)."],
+          ["What is a franchise?","A business model where a franchisee pays to trade under an established brand's name and system."],
+          ["What factors influence business location?","Proximity to market, labour, materials, competitors, cost of premises, and online (e-commerce) options."],
+          ["What is the marketing mix (4 Ps)?","Product, Price, Place, Promotion — the combination of decisions used to market a product successfully."],
+          ["What is a business plan and why is it useful?","A document setting out the idea, aims, market, finances and operations — it helps planning and raising finance."],
+        ],
+        quiz: [
+          ["A business owned by one person with unlimited liability is a:",["Sole trader","Private limited company","Public limited company","Franchise"],0,"A sole trader is owned by one person and has unlimited liability."],
+          ["'Limited liability' means owners can only lose:",["The amount they invested","Their house and savings too","Nothing at all","Double their investment"],0,"Limited liability caps loss at the amount invested; personal assets are protected."],
+          ["Paying to trade under an established brand's name and system is a:",["Franchise","Sole trader","Partnership","Co-operative"],0,"A franchise lets a franchisee use an established brand and system for a fee."],
+          ["Product, Price, Place and Promotion together form the:",["Marketing mix (4 Ps)","Cash-flow forecast","Break-even point","Organisational chart"],0,"The 4 Ps — Product, Price, Place, Promotion — are the marketing mix."],
+          ["A key benefit of forming a private limited company (Ltd) is:",["Limited liability protects owners' personal assets","Unlimited liability","Shares sold on the stock market","No need to keep accounts"],0,"An Ltd gives limited liability, protecting owners if the business fails."],
+          ["Which is a factor in choosing a business location?",["Proximity to the market","The owner's favourite colour","The day of the week","Competitor logos"],0,"Nearness to market, labour, materials and cost of premises affect location."],
+          // application
+          ["A sole trader worries about losing personal savings if the business fails. To reduce this risk they could:",["Form a limited company for limited liability","Take on more personal debt","Ignore the risk","Stop keeping records"],0,"Becoming a limited company caps liability at the amount invested, protecting personal assets."],
+          ["An online-only retailer needs no shopfront. Its most important 'Place' decision is likely:",["An effective website and delivery/distribution","A high-street location","Nearness to a motorway junction only","Shop window displays"],0,"For e-commerce, 'Place' centres on the website and distribution rather than a physical shop."],
+        ]
+      },
+
+      // ═══════════ 1.5 EXTERNAL INFLUENCES ═══════════
+      biz_external: {
+        name: "1.5 Understanding external influences",
+        cards: [
+          ["Who are stakeholders? Give examples.","Groups with an interest in a business — owners, employees, customers, suppliers, local community, government."],
+          ["How can technology affect a business?","E-commerce, digital communication and social media change how firms sell, market and operate — creating opportunities and costs."],
+          ["What legislation affects businesses (principles)?","Consumer law (goods fit for purpose, as described) and employment law (contracts, pay, discrimination, health & safety)."],
+          ["How does the economy affect businesses?","Factors like unemployment, changing incomes, interest rates and taxes affect demand, costs and decisions."],
+          ["How do interest rates affect a business?","Higher rates raise borrowing costs and can reduce customer spending; lower rates do the opposite."],
+          ["What is the impact of exchange rates (basic idea)?","They change the price of imports and exports, affecting costs and competitiveness for firms that trade abroad."],
+          ["Why can stakeholders have conflicting interests?","Different groups want different things (e.g. owners want profit, employees want higher pay), so decisions involve trade-offs."],
+        ],
+        quiz: [
+          ["Which of these is a stakeholder in a business?",["Employees","The weather","A rival's logo","The alphabet"],0,"Employees have an interest in the business — a stakeholder group."],
+          ["A law requiring goods to be 'fit for purpose and as described' is an example of:",["Consumer law","Employment law","Interest rate policy","Exchange rate policy"],0,"Consumer law protects buyers — goods must be fit for purpose and as described."],
+          ["If interest rates rise, a business with a large loan will face:",["Higher borrowing costs","Lower borrowing costs","No change to costs","Automatic profit"],0,"Higher interest rates increase the cost of borrowing."],
+          ["Social media and e-commerce are examples of which external influence?",["Technology","Employment law","Exchange rates","Unlimited liability"],0,"Technology (e-commerce, social media) changes how businesses sell and market."],
+          ["Owners wanting higher profit while employees want higher pay is an example of:",["Conflicting stakeholder interests","A cash-flow forecast","A market map","A break-even point"],0,"Different stakeholders want different things, creating conflicting interests."],
+          ["A fall in customers' incomes during a downturn is most likely to:",["Reduce demand for non-essential products","Increase demand for luxuries","Have no effect on any business","Remove all fixed costs"],0,"Lower incomes usually cut spending on non-essential (luxury) goods."],
+          // application
+          ["A UK firm imports materials from abroad. If the pound weakens, its import costs will:",["Rise","Fall to zero","Stay exactly the same","Become a fixed cost"],0,"A weaker pound makes imports more expensive, raising costs."],
+          ["A shop introduces online ordering after rivals do. This is a response to which external influence?",["Technology","Employment law","Interest rates","Liability"],0,"Adopting e-commerce is a response to technological change."],
+        ]
+      },
+
+      // ═══════════ 2.1 GROWING THE BUSINESS ═══════════
+      biz_growth: {
+        name: "2.1 Growing the business",
+        cards: [
+          ["What is the difference between organic and inorganic (external) growth?","Organic growth comes from within (more outlets, new products); inorganic growth is via merger or takeover of another business."],
+          ["What is a merger and a takeover?","A merger is two firms joining to form one; a takeover is one firm buying control of another."],
+          ["What are economies of scale?","Cost advantages of producing on a larger scale — average cost per unit falls as output rises."],
+          ["What is the difference between a public and private limited company?","A plc can sell shares to the public on the stock market; a private Ltd sells shares privately."],
+          ["Why do business aims and objectives change as a firm grows?","Priorities shift from survival to growth, profit, market share, diversification or ethical/social goals."],
+          ["What are the effects of globalisation on business?","More international competition, larger markets, imports/exports, and access to lower-cost production abroad."],
+          ["What is the impact of e-commerce on growth?","It widens the market to national/global customers, often at lower cost than physical expansion."],
+        ],
+        quiz: [
+          ["A business grows by opening more of its own new stores. This is:",["Organic growth","A takeover","A merger","Inorganic growth"],0,"Growth from within (new outlets/products) is organic growth."],
+          ["One company buying control of another is a:",["Takeover","Merger","Franchise","Sole trader"],0,"A takeover is one firm buying control of another."],
+          ["As output rises, the average cost per unit falls. This is due to:",["Economies of scale","Diseconomies of scale","Rising fixed costs per unit","A cash-flow crisis"],0,"Economies of scale reduce average cost as output grows."],
+          ["A company that can sell its shares to the public on the stock market is a:",["Public limited company (plc)","Private limited company (Ltd)","Sole trader","Partnership"],0,"A plc can sell shares to the public; an Ltd cannot."],
+          ["Selling to customers worldwide through a website is growth via:",["E-commerce","A merger","Unlimited liability","Depreciation"],0,"E-commerce widens the market nationally/globally at lower cost."],
+          ["Two firms of similar size joining to form one new company is a:",["Merger","Takeover","Franchise","Sole trader"],0,"A merger is two firms combining into one."],
+          // application
+          ["A small firm merges with a rival to cut costs by bulk-buying materials. This mainly gains:",["Economies of scale","Unlimited liability","A cash-flow deficit","Lower quality"],0,"Larger-scale buying lowers average cost — an economy of scale."],
+          ["A UK clothing brand starts selling in other countries. This is an example of:",["Responding to globalisation","Organic decline","Reducing its market","A fixed cost"],0,"Expanding into international markets is engaging with globalisation."],
+        ]
+      },
+
+      // ═══════════ 2.2 MAKING MARKETING DECISIONS ═══════════
+      biz_marketing: {
+        name: "2.2 Making marketing decisions",
+        cards: [
+          ["What is the product life cycle?","The stages a product passes through: introduction, growth, maturity and decline."],
+          ["What are extension strategies?","Methods to prolong the maturity stage and delay decline — e.g. new features, new markets, repackaging, price changes."],
+          ["What is the difference between price skimming and penetration pricing?","Skimming sets a high launch price (new/innovative products); penetration sets a low price to win market share quickly."],
+          ["Name the main methods of promotion.","Advertising, sponsorship, social media, sales promotions (offers), public relations and personal selling."],
+          ["What is meant by 'Place' in the marketing mix?","How the product reaches customers — retailers, wholesalers, e-commerce and distribution channels."],
+          ["How do the 4 Ps work together?","Product, Price, Place and Promotion must be consistent and support each other to market a product successfully."],
+          ["Why must the marketing mix change over the product life cycle?","As a product moves from introduction to decline, price, promotion and place decisions must adapt to keep it selling."],
+        ],
+        quiz: [
+          ["The stages introduction, growth, maturity and decline describe the:",["Product life cycle","Cash-flow cycle","Break-even chart","Market map"],0,"These are the four stages of the product life cycle.",D('graphCurve',{alt:'product life cycle curve rising then falling'})],
+          ["Launching an innovative product at a high initial price is:",["Price skimming","Penetration pricing","Loss leader","Cost-plus only"],0,"Price skimming sets a high launch price for a new/innovative product."],
+          ["Setting a low price to quickly gain market share is:",["Penetration pricing","Price skimming","Premium pricing","Break-even"],0,"Penetration pricing uses a low price to win market share fast."],
+          ["Adding new features to prolong a product's maturity is an:",["Extension strategy","Economy of scale","Overhead","Unlimited liability"],0,"Extension strategies delay decline and prolong maturity."],
+          ["Which is a method of promotion?",["Social media advertising","Paying rent","Buying raw materials","Depreciation"],0,"Advertising (including social media) is a promotion method."],
+          ["In the marketing mix, choosing to sell via retailers and a website is a decision about:",["Place","Product","Price","Promotion"],0,"'Place' covers how the product reaches customers (channels)."],
+          // application
+          ["A product's sales have peaked and started to fall. To respond, the firm could use an extension strategy such as:",["Repackaging or entering a new market","Doing nothing","Ending the business","Raising variable costs"],0,"Extension strategies (new features, markets, packaging, pricing) revive a maturing product."],
+          ["A new tech gadget with no direct rivals is launched at a high price, lowered later. This is:",["Price skimming","Penetration pricing","A loss leader","Cost-plus pricing"],0,"Charging a high launch price then reducing it is price skimming."],
+        ]
+      },
+
+      // ═══════════ 2.3 MAKING OPERATIONAL DECISIONS ═══════════
+      biz_operations: {
+        name: "2.3 Making operational decisions",
+        cards: [
+          ["What are the main methods of production?","Job production (one-off/bespoke), batch production (groups), and flow production (continuous mass production)."],
+          ["What is job vs flow production?","Job: single, custom items (e.g. a wedding cake). Flow: continuous mass production of identical items (e.g. bottled drinks)."],
+          ["What is the role of procurement (purchasing)?","Buying the right materials/stock at the right quality, cost and time from suppliers to keep production running."],
+          ["What is the supply chain?","The network from raw materials through production to the customer — suppliers, manufacturers, distributors, retailers."],
+          ["What is just-in-time (JIT) stock control?","Stock arrives just as it is needed, minimising storage costs — but relies on reliable suppliers."],
+          ["What factors affect the choice of supplier?","Price, quality, reliability, delivery speed, and whether they can meet the required quantity."],
+          ["What is quality control vs quality assurance?","Control: checking/inspecting the finished product. Assurance: building quality into every stage of the process."],
+          ["How does managing quality benefit a business?","Fewer faults and returns, satisfied loyal customers, a stronger reputation and less waste."],
+        ],
+        quiz: [
+          ["Producing single, custom-made items such as a tailored suit is:",["Job production","Flow production","Batch production","Mass production"],0,"Job production makes one-off, bespoke items."],
+          ["Continuous mass production of identical items on a line is:",["Flow production","Job production","Batch production","Bespoke production"],0,"Flow production continuously makes identical items."],
+          ["A stock system where materials arrive just as needed to cut storage costs is:",["Just-in-time (JIT)","Just-in-case","Batch control","Cost-plus"],0,"JIT minimises stock held, reducing storage costs but needing reliable suppliers."],
+          ["Choosing a supplier should consider price, quality, reliability and:",["Delivery speed","The supplier's logo colour","The weather","The day of the week"],0,"Delivery speed (and ability to supply the quantity) matters alongside price/quality/reliability."],
+          ["Inspecting finished products to catch faults is:",["Quality control","Quality assurance","Just-in-time","Flow production"],0,"Quality control inspects the finished product; assurance builds quality into each stage."],
+          ["The network from raw materials to the final customer is the:",["Supply chain","Product life cycle","Break-even point","Marketing mix"],0,"The supply chain links suppliers, production, distribution and retail to the customer."],
+          // application
+          ["A bakery making thousands of identical loaves daily should use:",["Flow production","Job production","One-off bespoke production","No production method"],0,"Large volumes of identical items suit continuous flow production."],
+          ["A firm adopts JIT but a key supplier is unreliable. The likely risk is:",["Production stops if stock doesn't arrive on time","Storage costs rise sharply","Too much stock is held","Quality automatically improves"],0,"JIT holds little stock, so an unreliable supplier can halt production."],
+        ]
+      },
+
+      // ═══════════ 2.4 MAKING FINANCIAL DECISIONS ═══════════
+      biz_finance: {
+        name: "2.4 Making financial decisions",
+        cards: [
+          ["What is gross profit and how is it calculated?","Profit after the cost of making/buying goods. Gross profit = revenue − cost of sales."],
+          ["What is net profit and how is it calculated?","Profit after all costs. Net profit = gross profit − other operating expenses (overheads)."],
+          ["What is gross profit margin?","Gross profit ÷ revenue × 100 — the % of revenue left after the cost of sales."],
+          ["What is net profit margin?","Net profit ÷ revenue × 100 — the % of revenue that becomes net profit after all costs."],
+          ["What sources of finance suit a small/new business?","Personal savings, family/friends, bank loan, overdraft, crowdfunding, and trade credit."],
+          ["What is the difference between a loan and an overdraft?","A loan is a fixed sum repaid over time with interest; an overdraft lets you spend beyond your balance up to a limit, for short-term needs."],
+          ["What is the difference between short-term and long-term finance?","Short-term (overdraft, trade credit) covers day-to-day/cash-flow needs; long-term (loans, shares) funds large or lasting investment."],
+          ["Why interpret profit margins over time?","Rising margins show improving efficiency/pricing; falling margins warn of rising costs or weak pricing."],
+        ],
+        quiz: [
+          ["A business has revenue of £50,000 and cost of sales of £30,000. Its gross profit is:",["£20,000","£80,000","£30,000","£1.67"],0,"Gross profit = revenue − cost of sales = 50,000 − 30,000 = £20,000."],
+          ["Gross profit is £20,000 and overheads are £8,000. Net profit is:",["£12,000","£28,000","£20,000","£8,000"],0,"Net profit = gross profit − expenses = 20,000 − 8,000 = £12,000."],
+          ["Revenue £40,000, net profit £6,000. The net profit margin is:",["15%","6%","40%","24%"],0,"Net profit margin = 6,000 ÷ 40,000 × 100 = 15%."],
+          ["A fixed sum borrowed and repaid with interest over several years is a:",["Bank loan","Overdraft","Trade credit","Share issue"],0,"A loan is a fixed sum repaid over time; an overdraft is short-term flexible borrowing."],
+          ["Which source of finance best suits a short-term cash-flow gap?",["Overdraft","A 10-year mortgage","Selling the premises","Issuing shares to the public"],0,"An overdraft is flexible short-term finance for cash-flow gaps."],
+          ["Gross profit margin is calculated as:",["Gross profit ÷ revenue × 100","Revenue ÷ gross profit","Net profit − revenue","Revenue × costs"],0,"Gross profit margin = gross profit ÷ revenue × 100."],
+          // application/calculation
+          ["Revenue £80,000, cost of sales £50,000, overheads £18,000. The net profit is:",["£12,000","£30,000","£62,000","£18,000"],0,"Gross = 80,000−50,000=30,000; net = 30,000−18,000 = £12,000."],
+          ["A firm's net profit margin fell from 20% to 12% in a year. This most likely shows:",["Rising costs or weaker pricing","Improved efficiency","Higher profit per sale","No change in performance"],0,"A falling margin warns that costs rose or prices/efficiency weakened."],
+          ["A start-up needs money to buy premises for the long term. The most suitable finance is:",["A long-term bank loan","A short overdraft","Trade credit for 30 days","Petty cash"],0,"A large, lasting investment suits long-term finance like a bank loan."],
+        ]
+      },
+
+      // ═══════════ 2.5 MAKING HUMAN RESOURCE DECISIONS ═══════════
+      biz_hr: {
+        name: "2.5 Making human resource decisions",
+        cards: [
+          ["What are the main organisational structures?","Hierarchical (many layers, narrow span) and flat (few layers, wide span of control)."],
+          ["What is span of control?","The number of employees a manager is directly responsible for."],
+          ["What is the difference between centralised and decentralised structures?","Centralised: decisions made at the top. Decentralised: decision-making is delegated to lower levels/local managers."],
+          ["What is the difference between recruitment methods: internal vs external?","Internal recruits from existing staff (cheaper, quicker, known); external brings in new people (fresh ideas, wider pool)."],
+          ["What is the difference between part-time, full-time and freelance/contract work?","Full-time: standard hours. Part-time: fewer hours. Freelance/contract: hired per task/project, self-employed."],
+          ["Why do businesses train employees?","To improve skills, productivity, quality, motivation and safety, and to adapt to new methods/technology."],
+          ["What is the difference between on-the-job and off-the-job training?","On-the-job: learning while working (e.g. shadowing). Off-the-job: training away from the workplace (e.g. a course)."],
+          ["How can businesses motivate staff (financial and non-financial)?","Financial: pay, bonuses, commission. Non-financial: praise, responsibility, promotion, good working conditions."],
+        ],
+        quiz: [
+          ["The number of employees a manager is directly responsible for is the:",["Span of control","Chain of command","Product life cycle","Net margin"],0,"Span of control is how many staff report directly to a manager."],
+          ["A structure with many layers and a narrow span of control is:",["Hierarchical","Flat","Decentralised only","Freelance"],0,"Many layers with narrow spans describes a hierarchical (tall) structure."],
+          ["Recruiting someone already working at the business is:",["Internal recruitment","External recruitment","Off-the-job training","Delegation"],0,"Internal recruitment fills a role from existing staff."],
+          ["Learning by shadowing a colleague at work is:",["On-the-job training","Off-the-job training","External recruitment","Delegation"],0,"On-the-job training happens while working, e.g. shadowing."],
+          ["Which is a non-financial method of motivation?",["Giving greater responsibility","Paying a bonus","Commission","A pay rise"],0,"Responsibility is non-financial; the others are financial rewards."],
+          ["When decisions are delegated to local managers, the structure is:",["Decentralised","Centralised","Hierarchical only","Flat only"],0,"Decentralised structures delegate decision-making away from the top."],
+          // application
+          ["A fast-growing firm wants quick, cheap hiring of someone who already knows the business. Best method:",["Internal recruitment","External recruitment via national advert","A recruitment agency abroad","No recruitment"],0,"Internal recruitment is cheaper, quicker and uses someone who knows the business."],
+          ["Staff are demotivated despite good pay. A suitable non-financial fix is:",["More responsibility and recognition","Cutting all pay","Removing all training","Longer hours only"],0,"Non-financial motivators like responsibility, recognition and promotion can lift motivation."],
+        ]
+      }
+
+    }
+  };
+
+  console.log("[edexcel_business.js] Edexcel GCSE Business added: "+Object.keys(C.edexcel_gcse_business.topics).length+" topics.");
+})();
+</script>
+<script>
+// ============================================================
+//  EDEXCEL GCSE BUSINESS — DEPTH PACK
+//  Tops up every topic with more active-recall cards and more
+//  application/case-study style questions (incl. calculations).
+// ============================================================
+(function(){
+  const C=window.COURSES; const c=C&&C.edexcel_gcse_business; if(!c) return;
+  function push(tk,qs){ if(c.topics[tk]) c.topics[tk].quiz.push(...qs); }
+  function cards(tk,cs){ if(c.topics[tk]) c.topics[tk].cards.push(...cs); }
+
+  // 1.1 Enterprise & entrepreneurship
+  cards("biz_enterprise",[
+    ["What personal qualities help an entrepreneur succeed?","Determination, risk-taking, flexibility, creativity, self-confidence and good communication."],
+    ["What is a business idea's 'gap in the market'?","An unmet customer need that no existing product/service satisfies well — an opportunity for a new business."],
+    ["Why might rewards outweigh risks for an entrepreneur?","The chance of profit, independence and control over their own working life can be worth the risk of financial loss."],
+    ["Give an example of adding value through design.","Making a product visually appealing or ergonomic so customers value it more and will pay a higher price."],
+    ["Why do businesses exist to meet customer needs, not just make products?","A product only sells and earns revenue if it actually satisfies what customers want — meeting needs drives success."],
+    ["What is the difference between a business idea and a business opportunity?","An idea is a concept for a product/service; an opportunity exists when there is real demand and a viable way to profit from the idea."],
+  ]);
+  push("biz_enterprise",[
+    ["A person with determination, creativity and confidence to start a business shows entrepreneurial:",["Qualities","Liabilities","Overheads","Segments"],0,"These personal qualities help entrepreneurs succeed."],
+    ["An entrepreneur spots that no local café offers gluten-free cakes. This is an example of:",["A gap in the market","A fixed cost","Unlimited liability","A takeover"],0,"An unmet need with no current supplier is a gap in the market."],
+    ["Designing a chair to be both stylish and comfortable adds value through:",["Design","A variable cost","A merger","Depreciation"],0,"Good design can raise a product's appeal and value to customers."],
+    ["A product that looks good on paper but nobody actually wants to buy shows the difference between:",["An idea and a real opportunity","Risk and reward","A merger and a takeover","Primary and secondary research"],0,"A viable opportunity needs real customer demand, not just a concept."],
+    // application
+    ["An entrepreneur risks £5,000 savings to launch a stall, hoping to earn a living independently. This best illustrates:",["Risk taken for the reward of independence and profit","A guaranteed reward with no risk","Unlimited government support","No personal involvement"],0,"Personal financial risk is taken in pursuit of the reward of profit/independence."],
+    ["A start-up succeeds because it identifies exactly what a specific local community wants. This shows the purpose of business to:",["Meet customer needs","Avoid all risk","Eliminate competition","Reduce quality"],0,"Meeting customer needs is a core purpose of business activity."],
+  ]);
+
+  // 1.2 Spotting a business opportunity
+  cards("biz_opportunity",[
+    ["What is the purpose of a market map when planning a new product?","To see where competitors sit and spot a gap the new product could fill."],
+    ["Why might a small business struggle to carry out large-scale primary research?","It can be expensive and time-consuming; small firms often use cheaper methods (informal surveys, observing competitors)."],
+    ["Give a disadvantage of secondary research.","It may be out of date, not specific to the business's exact market, or produced by a source with bias."],
+    ["Why segment a market by lifestyle rather than just age?","Lifestyle better predicts buying habits and preferences, so marketing can target customers more precisely than age alone."],
+    ["What is meant by a 'target market'?","The specific group of customers a business aims its product and marketing at."],
+  ]);
+  push("biz_opportunity",[
+    ["A disadvantage of secondary research is that it may be:",["Out of date or not specific to the business","Always completely free","Always more accurate than primary data","Impossible to find"],0,"Secondary data can be outdated or too general for the specific business."],
+    ["Segmenting customers by lifestyle rather than age alone mainly helps because lifestyle:",["Better predicts buying habits and preferences","Is always cheaper to measure","Removes the need for any research","Guarantees higher prices"],0,"Lifestyle segmentation captures buying behaviour better than age alone."],
+    ["The specific group of customers a business aims its product at is its:",["Target market","Break-even point","Supply chain","Span of control"],0,"The target market is the intended group of customers."],
+    // application
+    ["A small bakery cannot afford a large market research firm. A realistic option is to:",["Ask customers directly and observe competitors informally","Commission an expensive national survey","Ignore research completely","Only use overseas data"],0,"Cheaper, informal primary research fits a small firm's limited budget."],
+    ["A market map shows most rivals cluster as 'expensive and high quality'. A gap exists for:",["Affordable, decent-quality products","Even more expensive products","No new entrants at all","Products identical to rivals"],0,"An empty area on the map (affordable/decent quality) shows an unmet opportunity."],
+    ["A business collects online reviews to understand why customers dislike a rival's product. This data is mainly:",["Qualitative secondary research","Quantitative primary research","A break-even calculation","A cash-flow forecast"],0,"Existing written reviews are secondary, and their content (opinions) is qualitative."],
+  ]);
+
+  // 1.3 Putting a business idea into practice
+  cards("biz_practice",[
+    ["What is the difference between a SMART objective and a vague aim?","SMART objectives are Specific, Measurable, Achievable, Realistic and Time-bound; a vague aim (e.g. 'do well') lacks these details."],
+    ["Why might a new business set 'survival' as its main objective?","In the early stages, avoiding failure and covering costs matters more than growth or high profit."],
+    ["What happens to profit if variable costs per unit rise but price stays the same?","Profit falls, because the gap between price and variable cost (contribution) shrinks for each sale."],
+    ["Why is a cash-flow forecast useful even for a profitable business?","It shows the timing of cash in/out, helping the business avoid running out of money to pay bills despite being profitable overall."],
+    ["What is 'contribution per unit'?","Selling price minus variable cost per unit — the amount each sale contributes towards fixed costs and profit."],
+  ]);
+  push("biz_practice",[
+    ["An objective to 'increase sales by 10% in 12 months' is a good example of a:",["SMART objective","Vague aim","Fixed cost","Stakeholder"],0,"It is Specific, Measurable and Time-bound — a SMART objective."],
+    ["A new café's main objective is likely to be:",["Survival in its early months","Immediate international expansion","Maximising shareholder dividends","Becoming a public limited company"],0,"New businesses usually prioritise survival before growth or big profit goals."],
+    ["If variable cost per unit rises but price is unchanged, contribution per unit will:",["Fall","Rise","Stay exactly the same","Become a fixed cost"],0,"Contribution = price − variable cost, so a rising variable cost reduces it."],
+    // application/calculation
+    ["Selling price is £20, variable cost is £12. The contribution per unit is:",["£8","£32","£12","£20"],0,"Contribution = price − variable cost = 20 − 12 = £8."],
+    ["Fixed costs are £4,000 and contribution per unit is £8. The break-even output is:",["500 units","320 units","4,000 units","32 units"],0,"Break-even = fixed costs ÷ contribution per unit = 4,000 ÷ 8 = 500 units."],
+    ["A firm's cash-flow forecast shows a cash shortfall in month 3 despite an annual profit. It should:",["Arrange short-term finance ahead of month 3","Ignore the forecast","Close the business immediately","Increase all costs"],0,"Forecasting the shortfall lets the firm arrange finance (e.g. overdraft) in advance."],
+    ["A business raises its price without changing costs. Its contribution per unit will:",["Increase","Decrease","Stay the same","Become a fixed cost"],0,"A higher price with the same variable cost increases contribution per unit."],
+  ]);
+
+  // 1.4 Making the business effective
+  cards("biz_effective",[
+    ["What is a public limited company (plc)?","A large company whose shares are sold to the public on the stock market, and which has limited liability."],
+    ["Why might a sole trader choose NOT to become a limited company?","Ltd status involves more paperwork, published accounts and cost, which a very small business may want to avoid."],
+    ["What is the difference between the 4 Ps and the wider marketing strategy?","The 4 Ps (Product, Price, Place, Promotion) are the tools; the marketing strategy is the overall plan for using them to reach objectives."],
+    ["Why might a business choose an online-only model over a physical shop?","Lower overheads (no rent for a shop), wider reach, and lower set-up costs — though it loses face-to-face sales and passing trade."],
+    ["What is a business plan's role in raising finance?","It shows lenders/investors the idea is well thought through and financially viable, making them more likely to provide funding."],
+  ]);
+  push("biz_effective",[
+    ["A company selling shares to the public on the stock market is a:",["Public limited company (plc)","Sole trader","Partnership","Private limited company"],0,"A plc sells shares to the public; a private Ltd does not."],
+    ["A key reason a small sole trader might avoid becoming a limited company is:",["The extra paperwork, cost and published accounts required","Limited liability is undesirable","It would increase their risk of personal loss","It guarantees lower profit"],0,"Ltd status brings more admin/cost that a very small business may want to avoid."],
+    ["A business plan helps when seeking a bank loan mainly by:",["Showing lenders the idea is well thought through and viable","Removing the need to repay the loan","Guaranteeing approval","Replacing the need for a market"],0,"A solid business plan reassures lenders/investors, improving the chance of finance."],
+    // application
+    ["An online-only retailer avoids shop rent but cannot offer face-to-face advice. This trade-off best illustrates:",["Lower overheads vs losing passing trade/personal service","Unlimited liability vs limited liability","Primary vs secondary research","Economies vs diseconomies of scale"],0,"E-commerce cuts overheads but loses in-person interaction — a genuine trade-off."],
+    ["A struggling sole trader decides to convert to a private limited company mainly to gain:",["Limited liability, protecting personal assets","Unlimited liability","A stock market listing","Guaranteed profit"],0,"Incorporating as an Ltd gives limited liability, protecting the owner's personal assets."],
+    ["A new gym must decide between a busy town centre and a cheaper out-of-town unit. The key location factor is the trade-off between:",["Cost of premises and proximity to customers","Branding and promotion only","Fixed and variable cost totals","Primary and secondary research"],0,"Location decisions balance rent/cost against how easily customers can reach the business."],
+  ]);
+
+  // 1.5 External influences
+  cards("biz_external",[
+    ["Give an example of employment legislation.","Laws on the minimum wage, working hours, discrimination and health & safety at work."],
+    ["How might rising unemployment affect a business?","Lower consumer spending (less demand) but potentially easier recruitment and lower wage costs."],
+    ["What is the impact of a competitor's actions as an external influence?","Rivals cutting prices, launching new products or advertising heavily can force a business to respond to stay competitive."],
+    ["Why must a business monitor its external environment continually?","Economic, legal, technological and competitive conditions change, and failing to adapt can damage sales and survival."],
+  ]);
+  push("biz_external",[
+    ["Laws on the minimum wage and working hours are examples of:",["Employment legislation","Consumer legislation","Interest rate policy","Exchange rate policy"],0,"These protect workers — employment legislation."],
+    ["Rising unemployment is likely to lead to:",["Lower consumer spending on non-essentials","Higher consumer spending on luxuries","No effect on any business","Guaranteed higher profit"],0,"Unemployed consumers have less income, reducing demand for non-essentials."],
+    ["A rival cutting its prices sharply is an example of the external influence of:",["Competition","Interest rates","Employment law","Exchange rates"],0,"Competitor actions are a direct competitive external influence."],
+    // application
+    ["A UK exporter benefits when the pound weakens because its goods abroad become:",["Cheaper for foreign buyers, boosting sales","More expensive for foreign buyers","Unaffected by exchange rates","Automatically higher quality"],0,"A weaker pound makes UK exports cheaper in foreign currency, helping sales abroad."],
+    ["A business ignores new online-safety legislation for its website. The main risk is:",["Legal penalties and loss of customer trust","Automatic higher profit","No consequences at all","Lower staff turnover"],0,"Failing to comply with legislation risks fines/legal action and reputational damage."],
+  ]);
+
+  // 2.1 Growing the business
+  cards("biz_growth",[
+    ["What is a diseconomy of scale?","A disadvantage of growing too large — e.g. poor communication or coordination — that raises average cost per unit."],
+    ["Why might a business choose organic growth over a merger/takeover?","It retains full control, avoids the cost and risk of a merger, and grows at a manageable pace, though more slowly."],
+    ["What risk comes with rapid inorganic growth via takeover?","Integrating two different cultures/systems can be difficult, costly and disruptive if not managed well."],
+    ["How does franchising support growth?","Franchisees fund their own outlets under the brand, letting the parent company expand quickly with lower capital risk."],
+  ]);
+  push("biz_growth",[
+    ["Poor communication in an overly large business raising average costs is a:",["Diseconomy of scale","Economy of scale","Merger","Franchise"],0,"Diseconomies of scale are the disadvantages of being too large, raising average cost."],
+    ["A benefit of organic growth compared with a takeover is that it:",["Retains full control and avoids merger risk/cost","Is always faster","Removes the need for finance","Guarantees no diseconomies of scale"],0,"Growing from within keeps control with the original owners and avoids merger risks, though it is usually slower."],
+    ["Franchising helps a brand grow quickly mainly because:",["Franchisees provide their own capital to open outlets","The parent company funds every outlet itself","No risk exists for franchisees","It guarantees higher quality automatically"],0,"Franchisees invest their own money, letting the brand expand with less capital risk to the parent."],
+    // application
+    ["Two rival supermarkets merge and struggle to combine different computer systems and cultures. This shows a risk of:",["Inorganic growth (merger/takeover)","Organic growth","Economies of scale","Market segmentation"],0,"Combining different systems/cultures after a merger is a classic integration risk."],
+    ["A firm becomes so large that decisions take too long to make, raising costs. This illustrates:",["Diseconomies of scale","Economies of scale","A break-even point","A market map"],0,"Slower decision-making due to size is a diseconomy of scale."],
+  ]);
+
+  // 2.2 Making marketing decisions
+  cards("biz_marketing",[
+    ["Why is the 'introduction' stage of the product life cycle often loss-making?","High development/launch costs and low initial sales mean revenue often doesn't yet cover costs."],
+    ["Give an example of a sales promotion.","'Buy one get one free', money-off vouchers, or a free gift with purchase."],
+    ["Why must promotion match the target audience?","Using the wrong channel/style (e.g. print adverts for teenagers) wastes budget and fails to reach or persuade the intended customers."],
+    ["What is the risk of relying only on price competition?","It can trigger a price war, cutting profit margins for all firms without necessarily growing overall sales."],
+  ]);
+  push("biz_marketing",[
+    ["The introduction stage of the product life cycle is often loss-making because:",["High launch costs and low early sales mean revenue is low","Sales are always highest at launch","Costs are always zero at launch","Price is always at its lowest"],0,"Development and launch costs are high while sales are still building."],
+    ["'Buy one get one free' is an example of:",["A sales promotion","Price skimming","Market segmentation","A break-even chart"],0,"BOGOF is a short-term sales promotion incentive."],
+    ["Advertising a product for teenagers through a medium mainly used by pensioners is likely to:",["Waste budget and fail to reach the target audience","Guarantee success","Increase economies of scale","Improve cash flow automatically"],0,"Promotion must match the target audience's habits or it wastes money and misses customers."],
+    // application
+    ["Two rival shops keep undercutting each other's prices, and both see falling profit margins. This shows the risk of:",["A price war from relying only on price competition","Effective market segmentation","Successful price skimming","Economies of scale"],0,"Continuous price-cutting between rivals is a price war that erodes margins."],
+    ["A soft-drink brand nearing decline launches a new flavour and updated packaging. This is an example of:",["An extension strategy","Price skimming","A takeover","A diseconomy of scale"],0,"New variants/packaging aim to prolong maturity and delay decline — an extension strategy."],
+  ]);
+
+  // 2.3 Making operational decisions
+  cards("biz_operations",[
+    ["What is a disadvantage of batch production?","Machinery must be reset between batches, causing downtime and reducing efficiency compared with continuous flow."],
+    ["Why is quality important beyond avoiding faults?","Good quality builds brand reputation and customer loyalty, supporting repeat sales and allowing premium pricing."],
+    ["What is the impact of poor supplier reliability on production?","Late or poor-quality deliveries can delay production, increase costs, and damage the business's own reputation with customers."],
+    ["Why might a business hold safety/buffer stock despite using JIT principles?","To protect against unexpected supplier delays or demand spikes, even though it adds some storage cost."],
+  ]);
+  push("biz_operations",[
+    ["A disadvantage of batch production compared with flow production is:",["Downtime resetting machinery between batches","No downtime ever occurs","It cannot produce different product types","It is only usable for services"],0,"Switching machinery between batches causes downtime, reducing efficiency."],
+    ["Which best explains why quality matters beyond fault prevention?",["It builds reputation, loyalty and supports premium pricing","It has no effect on price or loyalty","It only matters for exported goods","It guarantees zero production costs"],0,"Quality builds brand reputation and loyalty, and can justify higher prices."],
+    // application
+    ["A key ingredient supplier repeatedly delivers late, delaying a bakery's production. The main risk is:",["Missed deadlines and damaged customer reputation","Guaranteed lower costs","Improved product quality","No effect on the bakery"],0,"Unreliable supply disrupts production schedules and can harm customer trust."],
+    ["A firm using JIT still keeps a small buffer stock of a critical part. This is mainly to protect against:",["Unexpected supplier delays or demand spikes","Guaranteed zero storage cost","Removing the need for suppliers","Increasing average costs deliberately"],0,"A small buffer guards against disruption even under a largely JIT system."],
+  ]);
+
+  // 2.4 Making financial decisions
+  cards("biz_finance",[
+    ["Why compare a firm's profit margin with previous years or competitors?","To judge whether performance is improving/declining and how it compares with rivals, informing decisions."],
+    ["What is trade credit as a source of finance?","Buying goods/services now and paying the supplier later (e.g. in 30 days), which helps short-term cash flow."],
+    ["Why is crowdfunding attractive to some start-ups?","It can raise finance from many small backers online without giving up as much control as some other funding, and can test market interest."],
+    ["What is a risk of relying heavily on an overdraft?","Overdraft interest rates are often high, and the bank can demand repayment, making it a risky long-term solution."],
+  ]);
+  push("biz_finance",[
+    ["Buying stock now and paying the supplier in 30 days is:",["Trade credit","A bank loan","Crowdfunding","Share capital"],0,"Trade credit delays payment to a supplier, aiding short-term cash flow."],
+    ["Comparing profit margin year-on-year mainly helps a business to:",["Judge whether performance is improving or declining","Guarantee future profit","Remove the need for accounts","Fix all costs permanently"],0,"Tracking margins over time reveals trends in performance."],
+    ["A risk of relying heavily on an overdraft is:",["High interest rates and the bank can demand repayment","It is always interest-free","It can never be withdrawn by the bank","It is ideal for long-term investment"],0,"Overdrafts often carry high interest and can be recalled, making them risky long-term."],
+    // application/calculation
+    ["Revenue is £120,000 and gross profit margin is 40%. The gross profit is:",["£48,000","£40,000","£30,000","£120,000"],0,"Gross profit = margin × revenue = 0.40 × 120,000 = £48,000."],
+    ["A firm's net profit margin rose from 8% to 14% while revenue stayed the same. This shows:",["Costs fell relative to revenue, improving profitability","Revenue must have doubled","The firm made a loss","Fixed costs must have risen"],0,"With revenue unchanged, a higher margin means costs fell relative to revenue."],
+    ["A start-up wants finance without giving up much control and to test demand. It should consider:",["Crowdfunding","A public share issue","A large bank takeover loan","Ignoring finance altogether"],0,"Crowdfunding raises money from many small backers, often with limited loss of control."],
+  ]);
+
+  // 2.5 Making human resource decisions
+  cards("biz_hr",[
+    ["Why might a flat structure suit a small, fast-moving business?","Fewer layers mean faster decisions and communication, with staff often having wider responsibility."],
+    ["What is a disadvantage of a very wide span of control?","A manager may struggle to supervise/support many staff effectively, risking poor communication or oversight."],
+    ["Why use a job description and person specification when recruiting?","They clarify the role's duties and the ideal candidate's skills/qualities, helping attract and select the right person."],
+    ["How can poor training affect a business?","Lower productivity, more mistakes/waste, lower quality, and reduced staff motivation and safety."],
+  ]);
+  push("biz_hr",[
+    ["A flat structure with few layers suits a small business mainly because it allows:",["Faster decisions and communication","Slower decision-making","Higher wage costs automatically","Guaranteed higher profit"],0,"Fewer layers speed up communication and decisions in smaller firms."],
+    ["A disadvantage of a very wide span of control is that a manager may:",["Struggle to supervise many staff effectively","Have too few staff to manage","Automatically improve quality","Have no responsibilities"],0,"Overseeing too many people can strain a manager's ability to support them well."],
+    ["A job description and person specification are used mainly to:",["Clarify the role and ideal candidate, aiding recruitment","Set the company's prices","Calculate break-even output","Replace the need for interviews entirely"],0,"They define the role and requirements, guiding recruitment and selection."],
+    // application
+    ["A newly hired worker makes frequent errors due to inadequate training. The likely business impact is:",["Lower productivity and higher waste/mistakes","Automatically higher profit","Improved product quality","No effect on the business"],0,"Poor training tends to increase errors and waste and reduce productivity."],
+    ["A growing firm delegates more decisions to regional managers instead of head office. This is a move towards:",["A decentralised structure","A centralised structure","A sole trader","A franchise"],0,"Pushing decision-making down to local managers is decentralisation."],
+  ]);
+
+  console.log("[edexcel_business_depth.js] Business topics topped up with more cards/questions.");
+})();
+</script>
+<script>
+// ============================================================
+//  AQA GCSE PE — DEPTH PACK
+//  Tops up the thinnest topics (data use, effects of exercise)
+//  and adds further depth across Paper 1 & Paper 2 topics.
+// ============================================================
+(function(){
+  const C=window.COURSES; const c=C&&C.aqa_pe; if(!c) return;
+  function push(tk,qs){ if(c.topics[tk]) c.topics[tk].quiz.push(...qs); }
+  function cards(tk,cs){ if(c.topics[tk]) c.topics[tk].cards.push(...cs); }
+
+  // ── P2 · Use of data (thinnest: 5c/5q) ──
+  cards("p2_data_use",[
+    ["What is the difference between quantitative and qualitative data in PE?","Quantitative is numerical (heart rate, times, scores); qualitative is descriptive/observational (technique quality, effort)."],
+    ["Why use qualitative data alongside quantitative data?","Numbers alone don't capture technique or effort; qualitative observations add context a coach needs to give feedback."],
+    ["What is validity in data collection?","Whether the data actually measures what it claims to measure (e.g. a fitness test genuinely reflecting the fitness component tested)."],
+    ["What is reliability in data collection?","Whether a test gives consistent results if repeated under the same conditions."],
+    ["Why must sample size be considered when interpreting PE data?","A small sample may not represent performers generally, making conclusions less trustworthy."],
+    ["How can graphs help analyse performance data?","They show trends, patterns and comparisons visually, making changes over time or between performers easier to spot."],
+  ]);
+  push("p2_data_use",[
+    ["A stopwatch time for a 100 m sprint is an example of:",["Quantitative data","Qualitative data","An opinion","A hypothesis"],0,"A numerical time is quantitative data."],
+    ["A coach's written comment on a gymnast's 'poise and control' is:",["Qualitative data","Quantitative data","A break-even figure","A control group"],0,"Descriptive, non-numerical feedback is qualitative data."],
+    ["A test that gives very different results each time it's repeated under the same conditions lacks:",["Reliability","Validity","Quantitative data","A sample"],0,"Reliability is consistency of results on repeated testing."],
+    ["A 'sit and reach' test that doesn't actually measure the fitness component it claims to lacks:",["Validity","Reliability","A large sample","Qualitative data"],0,"Validity is whether a test truly measures what it claims to."],
+    ["Testing only 3 athletes and generalising to all athletes is a problem of:",["Small sample size","Too much quantitative data","Excess qualitative data","High reliability"],0,"A small sample may not represent the wider population, weakening conclusions."],
+    // application
+    ["A coach wants both a sprint time and feedback on running technique. They should collect:",["Quantitative data (time) and qualitative data (technique notes)","Only quantitative data","Only qualitative data","Neither type of data"],0,"Combining both data types gives the fullest picture of performance."],
+    ["A heart-rate monitor gives different readings each time on the same run at the same effort. This is a problem of:",["Reliability","Validity","Sample size","Qualitative data"],0,"Inconsistent repeated results indicate poor reliability."],
+  ]);
+
+  // ── P1 · Effects of exercise (7c/6q) ──
+  cards("p1_effects_exercise",[
+    ["What is the short-term effect of exercise on breathing rate and depth?","Both increase, to take in more oxygen and remove more carbon dioxide to meet the muscles' higher demand."],
+    ["What is the short-term effect of exercise on heart rate and stroke volume?","Both increase, raising cardiac output to deliver more oxygenated blood to working muscles."],
+    ["What is a long-term effect of exercise on resting heart rate?","It decreases (bradycardia) as the heart becomes more efficient, pumping more blood per beat."],
+    ["What is cardiac hypertrophy?","Long-term enlargement/thickening of the heart muscle wall due to regular training, increasing stroke volume."],
+    ["What is a long-term respiratory adaptation to training (other than vital capacity)?","Increased strength of the diaphragm and intercostal muscles, improving breathing efficiency."],
+    ["Why does regular weight-bearing exercise increase bone density?","Repeated stress on bones stimulates them to lay down more bone tissue, making them stronger and denser."],
+    ["What is the difference between health and fitness?","Health is a state of complete physical, mental and social wellbeing, free from illness; fitness is the ability to meet the demands of the environment/perform physical tasks."],
+  ]);
+  push("p1_effects_exercise",[
+    ["A short-term effect of starting exercise on breathing is that rate and depth both:",["Increase","Decrease","Stay exactly the same","Become irregular only"],0,"Breathing rate and depth rise to meet the muscles' greater oxygen demand."],
+    ["An athlete's resting heart rate has fallen after months of training. This long-term adaptation is called:",["Bradycardia","Hypertrophy","Hypertrophy of bone","Tachycardia"],0,"A lowered resting heart rate due to training is bradycardia."],
+    ["Thickening of the heart wall due to long-term training is:",["Cardiac hypertrophy","Bradycardia","Vital capacity increase","Lactic acid build-up"],0,"Cardiac hypertrophy is the enlargement of heart muscle from training."],
+    ["Repeated impact/stress on bones during weight-bearing exercise leads over time to:",["Increased bone density","Decreased bone density","No change to bones","Immediate fracture"],0,"Bones adapt to repeated stress by becoming denser and stronger."],
+    // application
+    ["A footballer's vital capacity has risen after a season of training. This shows a long-term adaptation in the:",["Respiratory system","Skeletal system","Digestive system","Nervous system only"],0,"Vital capacity is a lung/respiratory measure, so this is a respiratory adaptation."],
+    ["Two players have identical skill but one has trained for years and has a lower resting heart rate. This mainly reflects:",["A long-term cardiovascular adaptation","A short-term skill difference","A difference in health only","A change in body temperature only"],0,"A lower resting heart rate from sustained training is a long-term cardiovascular adaptation."],
+    ["Being free from illness and having complete physical, mental and social wellbeing describes:",["Health","Fitness","Hypertrophy","Bradycardia"],0,"This is the definition of health, distinct from fitness (ability to meet physical demands)."],
+  ]);
+
+  // ── further depth across other topics ──
+  cards("p1_movement_analysis",[
+    ["What is a lever system used for in the body?","To produce movement around a joint, with the bone as the lever, the joint as the fulcrum, and muscle contraction providing the force."],
+    ["Name the three classes of lever and give a sporting example of each.","1st class (fulcrum between force and load, e.g. neck nodding); 2nd class (load between fulcrum and force, e.g. calf raise); 3rd class (force between fulcrum and load, e.g. bicep curl)."],
+  ]);
+  push("p1_movement_analysis",[
+    ["In a lever system, the joint acts as the:",["Fulcrum","Load","Force","Resistance arm only"],0,"The joint is the pivot point — the fulcrum."],
+    ["A bicep curl, where the force (muscle) acts between the fulcrum (elbow) and the load (hand), is an example of a:",["Third class lever","First class lever","Second class lever","Fourth class lever"],0,"Third class levers have the force between the fulcrum and the load — most joints in the body work this way."],
+  ]);
+
+  cards("p2_health_wellbeing",[
+    ["What is the difference between a balanced diet and a diet for a specific sport?","A balanced diet meets general nutritional needs; a sport-specific diet is adjusted for the energy, timing and recovery demands of that activity."],
+    ["Why do endurance athletes often need a higher carbohydrate intake?","Carbohydrates are the main fuel for sustained aerobic activity, so more is needed to maintain energy over long events."],
+  ]);
+  push("p2_health_wellbeing",[
+    ["An endurance runner needs a higher proportion of which nutrient compared with a typical diet?",["Carbohydrate","Vitamin C only","Water only","Fibre only"],0,"Carbohydrates fuel sustained aerobic exercise, so endurance athletes need more."],
+    ["A balanced diet adjusted specifically for an athlete's training demands is called a:",["Sport-specific diet","Generic diet","Fad diet","Detox diet"],0,"Diets tailored to an athlete's sport and training needs are sport-specific."],
+  ]);
+
+  cards("p2_socio_cultural",[
+    ["What is a barrier to participation in sport?","Something that prevents or discourages people from taking part — e.g. cost, time, access, discrimination or lack of role models."],
+    ["How can providing role models increase participation?","Seeing someone similar to themselves succeed can inspire people from underrepresented groups to take part."],
+  ]);
+  push("p2_socio_cultural",[
+    ["Which is a barrier that can prevent someone taking part in sport?",["Cost of equipment or membership","Free access to facilities","Plenty of free time","Strong role models"],0,"Cost is a common barrier preventing participation; the others encourage it."],
+    ["Providing more visible role models from underrepresented groups mainly helps to:",["Inspire and increase participation from that group","Reduce all costs to zero","Guarantee elite performance","Remove the need for facilities"],0,"Relatable role models can inspire people to take up sport."],
+  ]);
+
+  console.log("[aqa_pe_depth.js] AQA GCSE PE topics topped up.");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
@@ -15658,7 +16507,7 @@ window.COURSES.aqa_alevel_pe = {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2","ocr_cnat_eng"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2","ocr_cnat_eng","ocr_cnat_imedia","edexcel_gcse_business"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
@@ -16076,6 +16925,23 @@ const COURSES = window.COURSES;
 const APP_VERSION=2;
 let state=blankState(), unsaved=false, allowClose=false;
 let curCourse=Object.keys(COURSES)[0], curTopic=null, curMode="cards";
+let quizLen="all";          // "5" | "10" | "all"
+let quizIndices=null;       // array of real question indices currently shown (null = not yet built)
+let quizSubsetKey=null;     // "course|topic" the current quizIndices belong to, so we rebuild on topic change
+
+function pickRandomIndices(total, n){
+  const idx=Array.from({length:total},(_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+  return idx.slice(0, Math.min(n,total)).sort((a,b)=>a-b);
+}
+function buildQuizSubset(force){
+  const key=curCourse+"|"+curTopic;
+  const t=COURSES[curCourse].topics[curTopic]; const total=t.quiz.length;
+  if(!force && quizSubsetKey===key && quizIndices) return; // keep existing set (e.g. re-render after answering)
+  quizSubsetKey=key;
+  if(quizLen==="all" || total<=Number(quizLen)){ quizIndices=Array.from({length:total},(_,i)=>i); }
+  else { quizIndices=pickRandomIndices(total, Number(quizLen)); }
+}
 let cardOrder=[], cardPos=0, cardFlipped=false, cardFilter="all";
 let curSection="learn"; // learn | progress | avatar
 
@@ -16279,12 +17145,12 @@ $("nextCard").addEventListener("click",()=>{ if(!cardOrder.length)return; cardPo
 $("knowCard").addEventListener("click",()=>{
   if(!cardOrder.length)return; const idx=cardOrder[cardPos], p=prog(curCourse,curTopic);
   if(!p.known.includes(idx)) p.known.push(idx); p.review=p.review.filter(i=>i!==idx);
-  markUnsaved(); toast("Marked as mastered"); advanceCard();
+  markUnsaved(); toast("Marked as mastered"); advanceCard(); renderSideFoot();
 });
 $("reviewCard").addEventListener("click",()=>{
   if(!cardOrder.length)return; const idx=cardOrder[cardPos], p=prog(curCourse,curTopic);
   if(!p.review.includes(idx)) p.review.push(idx); p.known=p.known.filter(i=>i!==idx);
-  markUnsaved(); toast("Flagged for review"); advanceCard();
+  markUnsaved(); toast("Flagged for review"); advanceCard(); renderSideFoot();
 });
 function advanceCard(){
   buildCardOrder();
@@ -16294,13 +17160,17 @@ function advanceCard(){
 }
 
 function renderQuiz(){
-  const t=COURSES[curCourse].topics[curTopic], qs=t.quiz, p=prog(curCourse,curTopic);
+  const t=COURSES[curCourse].topics[curTopic], p=prog(curCourse,curTopic);
+  buildQuizSubset(false);
   $("quizTitle").textContent=t.name.replace(/^\d+\s·\s/,"")+" — exam questions";
+  // sync the length-selector buttons' active state
+  document.querySelectorAll(".qlen[data-len]").forEach(b=>b.classList.toggle("active", b.dataset.len===quizLen));
   const list=$("quizList"); list.innerHTML=""; const keys=["A","B","C","D"];
-  qs.forEach((q,qi)=>{
+  quizIndices.forEach((qi,pos)=>{
+    const q=t.quiz[qi];
     const answered=p.quiz[qi]!==undefined, chosen=p.quiz[qi];
     const card=document.createElement("div"); card.className="q-card";
-    card.innerHTML=`<div class="q-num">Q${qi+1}</div><div class="q-text">${q[0]}</div>`
+    card.innerHTML=`<div class="q-num">Q${pos+1}</div><div class="q-text">${q[0]}</div>`
       + (q[4]?`<div class="fx-fig q-fig">${renderDiagram(q[4])}</div>`:"");
     const opts=document.createElement("div"); opts.className="options";
     q[1].forEach((optText,oi)=>{
@@ -16314,15 +17184,21 @@ function renderQuiz(){
       ex.innerHTML=`<b>${right?"Correct.":"Not quite."}</b> ${q[3]}`; card.appendChild(ex); }
     list.appendChild(card);
   });
-  updateQuizScore(); $("quizMeta").textContent=Object.keys(p.quiz).length+" of "+qs.length+" answered";
+  updateQuizScore();
+  const answeredInSet=quizIndices.filter(qi=>p.quiz[qi]!==undefined).length;
+  $("quizMeta").textContent=answeredInSet+" of "+quizIndices.length+" answered";
 }
-function answer(qi,oi){ const p=prog(curCourse,curTopic); if(p.quiz[qi]!==undefined)return; p.quiz[qi]=oi; markUnsaved(); renderQuiz(); }
+function answer(qi,oi){ const p=prog(curCourse,curTopic); if(p.quiz[qi]!==undefined)return; p.quiz[qi]=oi; markUnsaved(); renderQuiz(); renderSideFoot(); }
 function updateQuizScore(){
   const t=COURSES[curCourse].topics[curTopic], p=prog(curCourse,curTopic); let correct=0;
-  Object.entries(p.quiz).forEach(([qi,ch])=>{ if(t.quiz[qi][2]===ch) correct++; });
-  $("quizScore").textContent=correct; $("quizTotal").textContent=t.quiz.length;
+  quizIndices.forEach(qi=>{ if(p.quiz[qi]!==undefined && t.quiz[qi][2]===p.quiz[qi]) correct++; });
+  $("quizScore").textContent=correct; $("quizTotal").textContent=quizIndices.length;
 }
-$("resetQuiz").addEventListener("click",()=>{ const p=prog(curCourse,curTopic); p.quiz={}; markUnsaved(); toast("Topic quiz reset"); renderQuiz(); });
+$("resetQuiz").addEventListener("click",()=>{ const p=prog(curCourse,curTopic); p.quiz={}; markUnsaved(); toast("Topic quiz reset"); renderQuiz(); renderSideFoot(); });
+document.querySelectorAll(".qlen[data-len]").forEach(btn=>{
+  btn.addEventListener("click",()=>{ quizLen=btn.dataset.len; buildQuizSubset(true); renderQuiz(); });
+});
+$("quizShuffle").addEventListener("click",()=>{ buildQuizSubset(true); renderQuiz(); toast("New set of questions"); });
 
 function renderStats(){
   let cardsKnown=0,quizAns=0,quizCorrect=0,topicsStarted=0; const tp=$("topicProgress"); tp.innerHTML="";
@@ -16789,6 +17665,272 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
 
 </script>
 <script>
+// ============================================================
+//  FLUXOR AVATAR — EXPANSION
+//  Adds more wardrobe items and two NEW categories: House & Car.
+//  House/Car render as a small "property scene" strip along the
+//  bottom of the avatar portrait, so all existing preview and
+//  save mechanisms work unchanged.
+// ============================================================
+(function(){
+  if(!window.AVATAR_PARTS || !window.renderAvatar){ console.warn("avatar engine not ready"); return; }
+  const P = window.AVATAR_PARTS;
+
+  // ---- helper: shade a hex colour ----
+  function shade(hex,f){ hex=(hex||'#888').replace('#',''); if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+    let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+    const m=f<0?0:255,a=Math.abs(f); r=Math.round(r+(m-r)*a);g=Math.round(g+(m-g)*a);b=Math.round(b+(m-b)*a);
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
+
+  // ─────────── 1) MORE ITEMS for existing categories ───────────
+  const moreHair    = [["mohawk","Mohawk","#e8455f"],["braids","Braids","#241a12"],["pigtails","Pigtails","#5a3a1a"],["fringe","Fringe","#2a2018"]];
+  const moreClothes = [["varsity","Varsity jacket","#c8433f"],["dungarees","Dungarees","#3f6fb0"],["puffer","Puffer coat","#f4b740"],["knit","Knitted vest","#7bbf6a"],["tracksuit","Tracksuit","#8a5ad0"]];
+  const moreAcc     = [["monocle","Monocle","#f4b740"],["facemask","Face paint","#39e0c4"],["flowercrown","Flower crown","#ff5d9e"],["eyepatch","Eye patch","#222"],["bowtie","Bow tie","#e8455f"]];
+  const moreBg      = [["beach","Beach","#4fd0e0"],["city","City skyline","#3a4a6a"],["forest","Forest","#3f9a5a"],["neon","Neon","#ff2d95"],["gold","Gold vault","#f4c740"]];
+
+  function addUnique(cat,items){ const have=new Set(P[cat].map(x=>x[0])); items.forEach(it=>{ if(!have.has(it[0])) P[cat].push(it); }); }
+  addUnique("hair",moreHair); addUnique("clothes",moreClothes); addUnique("acc",moreAcc); addUnique("bg",moreBg);
+
+  // ─────────── 2) NEW CATEGORIES: HOUSE & CAR ───────────
+  // These are drawn in a small scene strip. We register them in AVATAR_PARTS
+  // and provide global renderers used by an enhanced avatar wrapper.
+  P.house = [
+    ["none","No home","#5a6b7d"],
+    ["tent","Tent","#4a9a5a"],
+    ["flat","City flat","#8a94a4"],
+    ["cottage","Cottage","#c98a5a"],
+    ["house","Town house","#c85a5a"],
+    ["mansion","Mansion","#d0b060"],
+    ["castle","Castle","#9aa4b4"],
+  ];
+  P.car = [
+    ["none","No car","#5a6b7d"],
+    ["bike","Bicycle","#39e0c4"],
+    ["hatch","Hatchback","#4a76d4"],
+    ["sports","Sports car","#e8455f"],
+    ["suv","SUV","#5a7d4a"],
+    ["limo","Limousine","#2c3a4a"],
+    ["rocket","Rocket car","#f4b740"],
+  ];
+
+  // House renderers — drawn within a ground scene (x from ~8..96, baseline y=190)
+  const HOUSE = {
+    none:()=>"",
+    tent:(c)=>{ const a=c||'#4a9a5a'; return `<path d="M18 190 L40 158 L62 190 Z" fill="${a}" stroke="${shade(a,-0.4)}" stroke-width="1.5"/><path d="M40 158 L40 190" stroke="${shade(a,-0.4)}" stroke-width="1.5"/><path d="M34 190 L40 172 L46 190 Z" fill="${shade(a,-0.5)}"/>`; },
+    flat:(c)=>{ const a=c||'#8a94a4'; let w=`<rect x="16" y="150" width="46" height="40" fill="${a}" stroke="${shade(a,-0.4)}"/>`;
+      for(let yy=156;yy<188;yy+=9)for(let xx=21;xx<58;xx+=11) w+=`<rect x="${xx}" y="${yy}" width="6" height="5" fill="${shade(a,0.4)}"/>`; return w; },
+    cottage:(c)=>{ const a=c||'#c98a5a'; return `<rect x="20" y="164" width="40" height="26" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M16 164 L40 146 L64 164 Z" fill="${shade(a,-0.3)}"/><rect x="35" y="174" width="10" height="16" fill="${shade(a,-0.5)}"/><rect x="24" y="170" width="8" height="7" fill="#bfe0f0"/>`; },
+    house:(c)=>{ const a=c||'#c85a5a'; return `<rect x="16" y="160" width="48" height="30" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M12 160 L40 140 L68 160 Z" fill="${shade(a,-0.35)}"/><rect x="34" y="172" width="12" height="18" fill="${shade(a,-0.5)}"/><rect x="22" y="166" width="9" height="8" fill="#bfe0f0"/><rect x="49" y="166" width="9" height="8" fill="#bfe0f0"/>`; },
+    mansion:(c)=>{ const a=c||'#d0b060'; return `<rect x="10" y="158" width="60" height="32" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M8 158 L40 142 L72 158 Z" fill="${shade(a,-0.3)}"/><rect x="18" y="164" width="8" height="9" fill="#bfe0f0"/><rect x="36" y="164" width="8" height="9" fill="#bfe0f0"/><rect x="54" y="164" width="8" height="9" fill="#bfe0f0"/><rect x="34" y="176" width="12" height="14" fill="${shade(a,-0.5)}"/><rect x="4" y="184" width="72" height="6" fill="${shade(a,-0.5)}"/>`; },
+    castle:(c)=>{ const a=c||'#9aa4b4'; let w=`<rect x="12" y="156" width="56" height="34" fill="${a}" stroke="${shade(a,-0.4)}"/>`;
+      for(let xx=12;xx<=60;xx+=12) w+=`<rect x="${xx}" y="150" width="8" height="8" fill="${a}"/>`;
+      w+=`<rect x="34" y="170" width="12" height="20" fill="${shade(a,-0.5)}"/><path d="M34 170 a6 6 0 0 1 12 0" fill="${shade(a,-0.5)}"/>`;
+      w+=`<path d="M40 150 L40 140 L48 144 L40 146" fill="#e8455f"/>`; return w; },
+  };
+
+  // Car renderers — drawn bottom-right (x ~110..185, baseline y=188)
+  const CAR = {
+    none:()=>"",
+    bike:(c)=>{ const a=c||'#39e0c4'; return `<g stroke="${a}" stroke-width="3" fill="none"><circle cx="128" cy="181" r="9"/><circle cx="160" cy="181" r="9"/><path d="M128 181 L144 181 L152 167 L160 181 M144 181 L150 167 L152 167"/></g><circle cx="152" cy="164" r="2.5" fill="${a}" stroke="none"/>`; },
+    hatch:(c)=>{ const a=c||'#4a76d4'; return `<path d="M112 180 L120 166 L150 162 L172 172 L184 180 Z" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M124 168 L148 165 L164 172 Z" fill="#bfe0f0"/><circle cx="130" cy="182" r="7" fill="#222"/><circle cx="170" cy="182" r="7" fill="#222"/>`; },
+    sports:(c)=>{ const a=c||'#e8455f'; return `<path d="M108 182 L120 172 L150 166 L178 174 L188 182 Z" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M126 172 L150 168 L168 174 Z" fill="#bfe0f0"/><circle cx="128" cy="184" r="7" fill="#222"/><circle cx="172" cy="184" r="7" fill="#222"/><rect x="150" y="164" width="20" height="3" fill="${shade(a,-0.3)}"/>`; },
+    suv:(c)=>{ const a=c||'#5a7d4a'; return `<path d="M112 182 L116 164 L172 164 L184 176 L184 182 Z" fill="${a}" stroke="${shade(a,-0.4)}"/><rect x="122" y="168" width="18" height="10" fill="#bfe0f0"/><rect x="146" y="168" width="18" height="10" fill="#bfe0f0"/><circle cx="130" cy="184" r="8" fill="#222"/><circle cx="170" cy="184" r="8" fill="#222"/>`; },
+    limo:(c)=>{ const a=c||'#2c3a4a'; return `<path d="M104 182 L110 170 L186 170 L192 182 Z" fill="${a}" stroke="${shade(a,-0.5)}"/><rect x="116" y="172" width="14" height="7" fill="#bfe0f0"/><rect x="134" y="172" width="14" height="7" fill="#bfe0f0"/><rect x="152" y="172" width="14" height="7" fill="#bfe0f0"/><circle cx="122" cy="184" r="6" fill="#222"/><circle cx="174" cy="184" r="6" fill="#222"/>`; },
+    rocket:(c)=>{ const a=c||'#f4b740'; return `<path d="M108 180 L150 172 L180 176 Q190 178 180 182 L120 184 Z" fill="${a}" stroke="${shade(a,-0.4)}"/><path d="M150 172 L160 166 L166 174 Z" fill="#e8455f"/><circle cx="132" cy="178" r="4" fill="#bfe0f0"/><path d="M108 180 Q98 182 104 186 L112 184 Z" fill="#ff7a3c"/><circle cx="124" cy="185" r="6" fill="#222"/><circle cx="168" cy="185" r="6" fill="#222"/>`; },
+  };
+
+  window.renderHouse = (id,color)=> (HOUSE[id]||HOUSE.none)(color);
+  window.renderCar   = (id,color)=> (CAR[id]||CAR.none)(color);
+
+  // ─────────── 3) Wrap renderAvatar so house/car appear in the scene ───────────
+  const baseRender = window.renderAvatar;
+  window.renderAvatar = function(cfg,size){
+    cfg = cfg || {};
+    let svg = baseRender(cfg, size);
+    const hasHouse = cfg.house && cfg.house!=="none";
+    const hasCar   = cfg.car && cfg.car!=="none";
+    if(!hasHouse && !hasCar) return svg;
+    // Build the scene overlay (ground + house + car) in the 200x200 space,
+    // inject it just before the closing border rect so it sits in front of the portrait bottom.
+    const ground = `<rect x="0" y="188" width="200" height="12" fill="#3a4a3a" opacity="0.9"/>`;
+    const house = hasHouse ? window.renderHouse(cfg.house, cfg.houseColor) : "";
+    const car   = hasCar ? window.renderCar(cfg.car, cfg.carColor) : "";
+    const scene = `<g class="fx-scene">${ground}${house}${car}</g>`;
+    // insert before the final border <rect ... stroke=...> (the last rect in the svg)
+    const marker = svg.lastIndexOf('<rect x="1.5"');
+    if(marker>-1){ svg = svg.slice(0,marker) + scene + svg.slice(marker); }
+    return svg;
+  };
+
+  console.log("[avatar_expand.js] added wardrobe items + House & Car categories.");
+})();
+</script>
+<script>
+// ============================================================
+//  FLUXOR AVATAR — FIX MISSING RENDERERS + MORE NEW ITEMS
+//  Several catalogue items (mohawk, braids, pigtails, fringe,
+//  varsity, dungarees, puffer, knit, tracksuit, monocle,
+//  facemask, flowercrown, eyepatch, bowtie, beach, city,
+//  forest, neon, gold) were added to AVATAR_PARTS but had no
+//  matching SVG render function, so they silently fell back to
+//  a default look. This patches proper renderers for all of
+//  them by wrapping renderAvatar with an item-specific overlay,
+//  and adds a further batch of brand-new items.
+// ============================================================
+(function(){
+  if(!window.AVATAR_PARTS || !window.renderAvatar){ console.warn("avatar engine not ready for fix-pack"); return; }
+  const P = window.AVATAR_PARTS;
+
+  function shade(hex,f){ hex=(hex||'#888').replace('#',''); if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+    let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+    const m=f<0?0:255,a=Math.abs(f); r=Math.round(r+(m-r)*a);g=Math.round(g+(m-g)*a);b=Math.round(b+(m-b)*a);
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
+
+  // ---- Extra HAIR renderers (drawn behind/around the head, ~x66-134,y40-95) ----
+  const HAIR_FIX = {
+    mohawk:(c)=>{ const a=c||'#e8455f'; return `<path d="M92 40 L100 20 L108 40 L104 46 L96 46 Z" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1"/><path d="M96 46 Q100 42 104 46 L102 60 L98 60 Z" fill="${a}"/>`; },
+    braids:(c)=>{ const a=c||'#241a12'; let g=`<path d="M66 70 Q60 66 66 56 Q76 42 100 42 Q124 42 134 56 Q140 66 134 70 L128 62 Q118 48 100 48 Q82 48 72 62 Z" fill="${a}"/>`;
+      // two braided tails
+      [64,136].forEach(x=>{ for(let i=0;i<4;i++){ g+=`<circle cx="${x+(x<100?-2:2)*0}" cy="${76+i*11}" r="5" fill="${a}"/>`; } });
+      return g; },
+    pigtails:(c)=>{ const a=c||'#5a3a1a'; return `<path d="M66 70 Q60 64 68 54 Q78 42 100 42 Q122 42 132 54 Q140 64 134 70 L128 60 Q118 48 100 48 Q82 48 72 60 Z" fill="${a}"/>`
+      +`<circle cx="60" cy="82" r="9" fill="${a}"/><circle cx="140" cy="82" r="9" fill="${a}"/>`
+      +`<circle cx="60" cy="82" r="3" fill="${shade(a,0.3)}"/><circle cx="140" cy="82" r="3" fill="${shade(a,0.3)}"/>`; },
+    fringe:(c)=>{ const a=c||'#2a2018'; return `<path d="M66 66 Q64 46 100 44 Q136 46 134 66 L128 60 Q126 50 100 50 Q74 50 72 60 Z" fill="${a}"/>`
+      +`<path d="M78 58 L82 50 M92 58 L94 48 M106 58 L108 48 M118 58 L122 50" stroke="${a}" stroke-width="4" stroke-linecap="round"/>`; },
+  };
+
+  // ---- Extra CLOTHES renderers (torso ~x54-146,y120-180) ----
+  const CLOTHES_FIX = {
+    varsity:(c)=>{ const a=c||'#c8433f'; const d=shade(a,-0.35);
+      return `<path d="M54 178 L54 138 Q54 122 100 122 Q146 122 146 138 L146 178 Z" fill="${d}"/>`
+        +`<path d="M54 178 L54 138 Q54 122 100 122 Q146 122 146 138 L146 150 L54 150 Z" fill="${a}"/>`
+        +`<circle cx="100" cy="140" r="4" fill="#fff" opacity="0.85"/><text x="100" y="144" font-size="7" text-anchor="middle" fill="${d}" font-weight="700"></text>`; },
+    dungarees:(c)=>{ const a=c||'#3f6fb0'; return `<path d="M60 178 L60 132 L80 132 L80 145 L120 145 L120 132 L140 132 L140 178 Z" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1.5"/>`
+        +`<rect x="68" y="118" width="8" height="18" fill="${a}"/><rect x="124" y="118" width="8" height="18" fill="${a}"/>`
+        +`<circle cx="72" cy="140" r="2.5" fill="#f4b740"/><circle cx="128" cy="140" r="2.5" fill="#f4b740"/>`; },
+    puffer:(c)=>{ const a=c||'#f4b740'; const d=shade(a,-0.25); let g=`<path d="M56 178 L56 130 Q56 118 100 118 Q144 118 144 130 L144 178 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/>`;
+      for(let y=126;y<176;y+=13) g+=`<line x1="56" y1="${y}" x2="144" y2="${y}" stroke="${d}" stroke-width="1.5" opacity="0.6"/>`;
+      g+=`<path d="M96 118 L96 178 M104 118 L104 178" stroke="${d}" stroke-width="1" opacity="0.5"/>`; return g; },
+    knit:(c)=>{ const a=c||'#7bbf6a'; const d=shade(a,-0.25); let g=`<path d="M58 178 L58 132 Q58 120 100 120 Q142 120 142 132 L142 178 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/>`;
+      for(let y=128;y<176;y+=8) for(let x=62;x<140;x+=10) g+=`<path d="M${x} ${y} l5 5 l-5 5" stroke="${d}" stroke-width="1" fill="none" opacity="0.5"/>`;
+      return g; },
+    tracksuit:(c)=>{ const a=c||'#8a5ad0'; const d=shade(a,-0.3); return `<path d="M56 178 L56 128 Q56 118 100 118 Q144 118 144 128 L144 178 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/>`
+        +`<path d="M56 132 L70 132 M130 132 L144 132" stroke="#fff" stroke-width="4"/>`
+        +`<path d="M92 118 L92 178 M108 118 L108 178" stroke="#fff" stroke-width="3" opacity="0.85"/>`; },
+  };
+
+  // ---- Extra ACC renderers (face/head area) ----
+  const ACC_FIX = {
+    monocle:(c)=>{ const a=c||'#f4b740'; return `<circle cx="112" cy="93" r="13" fill="none" stroke="${a}" stroke-width="3"/>`
+        +`<path d="M124 100 Q130 112 126 122" stroke="${a}" stroke-width="2" fill="none"/>`; },
+    facemask:(c)=>{ const a=c||'#39e0c4'; return `<rect x="72" y="100" width="56" height="22" rx="10" fill="${a}" opacity="0.9"/>`
+        +`<path d="M72 106 Q100 100 128 106" stroke="${shade(a,-0.3)}" stroke-width="1.5" fill="none" opacity="0.6"/>`; },
+    flowercrown:(c)=>{ const a=c||'#ff5d9e'; const pts=[[74,58],[88,48],[100,44],[112,48],[126,58]];
+      let g=""; pts.forEach(([x,y])=>{ g+=`<circle cx="${x}" cy="${y}" r="6" fill="${a}"/><circle cx="${x}" cy="${y}" r="2.5" fill="#f4e04d"/>`
+        +`<circle cx="${x-5}" cy="${y-3}" r="3" fill="${shade(a,0.2)}"/><circle cx="${x+5}" cy="${y-3}" r="3" fill="${shade(a,0.2)}"/>`; });
+      g+=`<path d="M70 62 Q100 46 130 62" stroke="#4a9a5a" stroke-width="3" fill="none"/>`;
+      return g; },
+    eyepatch:(c)=>{ const a=c||'#222'; return `<path d="M84 84 h24 v18 h-24 Z" fill="${a}" rx="3"/>`
+        +`<path d="M108 90 L146 78 M84 90 L58 82" stroke="${a}" stroke-width="3"/>`; },
+    bowtie:(c)=>{ const a=c||'#e8455f'; return `<path d="M86 150 L98 144 L98 156 Z" fill="${a}"/><path d="M114 150 L102 144 L102 156 Z" fill="${a}"/>`
+        +`<circle cx="100" cy="150" r="4" fill="${shade(a,-0.3)}"/>`; },
+  };
+
+  // ---- Extra BACKGROUND renderers (full-bleed 200x200) ----
+  const BG_FIX = {
+    beach:(c)=>{ const a=c||'#4fd0e0'; return `<rect width="200" height="130" fill="${a}"/><rect y="130" width="200" height="70" fill="#e8d9a0"/>`
+        +`<circle cx="150" cy="40" r="18" fill="#fff5e0" opacity="0.9"/><path d="M0 130 Q50 118 100 130 T200 130" fill="none" stroke="#fff" stroke-width="3" opacity="0.6"/>`; },
+    city:(c)=>{ const a=c||'#3a4a6a'; let g=`<defs><linearGradient id="cityg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a,0.3)}"/><stop offset="1" stop-color="${shade(a,-0.4)}"/></linearGradient></defs><rect width="200" height="200" fill="url(#cityg)"/>`;
+      const bl=[[10,90,30,110],[46,60,26,140],[78,100,22,100],[106,40,30,160],[142,75,24,125],[172,95,22,105]];
+      bl.forEach(([x,y,w,h])=>{ g+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${shade(a,-0.15)}"/>`;
+        for(let wy=y+8;wy<200-6;wy+=14) for(let wx=x+4;wx<x+w-4;wx+=9) g+=`<rect x="${wx}" y="${wy}" width="4" height="5" fill="#f4e04d" opacity="0.5"/>`; });
+      return g; },
+    forest:(c)=>{ const a=c||'#3f9a5a'; let g=`<rect width="200" height="200" fill="${shade(a,-0.55)}"/>`;
+      [[30,150],[65,130],[100,155],[135,125],[170,150]].forEach(([x,y])=>{ g+=`<path d="M${x} ${y} L${x-18} ${y+40} L${x+18} ${y+40} Z" fill="${a}"/><path d="M${x} ${y-16} L${x-14} ${y+18} L${x+14} ${y+18} Z" fill="${shade(a,0.15)}"/>`; });
+      return g; },
+    neon:(c)=>{ const a=c||'#ff2d95'; let g=`<rect width="200" height="200" fill="#0a0612"/>`;
+      [50,90,130,170].forEach((y,i)=>{ g+=`<rect x="10" y="${y}" width="180" height="4" fill="${i%2?a:'#39e0c4'}" opacity="0.8"/>`; });
+      g+=`<rect x="10" y="30" width="180" height="170" fill="none" stroke="${a}" stroke-width="2" opacity="0.4"/>`;
+      return g; },
+    gold:(c)=>{ const a=c||'#f4c740'; return `<defs><radialGradient id="goldg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${shade(a,0.35)}"/><stop offset="1" stop-color="${shade(a,-0.35)}"/></radialGradient></defs><rect width="200" height="200" fill="url(#goldg)"/>`
+        +Array.from({length:8},(_,i)=>`<circle cx="${20+i*22}" cy="${30+(i%3)*55}" r="6" fill="${shade(a,0.5)}" opacity="0.5"/>`).join(''); },
+  };
+
+  // ---- Wrap renderAvatar to apply these fixed overlays when selected ----
+  const prevRender = window.renderAvatar;
+  window.renderAvatar = function(cfg,size){
+    cfg = cfg || {};
+    let svg = prevRender(cfg, size);
+    let extra = "";
+    if(HAIR_FIX[cfg.hair]) extra += HAIR_FIX[cfg.hair](cfg.hairColor);
+    if(CLOTHES_FIX[cfg.clothes]) extra += CLOTHES_FIX[cfg.clothes](cfg.clothesColor);
+    if(ACC_FIX[cfg.acc]) extra += ACC_FIX[cfg.acc](cfg.accColor);
+    if(!extra && !BG_FIX[cfg.bg]) return svg;
+    // if a fixed background is selected, we must replace the (missing/fallback) bg layer.
+    // Simplest robust approach: rebuild the whole svg via the same structure as the base engine,
+    // by inserting our bg first (if needed) then layering the base render's clothes/head/hair/acc,
+    // then any fixed overlays on top.
+    if(BG_FIX[cfg.bg]){
+      // Re-render with a neutral bg the base engine understands, then swap the first fill rect group.
+      const neutralCfg = Object.assign({}, cfg, {bg:"plain"});
+      let base = prevRender(neutralCfg, size);
+      const bgSvg = BG_FIX[cfg.bg](cfg.bgColor);
+      // the base's plain bg is the first thing inside <g clip-path...>; replace up to the first two children.
+      const gStart = base.indexOf('clip-path');
+      const gOpen = base.indexOf('>', gStart) + 1;
+      // find where the plain bg rect/defs block ends: base.plain renders <defs>...</defs><rect .../>
+      const afterDefs = base.indexOf('</defs>', gOpen);
+      const bgRectEnd = base.indexOf('/>', afterDefs>-1?afterDefs:gOpen) + 2;
+      const cut = afterDefs>-1 ? bgRectEnd : (base.indexOf('/>', gOpen)+2);
+      base = base.slice(0,gOpen) + bgSvg + base.slice(cut);
+      svg = base;
+    }
+    if(extra){
+      const marker = svg.lastIndexOf('</g>');
+      if(marker>-1) svg = svg.slice(0,marker) + extra + svg.slice(marker);
+    }
+    return svg;
+  };
+
+  // ---- Add a further batch of brand-new items ----
+  function addUnique(cat,items){ const have=new Set(P[cat].map(x=>x[0])); items.forEach(it=>{ if(!have.has(it[0])) P[cat].push(it); }); }
+
+  addUnique("acc",[["scarf","Scarf","#e8455f"],["headband","Headband","#39e0c4"],["visor","Visor","#f4b740"],["necklace","Necklace","#f4c740"]]);
+  addUnique("hair",[["dreadlocks","Dreadlocks","#241a12"],["undercut","Undercut","#2a2018"]]);
+  addUnique("clothes",[["overalls","Overalls","#4a76d4"],["kimono","Kimono","#e8455f"],["armor","Armour","#8a94a4"]]);
+  addUnique("bg",[["desert","Desert","#e0b070"],["underwater","Underwater","#2a7ab8"],["volcano","Volcano","#c8433f"]]);
+
+  const ACC_FIX2 = {
+    scarf:(c)=>{ const a=c||'#e8455f'; return `<path d="M78 116 Q100 128 122 116 L122 128 Q100 138 78 128 Z" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1"/><path d="M112 126 L118 148" stroke="${a}" stroke-width="8" stroke-linecap="round"/>`; },
+    headband:(c)=>{ const a=c||'#39e0c4'; return `<path d="M66 68 Q100 54 134 68" stroke="${a}" stroke-width="8" fill="none" stroke-linecap="round"/>`; },
+    visor:(c)=>{ const a=c||'#f4b740'; return `<path d="M66 86 Q100 78 134 86 L130 96 Q100 90 70 96 Z" fill="${a}" opacity="0.85"/>`; },
+    necklace:(c)=>{ const a=c||'#f4c740'; return `<path d="M78 122 Q100 134 122 122" stroke="${a}" stroke-width="3" fill="none"/><circle cx="100" cy="132" r="4" fill="${a}"/>`; },
+  };
+  const HAIR_FIX2 = {
+    dreadlocks:(c)=>{ const a=c||'#241a12'; let g=`<path d="M66 70 Q60 60 70 50 Q84 40 100 40 Q116 40 130 50 Q140 60 134 70 L128 60 Q118 46 100 46 Q82 46 72 60 Z" fill="${a}"/>`;
+      for(let x=68;x<=132;x+=13) g+=`<rect x="${x-2.5}" y="60" width="5" height="30" rx="2.5" fill="${a}"/><circle cx="${x}" cy="89" r="3" fill="${shade(a,0.2)}"/>`; return g; },
+    undercut:(c)=>{ const a=c||'#2a2018'; return `<path d="M78 62 Q100 42 122 62 L122 50 Q100 36 78 50 Z" fill="${a}"/><path d="M66 78 L78 62 M134 78 L122 62" stroke="${a}" stroke-width="4"/>`; },
+  };
+  const CLOTHES_FIX2 = {
+    overalls:(c)=>{ const a=c||'#4a76d4'; return `<path d="M58 178 L58 130 L84 130 L84 144 L116 144 L116 130 L142 130 L142 178 Z" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1.5"/><rect x="66" y="116" width="8" height="16" fill="${a}"/><rect x="126" y="116" width="8" height="16" fill="${a}"/>`; },
+    kimono:(c)=>{ const a=c||'#e8455f'; return `<path d="M56 178 L60 128 Q100 116 140 128 L144 178 Z" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1.5"/><path d="M92 128 L92 178 M108 128 L108 178" stroke="${shade(a,-0.4)}" stroke-width="2"/><path d="M78 140 Q100 150 122 140" stroke="#f4e04d" stroke-width="3" fill="none"/>`; },
+    armor:(c)=>{ const a=c||'#8a94a4'; const d=shade(a,-0.35); return `<path d="M58 178 L58 126 Q100 114 142 126 L142 178 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/><path d="M78 130 L78 178 M122 130 L122 178" stroke="${d}" stroke-width="2"/><circle cx="100" cy="140" r="7" fill="${d}"/>`; },
+  };
+  const BG_FIX2 = {
+    desert:(c)=>{ const a=c||'#e0b070'; return `<defs><linearGradient id="deg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a,0.4)}"/><stop offset="1" stop-color="${a}"/></linearGradient></defs><rect width="200" height="200" fill="url(#deg)"/><circle cx="150" cy="40" r="16" fill="#fff5e0" opacity="0.9"/><path d="M0 150 Q50 138 100 150 T200 150 V200 H0 Z" fill="${shade(a,-0.25)}"/>`; },
+    underwater:(c)=>{ const a=c||'#2a7ab8'; let g=`<rect width="200" height="200" fill="${a}"/>`;
+      [[40,60,14],[90,110,10],[150,80,18],[60,150,8]].forEach(([x,y,r])=>{ g+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="0.15"/>`; });
+      g+=`<path d="M0 40 Q50 30 100 40 T200 40" stroke="#fff" stroke-width="2" fill="none" opacity="0.3"/>`; return g; },
+    volcano:(c)=>{ const a=c||'#c8433f'; return `<defs><radialGradient id="volg" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="${shade(a,0.3)}"/><stop offset="1" stop-color="#1a0806"/></radialGradient></defs><rect width="200" height="200" fill="url(#volg)"/><path d="M60 180 L100 90 L140 180 Z" fill="#3a2a2a"/><path d="M92 110 L100 90 L108 110 Z" fill="${a}"/>`; },
+  };
+  Object.assign(ACC_FIX, ACC_FIX2); Object.assign(HAIR_FIX, HAIR_FIX2); Object.assign(CLOTHES_FIX, CLOTHES_FIX2); Object.assign(BG_FIX, BG_FIX2);
+
+  console.log("[avatar_fix_and_more.js] Fixed missing renderers for existing items + added scarf/headband/visor/necklace, dreadlocks/undercut, overalls/kimono/armour, desert/underwater/volcano.");
+})();
+</script>
+
+<script>
 /* ============================================================
    FLUXOR REWARDS + AVATAR SYSTEM
    - Points from cards/quiz/topic-completion, levels, daily streak.
@@ -16817,12 +17959,13 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     if(!state.rewards){
       state.rewards = {
         spent:0,                 // points spent in shop
-        owned:{ bg:["plain"], hair:["none","short"], clothes:["tee"], acc:["none"], skin:["#e8b98a","#f1c9a5"] },
-        avatar:{ bg:"plain", bgColor:"#1b2533", hair:"short", hairColor:"#3a2a1a", clothes:"tee", clothesColor:"#39e0c4", skin:"#e8b98a", acc:"none", accColor:"#f4b740" },
+        owned:{ bg:["plain"], hair:["none","short"], clothes:["tee"], acc:["none"], skin:["#e8b98a","#f1c9a5"], house:["none"], car:["none"] },
+        avatar:{ bg:"plain", bgColor:"#1b2533", hair:"short", hairColor:"#3a2a1a", clothes:"tee", clothesColor:"#39e0c4", skin:"#e8b98a", acc:"none", accColor:"#f4b740", house:"none", houseColor:"#c85a5a", car:"none", carColor:"#4a76d4" },
         collection:[],           // saved avatar configs [{name,cfg}]
         streak:0, lastDay:null,
         badges:[],               // earned achievement ids
-        seenLevel:1              // highest level we've already celebrated
+        seenLevel:1,             // highest level we've already celebrated
+        trivia:{ xp:0, highScore:0, bestCombo:0, races:0 }  // Trivia Race ledger
       };
     }
     // migrate any missing keys
@@ -16830,7 +17973,16 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     r.owned = r.owned || {};
     if(!Array.isArray(r.badges)) r.badges=[];
     if(typeof r.seenLevel!=="number") r.seenLevel=levelFromXP(earnedXP()).level;
-    ["bg","hair","clothes","acc","skin"].forEach(k=>{ if(!Array.isArray(r.owned[k])) r.owned[k]=[]; });
+    if(!r.trivia) r.trivia={ xp:0, highScore:0, bestCombo:0, races:0 };
+    if(typeof r.trivia.xp!=="number") r.trivia.xp=0;
+    if(typeof r.trivia.highScore!=="number") r.trivia.highScore=0;
+    if(typeof r.trivia.bestCombo!=="number") r.trivia.bestCombo=0;
+    if(typeof r.trivia.races!=="number") r.trivia.races=0;
+    ["bg","hair","clothes","acc","skin","house","car"].forEach(k=>{ if(!Array.isArray(r.owned[k])) r.owned[k]=[]; });
+    if(!r.owned.house.includes("none")) r.owned.house.push("none");
+    if(!r.owned.car.includes("none")) r.owned.car.push("none");
+    if(r.avatar && r.avatar.house==null){ r.avatar.house="none"; r.avatar.houseColor="#c85a5a"; }
+    if(r.avatar && r.avatar.car==null){ r.avatar.car="none"; r.avatar.carColor="#4a76d4"; }
     if(!r.owned.bg.includes("plain")) r.owned.bg.push("plain");
     if(!r.owned.clothes.includes("tee")) r.owned.clothes.push("tee");
     if(!r.owned.acc.includes("none")) r.owned.acc.push("none");
@@ -16860,6 +18012,7 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     // streak multiplier bonus (mild): +2% per streak day, capped
     const r = state.rewards;
     if(r && r.streak>1) xp = Math.round(xp * (1 + Math.min(r.streak-1,10)*0.02));
+    if(r && r.trivia) xp += r.trivia.xp;   // Trivia Race points are also spendable currency
     return xp;
   }
   function spendable(){ const r=ensureRewards(); return Math.max(0, earnedXP() - r.spent); }
@@ -16875,7 +18028,7 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   }
 
   // ---------- shop prices ----------
-  const PRICE = { bg:120, hair:90, clothes:120, acc:80, skin:60 };
+  const PRICE = { bg:120, hair:90, clothes:120, acc:80, skin:60, house:400, car:400 };
   function priceFor(kind){ return PRICE[kind]||100; }
 
   // ---------- achievements ----------
@@ -16896,9 +18049,11 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
       if(topic.cards.length && known>=topic.cards.length && corr>=topic.quiz.length && topic.quiz.length) topicsDone++;
     });
     const r=ensureRewards();
+    const tr=r.trivia||{highScore:0,bestCombo:0,races:0};
     return { cardsKnown, quizCorrect, quizAnswered, topicsDone,
       courses:Object.keys(courses).length, streak:r.streak||0,
-      level:levelFromXP(earnedXP()).level, avatars:(r.collection||[]).length };
+      level:levelFromXP(earnedXP()).level, avatars:(r.collection||[]).length,
+      triviaHigh:tr.highScore, triviaCombo:tr.bestCombo, triviaRaces:tr.races };
   }
 
   const BADGES = [
@@ -16918,6 +18073,9 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     { id:"level_5",      name:"Rising Star",    desc:"Reach level 5",                      icon:"🚀", check:s=>s.level>=5 },
     { id:"level_10",     name:"Veteran",        desc:"Reach level 10",                     icon:"👑", check:s=>s.level>=10 },
     { id:"stylist",      name:"Stylist",        desc:"Save 3 avatars to your collection",  icon:"🎨", check:s=>s.avatars>=3 },
+    { id:"racer_1",      name:"First Lap",      desc:"Finish a Trivia Race",               icon:"🏁", check:s=>s.triviaRaces>=1 },
+    { id:"racer_score",  name:"Speed Demon",    desc:"Score 100+ in a single Trivia Race", icon:"💨", check:s=>s.triviaHigh>=100 },
+    { id:"racer_combo",  name:"Combo King",     desc:"Hit a 10-answer combo streak",       icon:"🔗", check:s=>s.triviaCombo>=10 },
   ];
 
   // queue of celebrations to show, and a flag so we don't stack them
@@ -17017,6 +18175,59 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   .badge .bd{font-size:10px;color:var(--ink-dim);font-family:var(--mono);display:block;margin-top:3px;line-height:1.3}
   .badge-count{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
 
+  /* Trivia Race */
+  .btn-race{margin-top:10px;width:100%;padding:12px;border-radius:10px;font-weight:700;font-size:15px;
+    background:linear-gradient(135deg,var(--phosphor),#2bb89e);color:#06231d;border:none;cursor:pointer;transition:.15s}
+  .btn-race:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .race-best{margin-top:8px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+
+  .race-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;
+    background:rgba(6,9,13,.8);backdrop-filter:blur(4px);padding:20px}
+  .race-overlay.hidden{display:none}
+  .race-modal{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:28px;max-width:520px;width:100%;max-height:90vh;overflow:auto}
+  .race-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;
+    background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line);cursor:pointer;font-size:14px}
+  .race-close:hover{color:var(--ink)}
+
+  .race-intro,.race-results{text-align:center}
+  .race-flag{font-size:44px;margin-bottom:6px}
+  .race-intro h2,.race-results h2{margin:4px 0 10px;font-size:22px}
+  .race-intro p{color:var(--ink-dim);font-size:14px;line-height:1.5;margin-bottom:18px}
+  .race-stats-row{display:flex;justify-content:center;gap:24px;margin:14px 0 20px}
+  .race-stats-row .v{display:block;font-size:22px;font-weight:700;color:var(--phosphor);font-family:var(--mono)}
+  .race-stats-row .k{display:block;font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .race-start{padding:12px 32px;font-size:16px;font-weight:700}
+  .race-final-score{font-size:44px;font-weight:800;color:var(--phosphor);font-family:var(--mono)}
+  .race-final-score span{font-size:16px;color:var(--ink-dim);font-weight:500}
+  .race-earned{color:var(--ink-dim);font-size:13px;margin:10px 0 18px}
+  .race-results-actions{display:flex;gap:10px;justify-content:center}
+
+  .race-hud{position:relative;display:flex;align-items:center;gap:16px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .race-hud-item{display:flex;flex-direction:column}
+  .race-hud-item .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim)}
+  .race-hud-item .v{font-size:18px;font-weight:700;font-family:var(--mono)}
+  .race-timebar{flex:1;height:10px;background:var(--panel-2);border-radius:6px;position:relative;overflow:hidden;border:1px solid var(--line)}
+  .race-timebar-fill{height:100%;background:linear-gradient(90deg,var(--phosphor),#2bb89e);transition:width 1s linear}
+  .race-timebar span{position:absolute;right:6px;top:-2px;font-size:10px;font-family:var(--mono);color:var(--ink)}
+  .race-flash{position:absolute;right:40px;top:-6px;font-family:var(--mono);font-weight:800;font-size:20px;
+    animation:raceFlashPop .7s ease-out forwards;pointer-events:none}
+  .race-flash.good{color:var(--phosphor)}
+  .race-flash.bad{color:#e2554e}
+  @keyframes raceFlashPop{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-26px) scale(1)}}
+
+  .race-q-text{font-size:17px;font-weight:600;margin-bottom:14px;line-height:1.4}
+  .race-fig{margin:10px 0 16px;text-align:center}
+  .race-options{display:flex;flex-direction:column;gap:8px}
+  .race-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;text-align:left;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);font-size:14px;cursor:pointer;transition:.12s}
+  .race-opt:hover:not(:disabled){border-color:var(--phosphor-dim)}
+  .race-opt .key{width:22px;height:22px;border-radius:6px;background:var(--panel);display:flex;align-items:center;
+    justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;flex:none}
+  .race-opt.correct{border-color:var(--phosphor);background:rgba(57,224,196,.12)}
+  .race-opt.wrong{border-color:#e2554e;background:rgba(226,85,78,.12)}
+  .race-opt:disabled{cursor:default;opacity:0.9}
+
   /* celebration popup */
   .celebrate-bg{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(6,9,13,.72);backdrop-filter:blur(3px);opacity:0;transition:opacity .25s;padding:24px}
   .celebrate-bg.show{opacity:1}
@@ -17088,6 +18299,8 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
             <button class="btn-primary btn" id="avSaveSlot">Save to collection</button>
             <button class="btn" id="avRandom">Surprise me</button>
           </div>
+          <button class="btn-race" id="avOpenRace">🏁 Play Trivia Race</button>
+          <div class="race-best" id="raceBest"></div>
         </div>
         <div>
           <div class="wardrobe" id="wardrobe"></div>
@@ -17143,7 +18356,7 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     $("avBank").textContent = bank+" points to spend";
     $("avMeta").textContent = "Level "+levelFromXP(earnedXP()).level;
     const P=window.AVATAR_PARTS, ward=$("wardrobe"); ward.innerHTML="";
-    const groups=[["bg","Background","bgColor"],["hair","Hair","hairColor"],["clothes","Clothes","clothesColor"],["acc","Accessory","accColor"]];
+    const groups=[["bg","Background","bgColor"],["hair","Hair","hairColor"],["clothes","Clothes","clothesColor"],["acc","Accessory","accColor"],["house","Home","houseColor"],["car","Vehicle","carColor"]];
     groups.forEach(([kind,label,colorKey])=>{
       const g=document.createElement("div"); g.className="ward-group";
       g.innerHTML=`<h4>${label}</h4>`;
@@ -17296,6 +18509,242 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     $("stCardsKnown").textContent=cardsKnown; $("stQuizAns").textContent=quizAns;
     $("stAccuracy").textContent=(quizAns?Math.round(quizCorrect/quizAns*100):0)+"%"; $("stStreak").textContent=topicsStarted;
     $("statsMeta").textContent="across all courses";
+  };
+
+
+  // ===================================================================
+  // TRIVIA RACE — a fast-paced timed quiz minigame inside the Avatar studio.
+  // Pulls random questions from topics the student has actually studied
+  // (falls back to any topic if they haven't studied anything yet).
+  // Scoring feeds a dedicated, additive XP ledger (r.trivia.xp) that is
+  // folded into earnedXP(), so race points are genuinely spendable in
+  // the wardrobe shop — without touching per-topic progress tracking.
+  // ===================================================================
+  const RACE_DURATION = 60;      // seconds
+  const RACE_BASE_PTS = 8;       // points for a correct answer at combo x1
+  const RACE_COMBO_STEP = 0.15;  // +15% per combo stack
+  const RACE_COMBO_CAP = 2.5;    // multiplier ceiling (combo of ~10)
+  const RACE_TIME_BONUS_MAX = 4; // extra pts for answering almost instantly
+
+  let raceView=null, raceTimer=null, raceState=null;
+
+  function buildRaceView(){
+    raceView=document.createElement("div");
+    raceView.id="raceOverlay"; raceView.className="race-overlay hidden";
+    raceView.innerHTML=`
+      <div class="race-modal">
+        <button class="race-close" id="raceClose" aria-label="Close">✕</button>
+        <div id="raceBody"></div>
+      </div>`;
+    document.body.appendChild(raceView);
+    raceView.querySelector("#raceClose").addEventListener("click", closeRace);
+    raceView.addEventListener("click", e=>{ if(e.target===raceView) closeRace(); });
+  }
+
+  // Build the pool of candidate questions: prefer topics the student has
+  // touched (state.progress has an entry), else fall back to everything.
+  function racePool(){
+    const studied=[];
+    Object.keys(state.progress||{}).forEach(key=>{
+      const [cid,tid]=key.split(".");
+      const topic=COURSES[cid] && COURSES[cid].topics[tid];
+      if(topic && topic.quiz && topic.quiz.length) studied.push({cid,tid,topic});
+    });
+    let sources=studied;
+    if(!sources.length){
+      // never studied anything yet: pull from every topic that has questions
+      Object.entries(COURSES).forEach(([cid,c])=>{
+        Object.entries(c.topics||{}).forEach(([tid,topic])=>{
+          if(topic.quiz && topic.quiz.length) sources.push({cid,tid,topic});
+        });
+      });
+    }
+    const pool=[];
+    sources.forEach(({cid,tid,topic})=>{
+      topic.quiz.forEach((q,qi)=>{ pool.push({cid,tid,q,qi}); });
+    });
+    return pool;
+  }
+
+  function shuffled(arr){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+
+  function openRace(){
+    if(!raceView) buildRaceView();
+    const pool = racePool();
+    if(pool.length < 4){ toast("Study a few topics first to unlock Trivia Race!"); return; }
+    raceState = {
+      queue: shuffled(pool),
+      qPos: 0,
+      score: 0,
+      combo: 0,
+      bestCombo: 0,
+      correct: 0,
+      answered: 0,
+      timeLeft: RACE_DURATION,
+      qStart: 0,
+      finished: false,
+    };
+    raceView.classList.remove("hidden");
+    renderRaceIntro();
+  }
+
+  function closeRace(){
+    if(raceTimer){ clearInterval(raceTimer); raceTimer=null; }
+    if(raceView) raceView.classList.add("hidden");
+    raceState=null;
+  }
+
+  function renderRaceIntro(){
+    const r=ensureRewards();
+    $("raceBody").innerHTML=`
+      <div class="race-intro">
+        <div class="race-flag">🏁</div>
+        <h2>Trivia Race</h2>
+        <p>Answer as many questions as you can in <b>${RACE_DURATION} seconds</b>.
+           Chain correct answers for a growing combo multiplier — get one wrong and your combo resets.</p>
+        <div class="race-stats-row">
+          <div><span class="v">${r.trivia.highScore}</span><span class="k">High score</span></div>
+          <div><span class="v">${r.trivia.bestCombo}</span><span class="k">Best combo</span></div>
+          <div><span class="v">${r.trivia.races}</span><span class="k">Races run</span></div>
+        </div>
+        <button class="btn-primary btn race-start" id="raceStartBtn">Start race</button>
+      </div>`;
+    $("raceStartBtn").addEventListener("click", startRace);
+  }
+
+  function startRace(){
+    raceState.timeLeft = RACE_DURATION;
+    nextQuestion();
+    raceTimer = setInterval(()=>{
+      raceState.timeLeft -= 1;
+      updateRaceTimerUI();
+      if(raceState.timeLeft<=0) finishRace();
+    }, 1000);
+  }
+
+  function updateRaceTimerUI(){
+    const el=$("raceTimeVal"); if(el) el.textContent=raceState.timeLeft;
+    const bar=$("raceTimeBar"); if(bar) bar.style.width=Math.max(0,(raceState.timeLeft/RACE_DURATION)*100)+"%";
+  }
+
+  function nextQuestion(){
+    if(raceState.qPos >= raceState.queue.length) raceState.queue = raceState.queue.concat(shuffled(racePool()));
+    const item = raceState.queue[raceState.qPos++];
+    raceState.current = item;
+    raceState.qStart = Date.now();
+    renderRaceQuestion(item);
+  }
+
+  function renderRaceQuestion(item){
+    const q=item.q, keys=["A","B","C","D"];
+    const mult = 1 + Math.min(raceState.combo*RACE_COMBO_STEP, RACE_COMBO_CAP-1);
+    $("raceBody").innerHTML=`
+      <div class="race-hud">
+        <div class="race-hud-item"><span class="k">Score</span><span class="v" id="raceScoreVal">${raceState.score}</span></div>
+        <div class="race-hud-item"><span class="k">Combo</span><span class="v" id="raceComboVal">${raceState.combo>0?"×"+mult.toFixed(2):"—"}</span></div>
+        <div class="race-timebar"><div class="race-timebar-fill" id="raceTimeBar" style="width:${(raceState.timeLeft/RACE_DURATION)*100}%"></div><span id="raceTimeVal">${raceState.timeLeft}</span></div>
+      </div>
+      <div class="race-q">
+        <div class="race-q-text">${q[0]}</div>
+        ${q[4]?`<div class="fx-fig race-fig">${renderDiagram(q[4])}</div>`:""}
+        <div class="race-options">
+          ${q[1].map((opt,oi)=>`<button class="race-opt" data-oi="${oi}"><span class="key">${keys[oi]}</span><span>${opt}</span></button>`).join("")}
+        </div>
+      </div>`;
+    document.querySelectorAll(".race-opt").forEach(btn=>{
+      btn.addEventListener("click",()=>raceAnswer(Number(btn.dataset.oi)));
+    });
+  }
+
+  function raceAnswer(oi){
+    if(!raceState || raceState.finished) return;
+    const item=raceState.current, q=item.q;
+    const correct = oi===q[2];
+    const elapsed = (Date.now()-raceState.qStart)/1000;
+    raceState.answered++;
+    document.querySelectorAll(".race-opt").forEach(btn=>{
+      btn.disabled=true;
+      const boi=Number(btn.dataset.oi);
+      if(boi===q[2]) btn.classList.add("correct");
+      else if(boi===oi) btn.classList.add("wrong");
+    });
+    if(correct){
+      raceState.correct++;
+      raceState.combo++;
+      raceState.bestCombo=Math.max(raceState.bestCombo, raceState.combo);
+      const mult = 1 + Math.min((raceState.combo-1)*RACE_COMBO_STEP, RACE_COMBO_CAP-1);
+      const speedBonus = Math.max(0, RACE_TIME_BONUS_MAX - Math.floor(elapsed));
+      const pts = Math.round(RACE_BASE_PTS*mult) + speedBonus;
+      raceState.score += pts;
+      flashRacePoints("+"+pts, true);
+    } else {
+      raceState.combo=0;
+      flashRacePoints("✕", false);
+    }
+    setTimeout(()=>{ if(raceState && !raceState.finished) nextQuestion(); }, 650);
+  }
+
+  function flashRacePoints(text, good){
+    const hud=document.querySelector(".race-hud"); if(!hud) return;
+    const fl=document.createElement("div");
+    fl.className="race-flash "+(good?"good":"bad"); fl.textContent=text;
+    hud.appendChild(fl);
+    setTimeout(()=>fl.remove(), 700);
+  }
+
+  function finishRace(){
+    if(raceTimer){ clearInterval(raceTimer); raceTimer=null; }
+    if(!raceState) return;
+    raceState.finished=true;
+    const r=ensureRewards();
+    const isNewHigh = raceState.score > r.trivia.highScore;
+    r.trivia.xp += raceState.score;
+    r.trivia.highScore = Math.max(r.trivia.highScore, raceState.score);
+    r.trivia.bestCombo = Math.max(r.trivia.bestCombo, raceState.bestCombo);
+    r.trivia.races += 1;
+    markUnsaved();
+    renderRaceResults(isNewHigh);
+    checkAchievements();
+    if(typeof renderSideFoot==="function"){ try{ renderSideFoot(); }catch(e){} }
+    if(typeof renderAvatarStudio==="function"){ try{ renderAvatarStudio(); }catch(e){} }
+  }
+
+  function renderRaceResults(isNewHigh){
+    const accuracy = raceState.answered ? Math.round((raceState.correct/raceState.answered)*100) : 0;
+    $("raceBody").innerHTML=`
+      <div class="race-results">
+        <div class="race-flag">${isNewHigh?"🏆":"🏁"}</div>
+        <h2>${isNewHigh?"New high score!":"Race complete"}</h2>
+        <div class="race-final-score">${raceState.score}<span> pts</span></div>
+        <div class="race-stats-row">
+          <div><span class="v">${raceState.correct}/${raceState.answered}</span><span class="k">Correct</span></div>
+          <div><span class="v">${accuracy}%</span><span class="k">Accuracy</span></div>
+          <div><span class="v">${raceState.bestCombo}</span><span class="k">Best combo</span></div>
+        </div>
+        <p class="race-earned">+${raceState.score} points added to your bank</p>
+        <div class="race-results-actions">
+          <button class="btn-primary btn" id="raceAgainBtn">Race again</button>
+          <button class="btn" id="raceDoneBtn">Done</button>
+        </div>
+      </div>`;
+    $("raceAgainBtn").addEventListener("click", openRace);
+    $("raceDoneBtn").addEventListener("click", closeRace);
+  }
+
+  // wire the entry button (added inside the avatar stage markup)
+  document.addEventListener("click", e=>{
+    if(e.target && e.target.id==="avOpenRace") openRace();
+  });
+
+  // show the best score under the entry button when the studio renders
+  const _origRenderAvatarStudio = renderAvatarStudio;
+  renderAvatarStudio = function(){
+    _origRenderAvatarStudio();
+    const el=$("raceBest"); if(el){ const r=ensureRewards(); el.textContent = r.trivia.races ? ("Best: "+r.trivia.highScore+" pts · "+r.trivia.races+" race"+(r.trivia.races===1?"":"s")+" played") : "Play your first race to set a high score!"; }
   };
 
   // ---------- wire up ----------
