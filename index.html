@@ -150,6 +150,8 @@
     background:var(--panel-2);border:1px solid var(--line);transition:.15s}
   .qlen:hover{color:var(--ink);border-color:var(--phosphor-dim)}
   .qlen.active{background:var(--phosphor);color:#06231d;font-weight:700;border-color:var(--phosphor)}
+  .qlen-race{border-color:var(--amber,#f4b740);color:var(--amber,#f4b740);font-weight:600}
+  .qlen-race:hover{background:rgba(244,183,64,.12);color:var(--amber,#f4b740)}
   .qlen-shuffle{margin-left:auto;font-size:13px;padding:7px 14px}
 
   .heading{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
@@ -383,6 +385,7 @@
       <button class="qlen" data-len="5">Random 5</button>
       <button class="qlen" data-len="10">Random 10</button>
       <button class="qlen" data-len="all">All questions</button>
+      <button class="qlen qlen-race" id="quizRaceBtn">🏁 Race</button>
       <button class="btn-ghost btn qlen-shuffle" id="quizShuffle" title="Pick a new random set">🔀 New set</button>
     </div>
     <div class="quiz" id="quizList"></div>
@@ -17199,6 +17202,10 @@ document.querySelectorAll(".qlen[data-len]").forEach(btn=>{
   btn.addEventListener("click",()=>{ quizLen=btn.dataset.len; buildQuizSubset(true); renderQuiz(); });
 });
 $("quizShuffle").addEventListener("click",()=>{ buildQuizSubset(true); renderQuiz(); toast("New set of questions"); });
+$("quizRaceBtn").addEventListener("click",()=>{
+  if(window.Rewards && window.Rewards.openRace) window.Rewards.openRace({cid:curCourse, tid:curTopic});
+  else toast("Trivia Race isn't available right now.");
+});
 
 function renderStats(){
   let cardsKnown=0,quizAns=0,quizCorrect=0,topicsStarted=0; const tp=$("topicProgress"); tp.innerHTML="";
@@ -18111,6 +18118,7 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     ensureRewards, earnedXP, spendable, touchStreak, levelFromXP,
     onProgress(){ touchStreak(); checkAchievements(); },   // called whenever the user masters a card / answers a quiz
     openAvatar(){ showAvatar(); },
+    openRace(scope){ openRace(scope); },   // scope: {cid,tid} to race one topic's questions
     summary(){ const r=ensureRewards(); return { avatar:r.avatar, level:levelFromXP(earnedXP()).level, points:spendable(), streak:r.streak||0 }; }
   };
 
@@ -18176,11 +18184,6 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   .badge-count{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
 
   /* Trivia Race */
-  .btn-race{margin-top:10px;width:100%;padding:12px;border-radius:10px;font-weight:700;font-size:15px;
-    background:linear-gradient(135deg,var(--phosphor),#2bb89e);color:#06231d;border:none;cursor:pointer;transition:.15s}
-  .btn-race:hover{filter:brightness(1.08);transform:translateY(-1px)}
-  .race-best{margin-top:8px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
-
   .race-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;
     background:rgba(6,9,13,.8);backdrop-filter:blur(4px);padding:20px}
   .race-overlay.hidden{display:none}
@@ -18299,8 +18302,6 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
             <button class="btn-primary btn" id="avSaveSlot">Save to collection</button>
             <button class="btn" id="avRandom">Surprise me</button>
           </div>
-          <button class="btn-race" id="avOpenRace">🏁 Play Trivia Race</button>
-          <div class="race-best" id="raceBest"></div>
         </div>
         <div>
           <div class="wardrobe" id="wardrobe"></div>
@@ -18543,7 +18544,15 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
 
   // Build the pool of candidate questions: prefer topics the student has
   // touched (state.progress has an entry), else fall back to everything.
-  function racePool(){
+  function racePool(scope){
+    // scope: {cid,tid} to restrict the race to one topic's questions.
+    // With no scope, fall back to every topic the student has studied
+    // (or the whole app if they haven't studied anything yet).
+    if(scope && scope.cid && scope.tid){
+      const topic = COURSES[scope.cid] && COURSES[scope.cid].topics[scope.tid];
+      if(!topic || !topic.quiz) return [];
+      return topic.quiz.map((q,qi)=>({cid:scope.cid,tid:scope.tid,q,qi}));
+    }
     const studied=[];
     Object.keys(state.progress||{}).forEach(key=>{
       const [cid,tid]=key.split(".");
@@ -18572,10 +18581,13 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
     return a;
   }
 
-  function openRace(){
+  let raceScope=null; // {cid,tid} of the topic this race instance is scoped to, or null
+  function openRace(scope){
     if(!raceView) buildRaceView();
-    const pool = racePool();
-    if(pool.length < 4){ toast("Study a few topics first to unlock Trivia Race!"); return; }
+    raceScope = scope || null;
+    const pool = racePool(raceScope);
+    const minNeeded = raceScope ? 1 : 4;
+    if(pool.length < minNeeded){ toast(raceScope ? "This topic needs at least one question to race." : "Study a few topics first to unlock Trivia Race!"); return; }
     raceState = {
       queue: shuffled(pool),
       qPos: 0,
@@ -18600,10 +18612,12 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
 
   function renderRaceIntro(){
     const r=ensureRewards();
+    const topicName = raceScope && COURSES[raceScope.cid] && COURSES[raceScope.cid].topics[raceScope.tid]
+      ? COURSES[raceScope.cid].topics[raceScope.tid].name.replace(/^\d+\s·\s/,"") : null;
     $("raceBody").innerHTML=`
       <div class="race-intro">
         <div class="race-flag">🏁</div>
-        <h2>Trivia Race</h2>
+        <h2>Trivia Race${topicName?": "+topicName:""}</h2>
         <p>Answer as many questions as you can in <b>${RACE_DURATION} seconds</b>.
            Chain correct answers for a growing combo multiplier — get one wrong and your combo resets.</p>
         <div class="race-stats-row">
@@ -18632,7 +18646,7 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   }
 
   function nextQuestion(){
-    if(raceState.qPos >= raceState.queue.length) raceState.queue = raceState.queue.concat(shuffled(racePool()));
+    if(raceState.qPos >= raceState.queue.length) raceState.queue = raceState.queue.concat(shuffled(racePool(raceScope)));
     const item = raceState.queue[raceState.qPos++];
     raceState.current = item;
     raceState.qStart = Date.now();
@@ -18731,21 +18745,9 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
           <button class="btn" id="raceDoneBtn">Done</button>
         </div>
       </div>`;
-    $("raceAgainBtn").addEventListener("click", openRace);
+    $("raceAgainBtn").addEventListener("click", ()=>openRace(raceScope));
     $("raceDoneBtn").addEventListener("click", closeRace);
   }
-
-  // wire the entry button (added inside the avatar stage markup)
-  document.addEventListener("click", e=>{
-    if(e.target && e.target.id==="avOpenRace") openRace();
-  });
-
-  // show the best score under the entry button when the studio renders
-  const _origRenderAvatarStudio = renderAvatarStudio;
-  renderAvatarStudio = function(){
-    _origRenderAvatarStudio();
-    const el=$("raceBest"); if(el){ const r=ensureRewards(); el.textContent = r.trivia.races ? ("Best: "+r.trivia.highScore+" pts · "+r.trivia.races+" race"+(r.trivia.races===1?"":"s")+" played") : "Play your first race to set a high score!"; }
-  };
 
   // ---------- wire up ----------
   function init(){
