@@ -235,13 +235,15 @@
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
   .stat .v{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--phosphor);line-height:1}
   .stat .k{font-size:13px;color:var(--ink-dim);margin-top:8px}
-  .topic-progress{margin-top:24px;display:flex;flex-direction:column;gap:14px}
+  .topic-progress{margin-top:24px;display:flex;flex-direction:column;gap:6px}
   .tp-group{font-family:var(--mono);font-size:12px;color:var(--phosphor);text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
-  .tp-row{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
-  .tp-head{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px}
-  .tp-head .pct{font-family:var(--mono);color:var(--phosphor)}
-  .bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--phosphor-dim),var(--phosphor));border-radius:4px;transition:width .6s}
+  .tp-row{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:9px 14px}
+  .tp-name{flex:1 1 auto;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{flex:1 1 140px;min-width:70px;height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--phosphor-dim),var(--phosphor));border-radius:3px;transition:width .6s}
+  .tp-pct{flex:none;width:38px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--phosphor)}
+  .tp-counts{flex:none;font-family:var(--mono);font-size:11px;color:var(--ink-dim);white-space:nowrap}
 
   .modal-bg{position:fixed;inset:0;z-index:100;background:rgba(6,9,13,.78);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
   .modal-bg.show{display:flex}
@@ -292,6 +294,7 @@
     .picker{flex-direction:column} .picker .field{width:100%}
     select{min-width:0;width:100%}
     .heading{flex-wrap:wrap} .flashcard{height:320px} .face .q{font-size:19px}
+    .tp-row{flex-wrap:wrap} .tp-name{flex-basis:100%} .tp-counts{display:none}
   }
 </style>
 </head>
@@ -17220,9 +17223,10 @@ function renderStats(){
       cardsKnown+=known; quizAns+=ans; quizCorrect+=corr;
       const denom=totalCards+totalQuiz, done=known+ans, pct=denom?Math.round(done/denom*100):0;
       const div=document.createElement("div"); div.className="tp-row";
-      div.innerHTML=`<div class="tp-head"><span>${topic.name}</span><span class="pct">${pct}%</span></div>
+      div.innerHTML=`<span class="tp-name">${topic.name}</span>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-top:8px">${known}/${totalCards} cards · ${ans}/${totalQuiz} questions</div>`;
+        <span class="tp-pct">${pct}%</span>
+        <span class="tp-counts">${known}/${totalCards}c · ${ans}/${totalQuiz}q</span>`;
       tp.appendChild(div);
     });
   });
@@ -18035,8 +18039,47 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   }
 
   // ---------- shop prices ----------
+  // Base price per category (used as a fallback / for items not explicitly tiered below).
   const PRICE = { bg:120, hair:90, clothes:120, acc:80, skin:60, house:400, car:400 };
-  function priceFor(kind){ return PRICE[kind]||100; }
+
+  // Per-item rarity tiers: more elaborate/lavish items cost more, even within
+  // the same category. Multiplies the category base price.
+  const RARITY_MULT = { standard:1, premium:1.6, legendary:2.4 };
+  const ITEM_RARITY = {
+    // backgrounds
+    bg:{ rings:"standard", grid:"standard", sky:"standard",
+         stars:"premium", aurora:"premium", confetti:"premium", beach:"premium", city:"premium", forest:"premium", desert:"premium",
+         neon:"legendary", gold:"legendary", underwater:"legendary", volcano:"legendary" },
+    // hair
+    hair:{ short:"standard", quiff:"standard", spiky:"standard", cap:"standard", beanie:"standard",
+           long:"premium", bun:"premium", ponytail:"premium", curly:"premium", afro:"premium", mohawk:"premium", fringe:"premium",
+           braids:"legendary", pigtails:"legendary", dreadlocks:"legendary", undercut:"legendary" },
+    // clothes
+    clothes:{ hoodie:"standard", shirt:"standard", jumper:"standard",
+              blazer:"premium", labcoat:"premium", varsity:"premium", dungarees:"premium", puffer:"premium", knit:"premium", tracksuit:"premium",
+              hero:"legendary", overalls:"legendary", kimono:"legendary", armor:"legendary" },
+    // accessories
+    acc:{ glasses:"standard", shades:"standard", headphones:"standard", earrings:"standard",
+          goggles:"premium", monocle:"premium", bowtie:"premium", scarf:"premium", headband:"premium", visor:"premium", necklace:"premium",
+          crown:"legendary", star:"legendary", facemask:"legendary", flowercrown:"legendary", eyepatch:"legendary" },
+    // house
+    house:{ tent:"standard", flat:"standard",
+            cottage:"premium", house:"premium",
+            mansion:"legendary", castle:"legendary" },
+    // car
+    car:{ bike:"standard", hatch:"standard",
+          suv:"premium", sports:"premium",
+          limo:"legendary", rocket:"legendary" },
+  };
+
+  function priceFor(kind, id){
+    const base = PRICE[kind]||100;
+    if(id==null) return base; // category-level fallback (kept for any old call sites)
+    if(id==="none" || id==="plain" || id==="tee") return 0; // starter items are always free
+    const rarity = (ITEM_RARITY[kind] && ITEM_RARITY[kind][id]) || "standard";
+    return Math.round(base * (RARITY_MULT[rarity]||1) / 10) * 10; // round to nearest 10 for tidy numbers
+  }
+  function rarityOf(kind,id){ return (ITEM_RARITY[kind] && ITEM_RARITY[kind][id]) || "standard"; }
 
   // ---------- achievements ----------
   // Each badge: {id, name, desc, icon, check(s)} where s is a stats snapshot.
@@ -18162,6 +18205,14 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   .ward-item .nm{font-family:var(--mono);font-size:10px;color:var(--ink-dim);line-height:1.2;display:block}
   .ward-item .cost{font-family:var(--mono);font-size:10px;color:var(--amber);display:block;margin-top:2px}
   .ward-item .owned-tick{position:absolute;top:4px;right:5px;color:var(--green);font-size:11px}
+  .ward-item .rarity-tag{position:absolute;top:4px;left:5px;font-family:var(--mono);font-size:8px;
+    text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:4px;font-weight:700}
+  .rarity-tag-standard{background:var(--panel);color:var(--ink-dim)}
+  .rarity-tag-premium{background:rgba(244,183,64,.18);color:var(--amber)}
+  .rarity-tag-legendary{background:linear-gradient(135deg,rgba(232,69,95,.22),rgba(138,90,208,.22));color:#e8455f}
+  .ward-item.rarity-premium:not(.owned):not(.locked-owned){border-color:rgba(244,183,64,.35)}
+  .ward-item.rarity-premium.locked{border-color:rgba(244,183,64,.3)}
+  .ward-item.rarity-legendary.locked{border-color:rgba(232,69,95,.35)}
   .swatches{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .swatch{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
   .swatch.active{border-color:var(--ink)}
@@ -18367,14 +18418,17 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
         const owned = r.owned[kind].includes(id) || id==="none" || id==="plain" || id==="tee";
         const active = r.avatar[kind]===id;
         const trying = tryOn && tryOn.kind===kind && tryOn.id===id;
-        const cost = priceFor(kind);
+        const cost = priceFor(kind, id);
+        const rarity = rarityOf(kind, id);
         // preview swatch using a mini avatar showing just this part on a neutral base
         const previewCfg = Object.assign({}, r.avatar); previewCfg[kind]=id; if(colorKey) previewCfg[colorKey]=r.avatar[colorKey]||def;
         const item=document.createElement("button");
-        item.className="ward-item"+(active?" active":"")+(trying?" trying":"")+(owned?"":" locked");
+        item.className="ward-item rarity-"+rarity+(active?" active":"")+(trying?" trying":"")+(owned?"":" locked");
         item.innerHTML = `<span class="pv">${renderAvatar(previewCfg,60)}</span>`
           + `<span class="nm">${nm}</span>`
-          + (owned ? `<span class="owned-tick">${active?"●":"✓"}</span>` : `<span class="cost">${trying?"trying…":cost+" pts"}</span>`);
+          + (owned ? `<span class="owned-tick">${active?"●":"✓"}</span>`
+                   : `<span class="cost">${trying?"trying…":cost+" pts"}</span>`)
+          + (owned || cost===0 ? "" : `<span class="rarity-tag rarity-tag-${rarity}">${rarity}</span>`);
         item.addEventListener("click",()=>{
           if(owned){ tryOn=null; r.avatar[kind]=id; markUnsaved(); renderAvatarStudio(); }
           else { // enter "try it on" preview before any purchase
