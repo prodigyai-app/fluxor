@@ -14805,6 +14805,179 @@ window.COURSES.aqa_alevel_pe = {
 </script>
 <script>
 // ============================================================
+//  GCSE CHEMISTRY — METALLIC BONDING ANIMATION
+//  Shows the "sea of delocalised electrons" model: a lattice of
+//  positive metal ions with electrons drifting freely between
+//  them, then demonstrates conduction by biasing the drift when
+//  a voltage is "applied".
+//  Registry: window.ANIMATIONS[courseKey]["bonding"]
+//  Attached to BOTH aqa_chemistry and combined_chemistry (shared
+//  bonding topic content), matching the physics animation pattern.
+// ============================================================
+(function(){
+  window.ANIMATIONS = window.ANIMATIONS || {};
+  const NS = "http://www.w3.org/2000/svg";
+
+  function el(tag, attrs, parent){
+    const e=document.createElementNS(NS, tag);
+    if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+  function svg(w,h){
+    return el("svg",{viewBox:"0 0 "+w+" "+h,width:w,height:h,"font-family":"system-ui,sans-serif"});
+  }
+  function controls(host){ const d=document.createElement("div"); d.className="anim-controls"; host.appendChild(d); return d; }
+  function slider(parent,label,min,max,val,step,oninput){
+    const wrap=document.createElement("label");
+    const span=document.createElement("span"); span.textContent=label;
+    const valSpan=document.createElement("span"); valSpan.className="val";
+    const input=document.createElement("input");
+    input.type="range"; input.min=min; input.max=max; input.value=val; input.step=step||1;
+    wrap.appendChild(span); wrap.appendChild(input); wrap.appendChild(valSpan); parent.appendChild(wrap);
+    function fmt(v){ valSpan.textContent=oninput(parseFloat(v)); }
+    input.addEventListener("input",()=>fmt(input.value));
+    fmt(input.value);
+    return input;
+  }
+  function btn(parent,label,onclick){
+    const b=document.createElement("button"); b.className="anim-btn"; b.textContent=label;
+    b.addEventListener("click",()=>onclick(b)); parent.appendChild(b); return b;
+  }
+  function readout(host){ const d=document.createElement("div"); d.className="anim-readout"; host.appendChild(d); return d; }
+  function col(name,fallback){
+    try{ const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fallback; }
+    catch(e){ return fallback; }
+  }
+  function reg(course, topic, anims){
+    window.ANIMATIONS[course]=window.ANIMATIONS[course]||{};
+    window.ANIMATIONS[course][topic]=(window.ANIMATIONS[course][topic]||[]).concat(anims);
+  }
+
+  const bondingAnims = [
+    {
+      title:"Metallic bonding — the sea of delocalised electrons",
+      subtitle:"Positive metal ions sit in a fixed lattice while outer electrons move freely between them. Turn on the flow, then apply a voltage to see how metals conduct.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'),
+              DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b'), PANEL=col('--panel-2','#1b2533');
+        const W=320,H=230;
+        const s=svg(W,H); host.appendChild(s);
+
+        // Background panel for the metal sample
+        el("rect",{x:6,y:6,width:W-12,height:H-12,rx:10,fill:PANEL,stroke:LINE,"stroke-width":1.5},s);
+
+        // ---- ion lattice: regular grid of positive metal ions ----
+        const cols=5, rows=4, marginX=36, marginY=34;
+        const stepX=(W-2*marginX)/(cols-1), stepY=(H-2*marginY-10)/(rows-1);
+        const ions=[];
+        for(let r=0;r<rows;r++){
+          for(let c=0;c<cols;c++){
+            const x=marginX+c*stepX, y=marginY+r*stepY;
+            ions.push({x,y});
+          }
+        }
+        ions.forEach(ion=>{
+          el("circle",{cx:ion.x,cy:ion.y,r:13,fill:"none",stroke:AM,"stroke-width":1,opacity:0.25},s); // faint glow ring
+          const g=el("circle",{cx:ion.x,cy:ion.y,r:9,fill:AM,opacity:0.9},s);
+          el("text",{x:ion.x,y:ion.y+3.5,"text-anchor":"middle","font-size":10,"font-weight":800,fill:"#3a2a06"},s).textContent="+";
+        });
+
+        // ---- delocalised electrons: free-roaming dots ----
+        const N_EL = 22;
+        const bounds = { xMin:marginX-stepX*0.55, xMax:marginX+(cols-1)*stepX+stepX*0.55,
+                          yMin:marginY-stepY*0.55, yMax:marginY+(rows-1)*stepY+stepY*0.55 };
+        const electrons=[];
+        for(let i=0;i<N_EL;i++){
+          electrons.push({
+            x: bounds.xMin + Math.random()*(bounds.xMax-bounds.xMin),
+            y: bounds.yMin + Math.random()*(bounds.yMax-bounds.yMin),
+            vx: (Math.random()-0.5)*1.4,
+            vy: (Math.random()-0.5)*1.4,
+          });
+        }
+        const dotEls = electrons.map(e=>{
+          const trail=el("circle",{cx:e.x,cy:e.y,r:2.2,fill:PH,opacity:0.18},s);
+          const dot=el("circle",{cx:e.x,cy:e.y,r:3.2,fill:PH},s);
+          el("text",{x:e.x,y:e.y+0.5,visibility:"hidden"},s); // (placeholder, unused)
+          return {dot,trail};
+        });
+
+        const cap = el("text",{x:W/2,y:H-9,"text-anchor":"middle","font-size":11,fill:DIM},s);
+        cap.textContent = "Sea of delocalised electrons — not held to any one ion";
+
+        const out = readout(host);
+        const c = controls(host);
+
+        let flowing=false, biased=false, raf=null;
+
+        function step(){
+          const driftStrength = biased ? 0.55 : 0; // rightward bias once "voltage" is applied
+          electrons.forEach((e,i)=>{
+            if(flowing){
+              e.vx += (Math.random()-0.5)*0.12;
+              e.vy += (Math.random()-0.5)*0.12;
+              // cap random speed
+              const sp=Math.hypot(e.vx,e.vy);
+              const maxSp=1.3;
+              if(sp>maxSp){ e.vx=e.vx/sp*maxSp; e.vy=e.vy/sp*maxSp; }
+              e.x += e.vx + driftStrength;
+              e.y += e.vy*0.6; // gentler vertical wander so drift right reads clearly
+              // wrap around the lattice bounds (electrons are delocalised across the whole metal)
+              if(e.x>bounds.xMax){ e.x=bounds.xMin+ (e.x-bounds.xMax); }
+              if(e.x<bounds.xMin){ e.x=bounds.xMax - (bounds.xMin-e.x); }
+              if(e.y>bounds.yMax) e.y=bounds.yMax - (e.y-bounds.yMax);
+              if(e.y<bounds.yMin) e.y=bounds.yMin + (bounds.yMin-e.y);
+            }
+            const {dot,trail}=dotEls[i];
+            trail.setAttribute("cx", e.x - e.vx*2 - driftStrength*1.6);
+            trail.setAttribute("cy", e.y - e.vy*1.2);
+            dot.setAttribute("cx", e.x); dot.setAttribute("cy", e.y);
+          });
+        }
+        function loop(){ step(); if(flowing) raf=requestAnimationFrame(loop); }
+
+        function updateReadout(){
+          if(!flowing) out.innerHTML="Electrons stationary — press <b>Start flow</b>.";
+          else if(!biased) out.innerHTML="Electrons drift <b>randomly</b> in all directions — no current, no overall flow.";
+          else out.innerHTML="A voltage drives electrons to drift <b>overall to the right</b> — this net flow of charge <b>is</b> an electric current.";
+        }
+
+        const flowBtn = btn(c,"Start flow",b=>{
+          flowing=!flowing;
+          b.textContent = flowing ? "Stop flow" : "Start flow";
+          b.classList.toggle("active", flowing);
+          updateReadout();
+          if(flowing && !raf) raf=requestAnimationFrame(loop);
+        });
+        const voltBtn = btn(c,"Apply voltage",b=>{
+          if(!flowing){ toastLikeNudge(); return; }
+          biased=!biased;
+          b.textContent = biased ? "Remove voltage" : "Apply voltage";
+          b.classList.toggle("active", biased);
+          cap.textContent = biased ? "Net drift to the right = an electric current"
+                                    : "Sea of delocalised electrons — not held to any one ion";
+          updateReadout();
+        });
+        function toastLikeNudge(){ out.innerHTML="Start the flow first, then apply a voltage."; }
+
+        updateReadout();
+
+        return ()=>{ flowing=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p>In a metal, each atom gives up its outer-shell electrons to form a regular lattice of <span class='keyword'>positive metal ions</span>. Those released electrons are <span class='keyword'>delocalised</span> — they don't belong to any one ion, and are free to move throughout the whole structure. This is the <span class='keyword'>'sea of electrons'</span> model of metallic bonding.</p><h4>Why metals have their properties</h4><ul><li><span class='keyword'>Conduct electricity</span> — the free electrons can drift and carry charge through the metal (shown when a voltage is applied above).</li><li><span class='keyword'>Conduct heat</span> — energy is transferred quickly by the mobile electrons.</li><li><span class='keyword'>Malleable and ductile</span> — the ions can slide past each other and reform bonds without breaking the structure, because the delocalised electrons hold the whole lattice together from all directions rather than in fixed, directional bonds.</li><li><span class='keyword'>High melting/boiling points</span> — strong electrostatic attraction between the positive ions and the sea of negative electrons takes a lot of energy to overcome.</li></ul><h4>Key term</h4><p><span class='keyword'>Metallic bonding</span>: the strong electrostatic attraction between positive metal ions and delocalised electrons, extending throughout the structure.</p>"
+    }
+  ];
+
+  reg("aqa_chemistry","bonding",bondingAnims);
+  reg("combined_chemistry","bonding",bondingAnims);
+
+  console.log("[chem_animations.js] Metallic bonding animation added to aqa_chemistry + combined_chemistry.");
+})();
+</script>
+
+<script>
+// ============================================================
 //  FUNCTIONAL SKILLS MATHEMATICS — Pearson Edexcel
 //  Level 1 (QN 603/4267/5) and Level 2 (QN 603/4268/7)
 //  Three content areas per level:
