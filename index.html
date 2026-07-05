@@ -14440,6 +14440,247 @@ window.COURSES.aqa_alevel_pe = {
   ]);
 
   // ═══════════════════════════════════════════════════════════════════════
+  //  PARTICLE MODEL — extra: density
+  // ═══════════════════════════════════════════════════════════════════════
+  add_particle_density();
+  function add_particle_density(){
+  add("particle", [
+    {
+      title:"Density — mass, volume and material",
+      subtitle:"Compare blocks of different materials. Change the mass or volume and watch the density change.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,220); host.appendChild(s);
+        const cx=90, baseY=185;
+        const blockLabel=el("text",{x:cx,y:20,"text-anchor":"middle","font-size":11,fill:DIM},s); blockLabel.textContent="Sample block";
+        const block=el("rect",{x:cx-40,y:baseY-80,width:80,height:80,rx:4,fill:PH,opacity:0.85,stroke:LINE,"stroke-width":1.5},s);
+        el("line",{x1:20,y1:baseY,x2:170,y2:baseY,stroke:LINE,"stroke-width":2},s);
+        const scaleX=250, scaleTop=20, scaleBot=190, scaleH=scaleBot-scaleTop;
+        el("line",{x1:scaleX,y1:scaleTop,x2:scaleX,y2:scaleBot,stroke:LINE,"stroke-width":2},s);
+        el("text",{x:scaleX,y:12,"text-anchor":"middle","font-size":10,fill:DIM},s).textContent="density";
+        el("text",{x:scaleX+8,y:scaleBot+4,"font-size":9,fill:DIM},s).textContent="0";
+        el("text",{x:scaleX+8,y:scaleTop-6,"font-size":9,fill:DIM},s).textContent="20 g/cm³";
+        const marker=el("circle",{cx:scaleX,cy:scaleBot,r:6,fill:AM},s);
+        const refs=[{name:"Water",d:1},{name:"Aluminium",d:2.7},{name:"Iron",d:7.9},{name:"Gold",d:19.3}];
+        function dY(d){ return scaleBot - Math.min(d,20)/20*scaleH; }
+        refs.forEach(r=>{ const y=dY(r.d); el("line",{x1:scaleX-4,y1:y,x2:scaleX+4,y2:y,stroke:DIM,"stroke-width":1},s);
+          el("text",{x:scaleX+10,y:y+3,"font-size":8,fill:DIM},s).textContent=r.name+" "+r.d; });
+
+        const out=readout(host); const c=controls(host);
+        let mass=200, sideCm=5;
+        function update(){
+          const volume = sideCm*sideCm*sideCm;
+          const density = mass/volume;
+          const pxSide = 30 + sideCm*8;
+          block.setAttribute("width",pxSide); block.setAttribute("height",pxSide);
+          block.setAttribute("x",cx-pxSide/2); block.setAttribute("y",baseY-pxSide);
+          block.setAttribute("fill", density>10? "#e2554e" : density>3 ? AM : PH);
+          marker.setAttribute("cy", dY(density));
+          out.innerHTML = "Mass: <b>"+mass+" g</b> &nbsp; Volume: <b>"+volume+" cm³</b><br>Density = mass ÷ volume = <b>"+density.toFixed(2)+" g/cm³</b>";
+        }
+        slider(c,"Mass (g)",20,2000,mass,20,v=>{mass=v;update();return v+" g";});
+        slider(c,"Side length (cm)",2,10,sideCm,1,v=>{sideCm=v;update();return v+" cm";});
+        update();
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p><span class='keyword'>Density</span> tells you how much mass is packed into a given volume. Two objects can be the same size but very different densities if they're made of different materials — a foam cube is far less dense than a lead cube the same size.</p><h4>The equation</h4><p>Density (kg/m³ or g/cm³) = mass (kg or g) ÷ volume (m³ or cm³).</p><p>Rearranged: mass = density × volume, and volume = mass ÷ density.</p><h4>Measuring density</h4><ul><li><span class='keyword'>Regular solids</span> — measure mass on a balance; calculate volume from measured dimensions (e.g. length³ for a cube).</li><li><span class='keyword'>Irregular solids</span> — measure mass on a balance; find volume by water displacement in a measuring cylinder.</li><li><span class='keyword'>Liquids</span> — measure mass of a known volume using a measuring cylinder and balance.</li></ul><h4>Why it matters</h4><p>Density explains why some objects float and others sink (compared with the density of water, 1 g/cm³) and helps identify unknown materials.</p>"
+    }
+  ]);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  FORCES — extra: momentum & collisions
+  // ═══════════════════════════════════════════════════════════════════════
+  add_forces_momentum();
+  function add_forces_momentum(){
+  add("forces", [
+    {
+      title:"Momentum — conservation in a collision",
+      subtitle:"Two trolleys collide and stick together. Change their masses and speeds and see momentum conserved.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,190); host.appendChild(s);
+        const trackY=110, trackL=20, trackR=300;
+        el("line",{x1:trackL,y1:trackY+22,x2:trackR,y2:trackY+22,stroke:LINE,"stroke-width":2},s);
+        const cartA=el("rect",{x:0,y:trackY,width:50,height:26,rx:4,fill:PH},s);
+        const cartB=el("rect",{x:0,y:trackY,width:50,height:26,rx:4,fill:AM},s);
+        const lblA=el("text",{x:0,y:trackY-8,"text-anchor":"middle","font-size":10,fill:PH,"font-weight":700},s); lblA.textContent="A";
+        const lblB=el("text",{x:0,y:trackY-8,"text-anchor":"middle","font-size":10,fill:AM,"font-weight":700},s); lblB.textContent="B";
+        const out=readout(host); const c=controls(host);
+
+        let mA=1, vA=3, mB=1, vB=0, running=false, raf=null, collided=false;
+        let xA=trackL, xB=trackR-50;
+        function reset(){
+          xA=trackL; xB=trackR-50; collided=false; running=false;
+          startBtn.textContent="Run"; startBtn.classList.remove("active");
+          draw(); updateReadout(false);
+        }
+        function draw(){
+          cartA.setAttribute("x",xA); cartA.setAttribute("width",30+mA*10);
+          cartB.setAttribute("x",xB); cartB.setAttribute("width",30+mB*10);
+          lblA.setAttribute("x", xA+(30+mA*10)/2);
+          lblB.setAttribute("x", xB+(30+mB*10)/2);
+        }
+        function updateReadout(after){
+          const pBefore = mA*vA + mB*vB;
+          if(!after){
+            out.innerHTML = "Before: p = m×v<br>A: "+mA+" kg × "+vA+" m/s = <b>"+(mA*vA).toFixed(1)+" kg·m/s</b><br>"
+              + "B: "+mB+" kg × "+vB+" m/s = <b>"+(mB*vB).toFixed(1)+" kg·m/s</b><br>Total momentum: <b>"+pBefore.toFixed(1)+" kg·m/s</b>";
+          } else {
+            const vCombined = pBefore/(mA+mB);
+            out.innerHTML = "They stick together (m = "+(mA+mB).toFixed(1)+" kg).<br>Combined velocity = total p ÷ total mass = <b>"+vCombined.toFixed(2)+" m/s</b><br>Momentum is conserved: <b>"+pBefore.toFixed(1)+" kg·m/s</b> before = after.";
+          }
+        }
+        function loop(){
+          if(!running) return;
+          const wA=30+mA*10;
+          if(!collided){
+            xA += vA*0.6; xB += vB*0.6;
+            if(xA+wA >= xB){ collided=true;
+              const vCombined = (mA*vA+mB*vB)/(mA+mB);
+              vA=vCombined; vB=vCombined;
+              updateReadout(true);
+            }
+          } else {
+            xA += vA*0.6; xB += vB*0.6;
+          }
+          draw();
+          if(xB > trackR+10 || xA > trackR+10){ running=false; startBtn.textContent="Reset"; startBtn.classList.remove("active"); return; }
+          raf=requestAnimationFrame(loop);
+        }
+        const startBtn=btn(c,"Run",b=>{
+          if(b.textContent==="Reset"){ reset(); return; }
+          running=true; b.textContent="Running…"; b.classList.add("active"); raf=requestAnimationFrame(loop);
+        });
+        slider(c,"Mass A (kg)",1,5,mA,1,v=>{mA=v;reset();return v+" kg";});
+        slider(c,"Speed A (m/s)",0,6,vA,1,v=>{vA=v;reset();return v+" m/s";});
+        slider(c,"Mass B (kg)",1,5,mB,1,v=>{mB=v;reset();return v+" kg";});
+        reset();
+        return ()=>{ running=false; if(raf) cancelAnimationFrame(raf); };
+      },
+      explain:"<h4>What's happening</h4><p><span class='keyword'>Momentum</span> (p = m × v) is conserved in every collision, as long as no external force acts. Here, trolley A moves towards stationary trolley B; when they collide and stick together (a completely <span class='keyword'>inelastic collision</span>), the total momentum just before equals the total momentum just after.</p><h4>The equation</h4><p>momentum (kg·m/s) = mass (kg) × velocity (m/s)</p><p><span class='keyword'>Conservation of momentum</span>: total momentum before = total momentum after, provided no external force acts on the system.</p><h4>Why it matters</h4><p>This principle lets you calculate the velocity after a collision without knowing the forces involved — used to analyse car crashes, explain recoil in guns/rockets, and understand why heavier or faster objects transfer more momentum on impact.</p>"
+    }
+  ]);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  FORCES — extra: moments (turning effect)
+  // ═══════════════════════════════════════════════════════════════════════
+  add_forces_moments();
+  function add_forces_moments(){
+  add("forces", [
+    {
+      title:"Moments — balancing a see-saw",
+      subtitle:"Place weights either side of a pivot. Balance the see-saw by matching the moments.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,210); host.appendChild(s);
+        const pivotX=160, beamY=110, beamHalf=130;
+        el("path",{d:`M${pivotX-14} ${beamY+40} L${pivotX+14} ${beamY+40} L${pivotX} ${beamY+14} Z`,fill:DIM},s);
+        const beam=el("rect",{x:pivotX-beamHalf,y:beamY-6,width:beamHalf*2,height:12,rx:4,fill:PH},s);
+        el("circle",{cx:pivotX,cy:beamY,r:4,fill:AM},s);
+        const wA=el("circle",{cx:pivotX-90,cy:beamY-6,r:12,fill:AM},s);
+        const wLabelA=el("text",{x:pivotX-90,y:beamY-6+4,"text-anchor":"middle","font-size":10,"font-weight":700,fill:"#3a2a06"},s); wLabelA.textContent="A";
+        const wB=el("circle",{cx:pivotX+90,cy:beamY-6,r:12,fill:"#e2554e"},s);
+        const wLabelB=el("text",{x:pivotX+90,y:beamY-6+4,"text-anchor":"middle","font-size":10,"font-weight":700,fill:"#fff"},s); wLabelB.textContent="B";
+        el("line",{x1:20,y1:beamY+40,x2:300,y2:beamY+40,stroke:LINE,"stroke-width":1,"stroke-dasharray":"3 3"},s);
+
+        const out=readout(host); const c=controls(host);
+        let FA=20, dA=90, FB=20, dB=90;
+        function update(){
+          const momA = FA*(dA/50);
+          const momB = FB*(dB/50);
+          const distPxA = 20+dA, distPxB=20+dB;
+          wA.setAttribute("cx", Math.max(pivotX-beamHalf+14, pivotX-distPxA*0.9));
+          wB.setAttribute("cx", Math.min(pivotX+beamHalf-14, pivotX+distPxB*0.9));
+          wLabelA.setAttribute("x", wA.getAttribute("cx"));
+          wLabelB.setAttribute("x", wB.getAttribute("cx"));
+          const diff = momA-momB;
+          const tilt = Math.max(-12, Math.min(12, diff*0.6));
+          beam.setAttribute("transform", `rotate(${-tilt} ${pivotX} ${beamY})`);
+          wA.setAttribute("transform", `rotate(${-tilt} ${pivotX} ${beamY})`);
+          wB.setAttribute("transform", `rotate(${-tilt} ${pivotX} ${beamY})`);
+          wLabelA.setAttribute("transform", `rotate(${-tilt} ${pivotX} ${beamY})`);
+          wLabelB.setAttribute("transform", `rotate(${-tilt} ${pivotX} ${beamY})`);
+          const balanced = Math.abs(diff) < 0.3;
+          out.innerHTML = "Moment A = F × d = "+FA+" N × "+(dA/50).toFixed(1)+" m = <b>"+momA.toFixed(1)+" N·m</b><br>"
+            + "Moment B = F × d = "+FB+" N × "+(dB/50).toFixed(1)+" m = <b>"+momB.toFixed(1)+" N·m</b><br>"
+            + (balanced ? "<b>Balanced!</b> The moments are equal, so the see-saw is level." : (diff>0 ? "Side A is heavier — it will tip down." : "Side B is heavier — it will tip down."));
+        }
+        slider(c,"Weight A (N)",5,40,FA,5,v=>{FA=v;update();return v+" N";});
+        slider(c,"Distance A (cm)",20,120,dA,10,v=>{dA=v;update();return v+" cm";});
+        slider(c,"Weight B (N)",5,40,FB,5,v=>{FB=v;update();return v+" N";});
+        slider(c,"Distance B (cm)",20,120,dB,10,v=>{dB=v;update();return v+" cm";});
+        update();
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>The <span class='keyword'>moment</span> of a force is its turning effect about a pivot. A see-saw balances when the moments on each side are equal — even if the weights themselves are different, as long as the lighter weight is placed further from the pivot.</p><h4>The equation</h4><p>Moment (N·m) = force (N) × perpendicular distance from the pivot (m).</p><h4>The principle of moments</h4><p>An object is balanced (in equilibrium) when the total clockwise moment equals the total anticlockwise moment about the pivot.</p><h4>Why it matters</h4><p>This explains how spanners, see-saws, door handles and levers all work — placing a force further from the pivot increases its turning effect, which is why a longer spanner handle makes it easier to turn a tight nut.</p>"
+    }
+  ]);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  WAVES — extra: the electromagnetic spectrum
+  // ═══════════════════════════════════════════════════════════════════════
+  add_waves_emspectrum();
+  function add_waves_emspectrum(){
+  add("waves", [
+    {
+      title:"The electromagnetic spectrum",
+      subtitle:"Step through the EM spectrum from radio to gamma and see how wavelength, frequency and use change.",
+      build:function(host){
+        const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'), DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b');
+        const s=svg(320,230); host.appendChild(s);
+        const bands=[
+          {name:"Radio",colour:"#7b5ad0",wl:"km–cm",use:"Broadcasting, communications"},
+          {name:"Microwave",colour:"#5a8fd0",wl:"cm–mm",use:"Cooking food, satellite communication"},
+          {name:"Infrared",colour:"#e2554e",wl:"mm–700nm",use:"Thermal imaging, remote controls"},
+          {name:"Visible light",colour:"#39e0c4",wl:"700–400nm",use:"Seeing, photography"},
+          {name:"Ultraviolet",colour:"#8a5ad0",wl:"400–10nm",use:"Sun tanning/damage, sterilisation"},
+          {name:"X-ray",colour:"#f4b740",wl:"10–0.01nm",use:"Medical imaging, security scanning"},
+          {name:"Gamma",colour:"#ffffff",wl:"<0.01nm",use:"Cancer treatment, sterilising equipment"},
+        ];
+        const barY=40, barH=26, barL=20, barR=300, n=bands.length, segW=(barR-barL)/n;
+        bands.forEach((b,i)=>{
+          el("rect",{x:barL+i*segW,y:barY,width:segW,height:barH,fill:b.colour, stroke:LINE, "stroke-width":1},s);
+        });
+        const marker=el("path",{d:"",fill:AM},s);
+        const wavePath=el("path",{d:"",stroke:INK,"stroke-width":2,fill:"none"},s);
+        const nameTxt=el("text",{x:160,y:120,"text-anchor":"middle","font-size":15,"font-weight":700,fill:INK},s);
+        const wlTxt=el("text",{x:160,y:140,"text-anchor":"middle","font-size":11,fill:DIM},s);
+        const useTxt=el("text",{x:160,y:158,"text-anchor":"middle","font-size":11,fill:DIM},s);
+        el("text",{x:barL,y:barY-10,"font-size":9,fill:DIM},s).textContent="long λ, low f";
+        el("text",{x:barR,y:barY-10,"text-anchor":"end","font-size":9,fill:DIM},s).textContent="short λ, high f";
+
+        const out=readout(host); const c=controls(host);
+        let idx=3;
+        function drawWave(period){
+          let d=""; const y0=190, amp=14, w=260, x0=30;
+          for(let x=0;x<=w;x+=2){ const yy=y0+amp*Math.sin((x/period)*2*Math.PI); d += (x===0?"M":"L")+(x0+x)+" "+yy; }
+          wavePath.setAttribute("d", d);
+        }
+        function update(){
+          const b=bands[idx];
+          const segX = barL + idx*segW;
+          marker.setAttribute("d", `M${segX} ${barY+barH+4} L${segX+segW} ${barY+barH+4} L${segX+segW/2} ${barY+barH+16} Z`);
+          nameTxt.textContent = b.name;
+          nameTxt.setAttribute("fill", b.colour==="#ffffff"?INK:b.colour);
+          wlTxt.textContent = "Wavelength: "+b.wl;
+          useTxt.textContent = "Use: "+b.use;
+          drawWave(10 + idx*7);
+          out.innerHTML = "<b>"+b.name+"</b> — wavelength "+b.wl+"<br>Use: "+b.use;
+        }
+        btn(c,"◂ Lower frequency",()=>{ idx=Math.max(0,idx-1); update(); });
+        btn(c,"Higher frequency ▸",()=>{ idx=Math.min(bands.length-1,idx+1); update(); });
+        update();
+        return ()=>{};
+      },
+      explain:"<h4>What's happening</h4><p>The <span class='keyword'>electromagnetic spectrum</span> is a continuous range of transverse waves, all travelling at the speed of light in a vacuum, but with different wavelengths and frequencies. In order of increasing frequency (decreasing wavelength): radio, microwave, infrared, visible light, ultraviolet, X-ray, gamma.</p><h4>The pattern</h4><p>As you move along the spectrum from radio to gamma: <span class='keyword'>wavelength decreases</span>, <span class='keyword'>frequency increases</span>, and <span class='keyword'>energy increases</span>. Higher-frequency waves (UV, X-ray, gamma) carry more energy and can be more hazardous to living cells.</p><h4>Uses and dangers</h4><p>Each part of the spectrum is used differently based on its properties — radio waves for broadcasting, microwaves for communication and cooking, infrared for thermal imaging, visible light for sight, UV for sterilisation (but can damage skin/eyes), X-rays and gamma for medical imaging and treatment (but can cause cell damage/mutation, so exposure is carefully controlled).</p><h4>Key fact</h4><p>All EM waves travel at the same speed in a vacuum: c = f × λ (speed = frequency × wavelength), so as frequency goes up, wavelength must go down.</p>"
+    }
+  ]);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
   //  ENERGY — extra: power & efficiency / thermal insulation
   // ═══════════════════════════════════════════════════════════════════════
   add("energy", [
@@ -16613,6 +16854,297 @@ window.COURSES.aqa_alevel_pe = {
 })();
 </script>
 <script>
+// ============================================================
+//  PEARSON EDEXCEL GCSE (9-1) DESIGN AND TECHNOLOGY (1DT0)
+//  Component 1, Section A: Core content (examined for ALL
+//  students regardless of chosen material specialism).
+//  Topics map to the specification's core key ideas 1.1–1.13:
+//   1.1  New and emerging technologies
+//   1.2  Critically evaluating new & emerging technologies
+//   1.3  Energy generation and storage
+//   1.4  Modern, smart and composite materials; technical textiles
+//   1.5  Mechanical devices and movement
+//   1.6  Electronic systems, sensors and outputs
+//   1.7  Programmable components
+//   1.8–1.12 Materials overview: metals, papers & boards, polymers,
+//             textiles, timbers (properties/characteristics — the
+//             breadth every student needs regardless of specialism)
+//   1.13 Materials, components & manufacturing processes in context
+//  Component 2 (NEA) is coursework-based and not represented here.
+// ============================================================
+(function(){
+  const C=window.COURSES; if(!C){ console.error("COURSES missing before edexcel_dt.js"); return; }
+
+  C.edexcel_gcse_dt = {
+    name: "GCSE Design and Technology (Edexcel)",
+    subject: "Design and Technology",
+    level: "GCSE",
+    topics: {
+
+      // ═══════════ 1.1 NEW AND EMERGING TECHNOLOGIES ═══════════
+      dt_new_tech: {
+        name: "1.1 New and emerging technologies",
+        cards: [
+          ["How can new technology affect industry employment?","It can cause unemployment where automation replaces jobs, but also creates demand for new skills (a changing workforce skill set)."],
+          ["What is a science and technology park?","A cluster of technology/research businesses (often near a university) that supports innovation and enterprise."],
+          ["What is crowdfunding as a source of enterprise funding?","Raising small amounts of money from many people, usually online, to fund a new product or business idea."],
+          ["What is a not-for-profit organisation?","An organisation that reinvests any surplus into its cause rather than distributing profit to owners/shareholders."],
+          ["Give three sustainability impacts of manufacturing.","Transportation costs/emissions, pollution, demand on natural resources, and waste generated."],
+          ["What is meant by 'demographic movement' as an industry factor?","People relocating (e.g. for work), which changes the local workforce, skills available and demand for products."],
+          ["What is the Internet of Things (IoT)?","Everyday products connected to the internet, able to send/receive data and be controlled remotely."],
+          ["How have working patterns changed due to technology?","Remote working, flexible/shift patterns, and video conferencing reduce the need to travel to a workplace."],
+          ["What is just-in-time (JIT) production?","Materials/components arrive exactly when needed in production, reducing storage costs but relying on reliable supply."],
+          ["What is lean manufacturing?","An approach that minimises waste (time, materials, effort) while maximising value in the production process."],
+          ["Distinguish batch, one-off, continuous and mass production.","One-off: single bespoke item. Batch: a set quantity, then retool. Mass: continuous high-volume identical items. Continuous: runs non-stop (e.g. chemical processing)."],
+        ],
+        quiz: [
+          ["A cluster of research and technology businesses, often near a university, is a:",["Science and technology park","Not-for-profit organisation","JIT system","Batch production run"],0,"A science and technology park supports innovation and enterprise through clustering research businesses."],
+          ["Raising small amounts of money from many people online to fund a new product is:",["Crowdfunding","Government funding","Batch production","Mass production"],0,"Crowdfunding raises finance from many small backers, usually online."],
+          ["An organisation that reinvests any surplus into its cause rather than paying shareholders is:",["Not-for-profit","A privately-owned business","A science park","An apprenticeship scheme"],0,"Not-for-profit organisations reinvest surplus rather than distribute profit."],
+          ["Everyday products connected to the internet and able to be controlled remotely describes:",["The Internet of Things (IoT)","Just-in-time production","Lean manufacturing","A demographic movement"],0,"IoT connects everyday products to the internet for remote data/control."],
+          ["A stock system where materials arrive exactly when needed, minimising storage, is:",["Just-in-time (JIT)","Mass production","One-off production","Crowdfunding"],0,"JIT minimises stock held by timing deliveries to match need."],
+          ["Producing a single, bespoke item (e.g. a hand-built prototype) is:",["One-off production","Batch production","Mass production","Continuous production"],0,"One-off production makes a single unique item."],
+          ["An approach that aims to minimise waste while maximising value in production is:",["Lean manufacturing","Crowdfunding","A science park","Demographic movement"],0,"Lean manufacturing focuses on removing waste from every part of the process."],
+          ["Which is a social impact of new technology on working patterns?",["Remote working and flexible shift patterns","Increased demand for raw timber","Higher transportation emissions only","Reduced product lifespan only"],0,"Technology has enabled remote and flexible working via IoT/video conferencing."],
+          // application
+          ["A factory automates a task previously done by hand. A likely industry impact is:",["Some job losses but demand for new technical skills","Guaranteed full employment for all existing staff","No change to the workforce","Immediate closure of the business"],0,"Automation can displace some jobs while creating demand for different skills — a genuine trade-off."],
+          ["A start-up funds its first product run by asking the public to pre-order online. This is best described as:",["Crowdfunding","Mass production","Just-in-time manufacture","A government grant only"],0,"Raising funds from many individual backers online is crowdfunding."],
+          ["A furniture company switches to producing exactly enough stock to meet current orders, holding minimal inventory. This is:",["Just-in-time production","Mass production","One-off production","Continuous production"],0,"Matching production/delivery closely to need with minimal stock held is JIT."],
+        ]
+      },
+
+      // ═══════════ 1.2 EVALUATING NEW & EMERGING TECHNOLOGIES ═══════════
+      dt_evaluating_tech: {
+        name: "1.2 Evaluating new and emerging technologies",
+        cards: [
+          ["Name four practical factors that limit design decisions.","Budget constraints, timescale, who the product is for, the materials available, and manufacturing capabilities."],
+          ["How might medical advances influence future product design?","New materials/technologies (e.g. biocompatible materials, sensors) can be applied to healthcare products and assistive devices."],
+          ["What ethical questions should be asked about a new product?","Where and by whom it was made, who benefits from it, and whether it is a fair trade product."],
+          ["What is a fair trade product?","A product made under agreed standards that ensure producers (often in developing countries) receive a fair price and fair working conditions."],
+          ["What is a carbon footprint?","The total amount of greenhouse gases (as CO₂ equivalent) produced directly and indirectly by an activity, product or organisation."],
+          ["What is life cycle analysis (LCA)?","Assessing a product's environmental impact at every stage — raw material extraction, manufacture, use, and disposal/recycling."],
+          ["Why does energy usage during manufacture and transport matter environmentally?","Energy use (often from fossil fuels) contributes to a product's carbon footprint and overall environmental impact."],
+        ],
+        quiz: [
+          ["Which is a budget/practical factor affecting a design decision?",["Timescale for the project","The colour of a rival's product","The designer's favourite font","Unrelated news headlines"],0,"Timescale is one of the practical constraints (with budget, materials, manufacturing capability) shaping design decisions."],
+          ["A product made under standards ensuring producers receive a fair price is a:",["Fair trade product","Mass-produced product","One-off product","JIT product"],0,"Fair trade certification ensures fair prices and conditions for producers."],
+          ["The total greenhouse gases produced by a product across its life is its:",["Carbon footprint","Life cycle analysis","Ethical perspective","Demographic movement"],0,"Carbon footprint measures total greenhouse gas emissions associated with something."],
+          ["Assessing a product's environmental impact from raw material to disposal is:",["Life cycle analysis (LCA)","A carbon footprint","A fair trade audit","A demographic study"],0,"LCA looks at every stage of a product's life for environmental impact."],
+          ["Asking 'where was this made and who benefits?' when evaluating a product is considering its:",["Ethical perspective","Mechanical advantage","Velocity ratio","Circuit design"],0,"These questions relate to the ethical evaluation of a product's origins and impact."],
+          // application
+          ["A designer has a fixed budget and a tight deadline. These are examples of:",["Practical constraints on the design","Ethical perspectives","Environmental perspectives","Energy storage methods"],0,"Budget and timescale are practical/contextual constraints on design decisions."],
+          ["A company reduces packaging and sources local materials to cut emissions across a product's life. This shows use of:",["Life cycle analysis to inform design decisions","A crowdfunding campaign","A science and technology park","A batch production run"],0,"Considering impact across the whole life of a product to change design decisions is applying LCA."],
+        ]
+      },
+
+      // ═══════════ 1.3 ENERGY GENERATION AND STORAGE ═══════════
+      dt_energy: {
+        name: "1.3 Energy generation and storage",
+        cards: [
+          ["Name three fossil fuels used to generate energy.","Oil, gas and coal."],
+          ["What are biofuels? Give two examples.","Fuels made from organic material — biodiesel (from oils/fats) and biomass (burning organic matter for energy)."],
+          ["Name four renewable energy sources.","Tidal, wind, solar and hydroelectric."],
+          ["How does a solar cell power a system?","It converts light energy directly into electrical energy (the photovoltaic effect)."],
+          ["What factors affect the choice of a power source for a product?","Portability, environmental impact, power output needed, how it connects to the circuit/system, and cost."],
+          ["Why might a portable product use a battery rather than mains electricity?","Batteries allow the product to be used anywhere without a cable, though they store less energy and need recharging/replacing."],
+          ["What is a disadvantage of relying on fossil fuels for energy?","They are non-renewable (will run out) and burning them produces pollution and greenhouse gases."],
+          ["What is a disadvantage of wind power?","It is unreliable (depends on wind conditions) and can only be sited in suitable locations."],
+        ],
+        quiz: [
+          ["Which of these is a fossil fuel?",["Coal","Wind","Solar","Tidal"],0,"Coal is a fossil fuel; the others are renewable energy sources."],
+          ["Biodiesel and biomass are examples of:",["Biofuels","Fossil fuels","Nuclear energy","Tidal energy"],0,"Biofuels are made from organic material, including biodiesel and biomass."],
+          ["A solar cell generates electricity by:",["Converting light energy directly into electrical energy","Burning fossil fuels","Using tidal movement","Storing chemical energy only"],0,"Solar cells use the photovoltaic effect to convert light into electricity."],
+          ["Which factor affects choosing a power source for a portable product?",["Portability of the power source","The product's brand colour","The designer's age","Unrelated market trends"],0,"Portability is a key factor for products that need to be used away from a mains supply."],
+          ["A key disadvantage of wind power as an energy source is that it is:",["Unreliable, depending on wind conditions","The cheapest form of energy always","Available everywhere with no limitations","Completely free to install"],0,"Wind power output varies with weather and needs suitable sites."],
+          // application
+          ["A remote sensor in a field with no mains supply needs power. The best source is likely:",["A battery or solar cell","Mains electricity only","Coal power only","Hydroelectric power only"],0,"A portable, off-grid location suits batteries or solar cells rather than a fixed mains connection."],
+          ["A company wants to reduce a product's environmental impact when choosing its power source. They should prioritise:",["Renewable sources like solar or wind","Fossil fuels for reliability only","The cheapest possible material","Ignoring environmental impact"],0,"Prioritising renewable sources reduces environmental impact, a key factor in power source selection."],
+        ]
+      },
+
+      // ═══════════ 1.4 MODERN, SMART AND COMPOSITE MATERIALS ═══════════
+      dt_smart_materials: {
+        name: "1.4 Modern, smart and composite materials",
+        cards: [
+          ["What is a shape-memory alloy (SMA)? Give a use.","A metal that returns to a pre-set shape when heated — used in glasses frames and medical stents."],
+          ["What is a nanomaterial?","A material engineered at an extremely small (nano) scale, giving it different or enhanced properties (e.g. strength, water resistance)."],
+          ["What does a piezoelectric material do?","It generates a small electric voltage when physically stressed/deformed (or deforms slightly when a voltage is applied) — used in sensors and buzzers."],
+          ["What is a temperature-responsive polymer?","A polymer that changes shape, colour or properties in response to temperature change."],
+          ["What is a composite material? Give an example.","Two or more materials combined to get better properties than either alone — e.g. carbon fibre reinforced polymer, or plywood."],
+          ["What is reinforced concrete?","Concrete with steel bars/mesh embedded in it, combining concrete's compressive strength with steel's tensile strength."],
+          ["What is a technical textile? Give an example category.","A textile engineered for a specific technical performance rather than appearance — e.g. geo-textiles (used in construction/civil engineering) or protective textiles (fire/cut resistant)."],
+          ["Give an example of a domestic technical textile.","Fabrics used in curtains, upholstery or bedding engineered for specific performance (e.g. flame retardancy)."],
+        ],
+        quiz: [
+          ["A metal that returns to a pre-set shape when heated is a:",["Shape-memory alloy","Nanomaterial","Composite","Technical textile"],0,"Shape-memory alloys (SMAs) return to a pre-programmed shape when heated."],
+          ["A material engineered at an extremely small scale for enhanced properties is a:",["Nanomaterial","Composite","Piezoelectric material","Fossil fuel"],0,"Nanomaterials are engineered at the nanoscale for altered/enhanced properties."],
+          ["A material that generates a small voltage when physically stressed is:",["Piezoelectric","Thermoforming","Ferrous","A biofuel"],0,"Piezoelectric materials convert mechanical stress into electrical signals (and vice versa)."],
+          ["Plywood is an example of a:",["Composite material","Ferrous metal","Thermosetting polymer","Natural fibre"],0,"Plywood combines layers of wood veneer — a composite."],
+          ["Steel bars embedded in concrete create:",["Reinforced concrete","A shape-memory alloy","A piezoelectric sensor","A technical textile"],0,"Reinforced concrete combines concrete's compression strength with steel's tension strength."],
+          ["A fabric engineered for use in construction/civil engineering projects is a:",["Geo-textile","Domestic textile","Sports textile","Agro-textile"],0,"Geo-textiles are technical textiles used in construction and ground engineering."],
+          // application
+          ["Glasses frames that bend and spring back into shape use:",["A shape-memory alloy","A thermosetting polymer","A ferrous metal","A composite timber"],0,"SMAs are used in glasses frames because they return to their original shape after bending."],
+          ["A buzzer that converts an electrical signal into a physical vibration is most likely using a:",["Piezoelectric material","Shape-memory alloy","Geo-textile","Reinforced concrete"],0,"Piezoelectric materials convert electrical energy into mechanical movement, used in buzzers."],
+        ]
+      },
+
+      // ═══════════ 1.5 MECHANICAL DEVICES AND MOVEMENT ═══════════
+      dt_mechanisms: {
+        name: "1.5 Mechanical devices and movement",
+        cards: [
+          ["Name the four types of movement.","Linear, reciprocating, rotary and oscillating."],
+          ["What is reciprocating movement?","Repeated back-and-forth movement in a straight line (e.g. a sewing machine needle)."],
+          ["What is oscillating movement?","Repeated swinging movement back and forth around a fixed point (e.g. a pendulum)."],
+          ["Describe a class 1 lever.","The pivot (fulcrum) is between the effort and the load (e.g. a see-saw)."],
+          ["Describe a class 2 lever.","The load is between the fulcrum and the effort (e.g. a wheelbarrow)."],
+          ["Describe a class 3 lever.","The effort is between the fulcrum and the load (e.g. tweezers)."],
+          ["What is mechanical advantage (MA)?","MA = load ÷ effort — how much a lever/machine multiplies the input force."],
+          ["What is velocity ratio (VR)?","VR = distance moved by effort ÷ distance moved by load — how the machine's speed changes input to output."],
+          ["What is a cam and follower system used for?","A rotating cam converts rotary motion into reciprocating motion via a follower that rides on its profile."],
+          ["Name three types of cam.","Pear-shaped, eccentric (circular) and drop (snail) cams."],
+          ["What does a bell crank linkage do?","Changes the direction of movement/force through 90°."],
+          ["What is the purpose of a pulley and belt system?","Transfers rotary motion between two shafts, and can change speed/torque via different pulley diameters (velocity ratio)."],
+          ["What is an idler gear used for?","A gear placed between two others to change the direction of rotation without changing the gear ratio."],
+          ["What do rack and pinion gears convert?","Rotary motion (pinion) into linear motion (rack), or vice versa."],
+        ],
+        quiz: [
+          ["Repeated back-and-forth movement in a straight line is:",["Reciprocating motion","Rotary motion","Oscillating motion","Linear motion only"],0,"Reciprocating motion moves back and forth in a straight line, like a saw blade."],
+          ["A see-saw, where the pivot sits between the effort and the load, is a:",["Class 1 lever","Class 2 lever","Class 3 lever","Not a lever"],0,"Class 1 levers have the fulcrum between effort and load."],
+          ["Tweezers, where the effort is between the fulcrum and the load, are a:",["Class 3 lever","Class 1 lever","Class 2 lever","A pulley system"],0,"Class 3 levers have the effort between the fulcrum and the load."],
+          ["Mechanical advantage (MA) is calculated as:",["Load ÷ effort","Effort ÷ load","Distance moved by effort ÷ distance moved by load","Effort × load"],0,"MA = load ÷ effort, showing how much the force is multiplied."],
+          ["A rotating cam turning rotary motion into reciprocating motion works with a:",["Follower","Idler gear","Rack and pinion","Bell crank"],0,"A follower rides on the cam's profile, converting the rotary motion to reciprocating motion."],
+          ["A gear placed between two others purely to reverse the direction of rotation is an:",["Idler gear","Bevel gear","Rack and pinion","Compound gear train"],0,"An idler gear changes rotation direction without affecting the overall gear ratio."],
+          ["Rack and pinion gears convert rotary motion into:",["Linear motion","Reciprocating motion only","Oscillating motion","No motion"],0,"The pinion (rotary) drives the rack (linear), or vice versa."],
+          ["A bell crank linkage is mainly used to:",["Change the direction of a force through 90°","Store energy","Generate electricity","Measure velocity ratio"],0,"Bell cranks redirect motion/force, typically through a right angle."],
+          // application/calculation
+          ["A lever has a load of 60 N and requires an effort of 20 N. Its mechanical advantage is:",["3","0.33","1200","40"],0,"MA = load ÷ effort = 60 ÷ 20 = 3."],
+          ["A pulley system has a driver pulley of diameter 100 mm and a driven pulley of diameter 25 mm. The velocity ratio is:",["4","0.25","2500","75"],0,"VR = driver diameter ÷ driven diameter = 100 ÷ 25 = 4 — the driven pulley spins 4× faster."],
+          ["A snail-shaped cam is best described as a:",["Drop cam","Pear-shaped cam","Eccentric cam","Bell crank"],0,"The snail/drop cam has a gradual rise and sudden drop in its profile."],
+        ]
+      },
+
+      // ═══════════ 1.6 ELECTRONIC SYSTEMS ═══════════
+      dt_electronics: {
+        name: "1.6 Electronic systems, sensors and outputs",
+        cards: [
+          ["What is the role of a sensor in an electronic system?","It detects a change in the environment (light, temperature, etc.) and produces an electrical signal as an input to the system."],
+          ["What is a light-dependent resistor (LDR)?","A sensor whose resistance changes with light level — used to detect light/darkness."],
+          ["What is a thermistor?","A sensor whose resistance changes with temperature — used to detect temperature changes."],
+          ["What is the role of a switch in an electronic system?","It manually opens or closes a circuit, controlling whether current flows as an input to the system."],
+          ["What does a transistor do in a simple system?","Acts as an electronic switch or amplifier, letting a small signal control a larger current."],
+          ["What is the role of a resistor in a circuit?","Controls/limits the flow of current, and can be used to divide voltage in a system."],
+          ["What is the role of an output component?","It converts an electrical signal into a useful effect — e.g. sound, light or movement."],
+          ["What does a buzzer output?","Sound, in response to an electrical signal (often using a piezoelectric element)."],
+          ["What does an LED output?","Light, when current flows through it in the correct direction."],
+        ],
+        quiz: [
+          ["A component whose resistance changes with light level is a:",["Light-dependent resistor (LDR)","Thermistor","Transistor","Buzzer"],0,"An LDR's resistance varies with light, allowing it to sense light/darkness."],
+          ["A component whose resistance changes with temperature is a:",["Thermistor","LDR","LED","Switch"],0,"A thermistor's resistance changes with temperature, used to sense temperature changes."],
+          ["A component that manually opens or closes a circuit is a:",["Switch","Transistor","Resistor","LED"],0,"A switch is a manual input controlling current flow."],
+          ["A component that acts as an electronic switch or amplifier is a:",["Transistor","LDR","Buzzer","Thermistor"],0,"Transistors switch or amplify signals in electronic circuits."],
+          ["Which component's role is to control/limit current flow?",["Resistor","LED","Buzzer","Sensor"],0,"Resistors limit current and can be used to divide voltage."],
+          ["An LED is an example of a(n):",["Output component","Input component","Sensor","Switch"],0,"LEDs are outputs, converting electrical signal into light."],
+          // application
+          ["A security light should turn on automatically when it gets dark. The most suitable input sensor is a:",["Light-dependent resistor (LDR)","Thermistor","Buzzer","LED"],0,"An LDR detects darkness, triggering the light — matching the required function."],
+          ["A greenhouse alarm should sound when the temperature drops too low. This system needs a:",["Thermistor as the input sensor and a buzzer as the output","LDR as the input and an LED as the output","A switch only, with no sensor","A resistor as the only component"],0,"Temperature sensing needs a thermistor; sounding an alarm needs a buzzer output."],
+        ]
+      },
+
+      // ═══════════ 1.7 PROGRAMMABLE COMPONENTS ═══════════
+      dt_programmable: {
+        name: "1.7 Programmable components",
+        cards: [
+          ["What is a flowchart used for in programming a system?","To plan and show the sequence of steps, decisions and loops a program will follow."],
+          ["How do programmable systems respond to inputs and decisions?","They use conditional logic (if/then decisions) to switch outputs on or off depending on the input received."],
+          ["What is an analogue input? Give an example.","A signal that varies continuously (not just on/off) — e.g. a light sensor giving a range of light-level values."],
+          ["What is a loop in a control program?","A section of code that repeats, either a set number of times (count-controlled) or until a condition is met."],
+          ["What is a delay used for in a control routine?","To pause the program for a set time before continuing — e.g. keeping an output on for a fixed duration."],
+          ["What is a count used for in a control routine?","To track how many times something has happened (e.g. how many times a sensor has been triggered) and act after a set number."],
+        ],
+        quiz: [
+          ["A diagram showing the sequence of steps and decisions in a program is a:",["Flowchart","Circuit diagram","Cam profile","Gear train"],0,"A flowchart plans the logical sequence of a control program."],
+          ["A signal that varies continuously rather than just being on/off is:",["Analogue","Digital","Reciprocating","Rotary"],0,"Analogue signals vary continuously across a range of values."],
+          ["A section of a control program that repeats until a condition is met is a:",["Loop","Delay","Switch","Sensor"],0,"Loops repeat instructions, either a set number of times or until a condition is true."],
+          ["Pausing a program for a fixed time before continuing uses a:",["Delay","Loop","Count","Flowchart"],0,"A delay pauses execution for a set duration."],
+          ["Tracking how many times an event has occurred in a program uses a:",["Count","Delay","Sensor only","Resistor"],0,"A count tracks the number of occurrences of an event."],
+          // application
+          ["A programmable system must turn on a light only when it is dark AND a button is pressed. This needs:",["A decision (conditional logic) combining both inputs","A single output with no logic","An analogue-only signal","A cam and follower"],0,"Combining two conditions to control an output needs conditional (if/then) logic."],
+          ["A control program should flash an LED 5 times then stop. The best tool is a:",["Count-controlled loop","A single delay only","An analogue sensor","A rack and pinion"],0,"Repeating an action a set number of times is a count-controlled loop."],
+        ]
+      },
+
+      // ═══════════ 1.8–1.12 MATERIALS OVERVIEW ═══════════
+      dt_materials_overview: {
+        name: "1.8–1.12 Materials: metals, papers & boards, polymers, textiles, timbers",
+        cards: [
+          ["Name three ferrous metals.","Mild steel, stainless steel and cast iron."],
+          ["Name three non-ferrous metals.","Aluminium, copper and brass."],
+          ["Define ductility.","The ability of a material to be drawn out into a wire without breaking."],
+          ["Define malleability.","The ability of a material to be hammered or pressed into shape without cracking."],
+          ["Define hardness (as a material property).","The ability of a material to resist scratching, indentation and wear."],
+          ["Give an example of copier paper's typical use and a property.","Used for printing/photocopying; needs good printability and consistent weight."],
+          ["What is folding boxboard used for?","Lightweight packaging (e.g. cereal boxes) that needs to fold cleanly and hold shape."],
+          ["What is corrugated board known for?","Strength and cushioning from its fluted layer — used for shipping boxes."],
+          ["Define biodegradability.","The ability of a material to break down naturally over time through the action of living organisms."],
+          ["What is a thermoforming polymer? Give an example.","A polymer that softens when heated and can be reshaped repeatedly — e.g. acrylic, HIPS."],
+          ["What is a thermosetting polymer? Give an example.","A polymer that sets permanently when heated/cured and cannot be reshaped — e.g. polyester resin, urea formaldehyde."],
+          ["What does 'toughness' mean as a material property?","The ability to absorb energy/impact without fracturing."],
+          ["Give an example of a natural animal fibre and a natural vegetable fibre.","Wool (animal) and cotton (vegetable)."],
+          ["What is a woven textile? Give an example.","Two sets of yarn interlaced at right angles — e.g. denim (a twill weave) or calico (a plain weave)."],
+          ["What is a non-woven textile? Give an example.","Fibres bonded or felted together rather than woven — e.g. felted wool fabric."],
+          ["Define elasticity (as a textile property).","The ability of a material to stretch and return to its original size and shape."],
+          ["Name two hardwoods and two softwoods.","Hardwoods: oak, mahogany. Softwoods: pine, cedar."],
+          ["What is MDF and what is it made from?","Medium Density Fibreboard — a manufactured timber made from compressed wood fibres and resin."],
+          ["Why are manufactured boards like plywood often preferred over solid timber?","They are more dimensionally stable, come in large uniform sheets, and make efficient use of wood resources."],
+        ],
+        quiz: [
+          ["Which of these is a ferrous metal?",["Stainless steel","Aluminium","Copper","Brass"],0,"Stainless steel contains iron, making it ferrous; the others are non-ferrous."],
+          ["The ability to be drawn into a wire without breaking is:",["Ductility","Malleability","Hardness","Biodegradability"],0,"Ductility describes being drawn into a wire, e.g. copper wiring."],
+          ["The ability to be hammered into shape without cracking is:",["Malleability","Ductility","Toughness","Printability"],0,"Malleable materials can be shaped by hammering/pressing without cracking."],
+          ["Corrugated board is especially valued in packaging for its:",["Strength and cushioning","Transparency","Elasticity","Biodegradability only"],0,"The fluted layer of corrugated board gives strength and cushioning for shipping."],
+          ["A polymer that softens on heating and can be reshaped repeatedly is:",["Thermoforming","Thermosetting","Ferrous","A composite"],0,"Thermoforming polymers soften and can be remoulded multiple times."],
+          ["Polyester resin is an example of a:",["Thermosetting polymer","Thermoforming polymer","Ferrous metal","Non-woven textile"],0,"Thermosetting polymers like polyester resin set permanently when cured."],
+          ["Wool is an example of a:",["Natural animal fibre","Synthetic fibre","Non-woven fabric only","Manufactured timber"],0,"Wool comes from animals — a natural animal fibre."],
+          ["Denim is an example of a:",["Woven (twill) textile","Non-woven textile","Knitted textile","Thermosetting polymer"],0,"Denim uses a twill weave, a type of woven textile."],
+          ["Felted wool fabric is an example of a:",["Non-woven textile","Woven textile","Knitted textile","Composite metal"],0,"Felting bonds fibres together without weaving — a non-woven process."],
+          ["Which is a hardwood?",["Oak","Pine","Cedar","MDF"],0,"Oak is a hardwood; pine and cedar are softwoods, and MDF is manufactured."],
+          ["MDF is manufactured from:",["Compressed wood fibres and resin","Woven natural fibres","Molten metal","Recycled paper only"],0,"MDF (Medium Density Fibreboard) is made from wood fibres bonded with resin."],
+          // application
+          ["A product needs to flex repeatedly without cracking, such as a plastic bottle. The best property to prioritise is:",["Toughness/flexibility (thermoforming polymer)","Extreme hardness","Maximum brittleness","High biodegradability only"],0,"Repeated flexing needs a tough, flexible thermoforming polymer rather than a brittle or rigid material."],
+          ["A kitchen worktop needs to resist scratches from daily use. The most relevant property is:",["Hardness","Ductility","Elasticity","Biodegradability"],0,"Hardness (resistance to scratching/wear) is the key property for a worktop surface."],
+          ["A shipping company wants strong, lightweight, cushioning packaging. They should choose:",["Corrugated board","Tracing paper","Cast iron","Knitted fabric"],0,"Corrugated board's fluted structure gives strength and cushioning at low weight."],
+          ["A designer needs a material that returns to shape after stretching, for sportswear. They should prioritise:",["Elasticity","Hardness","Biodegradability","Toughness only"],0,"Elasticity allows the fabric to stretch with movement and return to shape."],
+        ]
+      },
+
+      // ═══════════ 1.13 MATERIALS & PROCESSES IN CONTEXT ═══════════
+      dt_context: {
+        name: "1.13 Materials, components and processes in context",
+        cards: [
+          ["Why must material and process choices always be justified in context?","Because the right choice depends on the product's purpose, user, budget, required properties and how it will be made — there's no single 'best' material for everything."],
+          ["Give an example of how cost might affect a material choice.","A cheaper material (e.g. HIPS instead of a metal) might be chosen for a mass-produced consumer product to keep unit cost low."],
+          ["Why might a manufacturer choose a more expensive process for a small production run?","Expensive tooling (e.g. injection moulding) only pays off at high volumes; a small run may use a cheaper, more flexible process instead."],
+          ["Give an example of matching a material's properties to its function.","Choosing stainless steel for cutlery because it resists corrosion and is hygienic, unlike untreated mild steel."],
+          ["Why is justification of material/process choice an exam skill, not just recall?","Exam questions expect you to link a material's specific properties to the specific demands of the product in the question, not just list facts."],
+        ],
+        quiz: [
+          ["Choosing a material for a product should be based mainly on:",["Its properties matching the product's function and context","Its colour only","Its country of origin only","Random selection"],0,"Material selection should match properties to the specific needs of the product and its use."],
+          ["A company chooses a cheaper polymer over metal for a mass-produced toy mainly to:",["Reduce unit cost at high volume","Increase weight","Reduce durability deliberately","Make it non-recyclable"],0,"Lower-cost materials help keep unit costs down when producing at high volume."],
+          ["Expensive tooling such as injection moulding is usually only cost-effective for:",["High-volume production","A single one-off item","Products that will never be sold","Products with no material requirements"],0,"High tooling costs are spread over many units, so expensive tooling suits high volumes."],
+          ["Stainless steel is chosen for cutlery mainly because it is:",["Corrosion-resistant and hygienic","The cheapest possible metal","Difficult to clean","Non-recyclable"],0,"Corrosion resistance and hygiene make stainless steel well suited to cutlery."],
+          // application
+          ["A one-off bespoke architectural model needs a lightweight, easily-shaped material. A sensible choice is:",["Foam board or balsa wood","Cast iron","Stainless steel","Reinforced concrete"],0,"Lightweight, easily-worked materials like foam board or balsa suit small-scale one-off models."],
+          ["A company producing 500,000 identical plastic bottles per year should prioritise a process that:",["Has low unit cost at high volume, even with high tooling cost","Is only suitable for one-off items","Uses no machinery at all","Has the highest possible unit cost"],0,"At very high volumes, spreading tooling cost across many units gives the lowest cost per item."],
+        ]
+      }
+
+    }
+  };
+
+  console.log("[edexcel_dt.js] Edexcel GCSE Design and Technology added: "+Object.keys(C.edexcel_gcse_dt.topics).length+" topics.");
+})();
+</script>
+<script>
 /* ============================================================
    FLUXOR — ANSWER SHUFFLER
    Runs once after all content packs load. For every quiz item
@@ -16686,7 +17218,7 @@ window.COURSES.aqa_alevel_pe = {
     q[1]=out; q[2]=target;
   }
 
-  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2","ocr_cnat_eng","ocr_cnat_imedia","edexcel_gcse_business"];
+  const sources=["aqa_gcse","ocr_alevel","ocr_alevel_biology","ocr_alevel_chemistry","edexcel_alevel_maths","edexcel_foundation","edexcel_higher","aqa_biology","aqa_chemistry","ocr_compsci","aqa_pe","ks3_maths","combined_biology","combined_chemistry","combined_physics","aqa_alevel_pe","ks3_y7_science","ks3_y8_science","ks3_y9_science","edexcel_fs_maths_l1","edexcel_fs_maths_l2","ocr_cnat_eng","ocr_cnat_imedia","edexcel_gcse_business","edexcel_gcse_dt"];
   let n=0;
   sources.forEach(ck=>{ const course=C[ck]; if(!course) return;
     for(const tk in course.topics){ course.topics[tk].quiz.forEach(q=>{ shuffleQuiz(q); n++; }); }
@@ -17669,11 +18201,13 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
 
   // HEAD + FACE (with neck + soft shading) -----------------------------
   function head(skin, id){
-    const s=skin||"#e8b98a", dk=shade(s,-0.22), lt=shade(s,0.16);
+    const s=skin||"#e8b98a", dk=shade(s,-0.22), lt=shade(s,0.16), neckShade=shade(s,-0.08);
     return `<defs><radialGradient id="${id}sk" cx="42%" cy="38%" r="75%"><stop offset="0" stop-color="${lt}"/><stop offset="1" stop-color="${s}"/></radialGradient></defs>`
-      // neck
-      + `<path d="M86 132 Q86 150 80 156 L120 156 Q114 150 114 132 Z" fill="${dk}"/>`
-      + `<path d="M88 132 Q88 146 84 152 L116 152 Q112 146 112 132 Z" fill="${s}"/>`
+      // neck — same skin tone as the face, with only a gentle shadow at the outer edges
+      // (previously used a much darker shade here, which made the neck look like a
+      // different colour to the face; now it reads as clearly the same skin tone).
+      + `<path d="M86 132 Q86 150 80 156 L120 156 Q114 150 114 132 Z" fill="${neckShade}"/>`
+      + `<path d="M89 132 Q89 145 86 151 L114 151 Q111 145 111 132 Z" fill="${s}"/>`
       // ears
       + `<ellipse cx="55" cy="98" rx="7" ry="10" fill="${s}"/><ellipse cx="145" cy="98" rx="7" ry="10" fill="${s}"/>`
       // face
@@ -18113,6 +18647,139 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   console.log("[avatar_fix_and_more.js] Fixed missing renderers for existing items + added scarf/headband/visor/necklace, dreadlocks/undercut, overalls/kimono/armour, desert/underwater/volcano.");
 })();
 </script>
+<script>
+
+  // ============================================================
+  //  FLUXOR AVATAR — FLUXOR-BRANDED CLOTHING + MORE COLLECTIBLES
+  //  Adds a recognisable in-house "Fluxor" branded clothing line
+  //  (logo tee, hoodie, cap, varsity jacket) plus a further batch
+  //  of standalone collectible items across hair/acc/backgrounds.
+  // ============================================================
+  (function(){
+    if(!window.AVATAR_PARTS || !window.renderAvatar){ console.warn("avatar engine not ready for fluxor-brand pack"); return; }
+    const P = window.AVATAR_PARTS;
+    function shade(hex,f){ hex=(hex||'#888').replace('#',''); if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+      let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+      const m=f<0?0:255,a=Math.abs(f); r=Math.round(r+(m-r)*a);g=Math.round(g+(m-g)*a);b=Math.round(b+(m-b)*a);
+      return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join(''); }
+    const BRAND = "#39e0c4"; // Fluxor's signature phosphor-teal
+
+    // ---- the Fluxor logomark: a simple angular "F" bolt, drawn small on garments ----
+    function fluxorMark(cx,cy,scale,colour){
+      const s=scale||1, c=colour||"#06231d";
+      return `<g transform="translate(${cx} ${cy}) scale(${s})">`
+        + `<path d="M-6 -9 L6 -9 L6 -4 L-1 -4 L-1 0 L4 0 L4 5 L-1 5 L-1 9 L-6 9 Z" fill="${c}"/>`
+        + `</g>`;
+    }
+
+    // ---- new catalogue entries ----
+    P.clothes.push(
+      ["fluxortee","Fluxor logo tee",BRAND],
+      ["fluxorhoodie","Fluxor hoodie",BRAND],
+      ["fluxorvarsity","Fluxor varsity jacket","#1b2533"]
+    );
+    P.acc.push(["fluxorcap","Fluxor cap",BRAND]);
+    P.hair.push(["sidecut","Side-shaved","#2a2018"],["topknot","Top knot","#3a2a1a"]);
+    P.acc.push(["medal","Gold medal","#f4c740"],["labgoggles","Lab goggles","#8a94a4"]);
+    P.bg.push(["circuit","Circuit board","#141c27"],["sunset","Sunset","#e8845a"]);
+
+    // ---- Fluxor-branded clothing renderers ----
+    const CLOTHES_FLUXOR = {
+      fluxortee:(c)=>{ const a="#1b2533"; return `<path d="M58 178 L58 130 Q58 120 100 120 Q142 120 142 130 L142 178 Z" fill="${a}" stroke="${shade(a,0.2)}" stroke-width="1.5"/>`
+        + `<path d="M82 144 Q100 156 118 144 L114 150 Q100 160 86 150 Z" fill="${shade(a,-0.4)}"/>`
+        + fluxorMark(100,152,1.15,BRAND); },
+      fluxorhoodie:(c)=>{ const a=BRAND; const d=shade(a,-0.35);
+        return `<path d="M54 178 L54 128 Q54 116 100 116 Q146 116 146 128 L146 178 Z" fill="${a}" stroke="${d}" stroke-width="1.5"/>`
+          + `<path d="M80 116 Q100 132 120 116 L124 122 Q100 140 76 122 Z" fill="${d}"/>`
+          + `<circle cx="90" cy="150" r="2.5" fill="${d}"/><circle cx="110" cy="150" r="2.5" fill="${d}"/>`
+          + `<path d="M90 150 Q100 158 110 150" stroke="${d}" stroke-width="1.5" fill="none"/>`
+          + fluxorMark(100,138,0.85,"#06231d"); },
+      fluxorvarsity:(c)=>{ const a=c||"#1b2533"; const d=shade(a,0.15);
+        return `<path d="M56 178 L56 134 Q56 120 100 120 Q144 120 144 134 L144 178 Z" fill="${d}"/>`
+          + `<path d="M56 178 L56 134 Q56 120 100 120 Q144 120 144 134 L144 150 L56 150 Z" fill="${a}"/>`
+          + `<path d="M92 150 L92 178 M108 150 L108 178" stroke="${BRAND}" stroke-width="2" opacity="0.7"/>`
+          + fluxorMark(100,132,0.8,BRAND); },
+    };
+
+    const ACC_FLUXOR = {
+      fluxorcap:(c)=>{ const a=BRAND; const d=shade(a,-0.3);
+        return `<path d="M64 78 Q100 56 136 78 Q136 92 100 92 Q64 92 64 78 Z" fill="${a}" stroke="${d}" stroke-width="1"/>`
+          + `<path d="M100 92 Q118 92 126 86 L140 90 Q126 98 100 98 Z" fill="${d}"/>`
+          + fluxorMark(100,76,0.6,"#06231d"); },
+      medal:(c)=>{ const a=c||"#f4c740";
+        return `<path d="M92 118 L100 148 L108 118" stroke="${BRAND}" stroke-width="4" fill="none"/>`
+          + `<circle cx="100" cy="156" r="12" fill="${a}" stroke="${shade(a,-0.3)}" stroke-width="1.5"/>`
+          + `<circle cx="100" cy="156" r="6" fill="${shade(a,0.25)}"/>`
+          + `<text x="100" y="159" text-anchor="middle" font-size="8" font-weight="700" fill="${shade(a,-0.4)}">1</text>`; },
+      labgoggles:(c)=>{ const a=c||"#8a94a4";
+        return `<ellipse cx="82" cy="92" rx="12" ry="11" fill="none" stroke="${a}" stroke-width="4"/>`
+          + `<ellipse cx="118" cy="92" rx="12" ry="11" fill="none" stroke="${a}" stroke-width="4"/>`
+          + `<rect x="94" y="88" width="12" height="5" fill="${a}"/>`
+          + `<path d="M70 88 Q60 90 58 96" stroke="${a}" stroke-width="3" fill="none"/>`
+          + `<path d="M130 88 Q140 90 142 96" stroke="${a}" stroke-width="3" fill="none"/>`
+          + `<ellipse cx="82" cy="92" rx="9" ry="8" fill="${BRAND}" opacity="0.25"/>`
+          + `<ellipse cx="118" cy="92" rx="9" ry="8" fill="${BRAND}" opacity="0.25"/>`; },
+    };
+
+    const HAIR_FLUXOR = {
+      sidecut:(c)=>{ const a=c||"#2a2018";
+        return `<path d="M78 60 Q100 44 122 60 L122 50 Q100 38 78 50 Z" fill="${a}"/>`
+          + `<path d="M66 78 L78 60 M134 78 L122 60" stroke="${a}" stroke-width="6"/>`
+          + `<path d="M70 74 L76 62 M76 76 L82 64" stroke="${shade(a,0.5)}" stroke-width="1" opacity="0.5"/>`; },
+      topknot:(c)=>{ const a=c||"#3a2a1a";
+        return `<path d="M66 74 Q60 62 72 52 Q84 42 100 42 Q116 42 128 52 Q140 62 134 74 L128 64 Q118 50 100 50 Q82 50 72 64 Z" fill="${a}"/>`
+          + `<circle cx="100" cy="38" r="9" fill="${a}"/><rect x="96" y="30" width="8" height="6" rx="2" fill="${shade(a,0.3)}"/>`; },
+    };
+
+    const BG_FLUXOR = {
+      circuit:(c)=>{ const a="#141c27";
+        let g=`<rect width="200" height="200" fill="${a}"/>`;
+        const paths=[[20,40,90,40],[90,40,90,100],[90,100,170,100],[30,150,30,90],[30,90,110,90],[130,20,130,70],[130,70,180,70]];
+        paths.forEach(([x1,y1,x2,y2])=>{ g+=`<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${BRAND}" stroke-width="2" opacity="0.35"/>`; });
+        [[20,40],[90,40],[90,100],[170,100],[30,150],[30,90],[110,90],[130,20],[130,70],[180,70]].forEach(([x,y])=>{
+          g+=`<circle cx="${x}" cy="${y}" r="3" fill="${BRAND}" opacity="0.6"/>`; });
+        return g; },
+      sunset:(c)=>{ const a=c||"#e8845a";
+        return `<defs><linearGradient id="sung" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a,0.3)}"/><stop offset="0.55" stop-color="${a}"/><stop offset="1" stop-color="${shade(a,-0.5)}"/></linearGradient></defs>`
+          + `<rect width="200" height="200" fill="url(#sung)"/>`
+          + `<circle cx="100" cy="110" r="34" fill="#fff5d0" opacity="0.9"/>`
+          + `<path d="M0 150 L200 150 M0 165 L200 165 M0 180 L200 180" stroke="#1a1a2e" stroke-width="6" opacity="0.5"/>`; },
+    };
+
+    // merge into the existing extension maps used by the wrapped renderAvatar
+    // (window.__fx_avatar_fix_maps is not exposed, so we re-wrap renderAvatar here,
+    //  layering on top of whatever the previous wrapper already produces).
+    const prevRender = window.renderAvatar;
+    window.renderAvatar = function(cfg,size){
+      cfg = cfg || {};
+      let svg = prevRender(cfg, size);
+      let extra = "";
+      if(HAIR_FLUXOR[cfg.hair]) extra += HAIR_FLUXOR[cfg.hair](cfg.hairColor);
+      if(CLOTHES_FLUXOR[cfg.clothes]) extra += CLOTHES_FLUXOR[cfg.clothes](cfg.clothesColor);
+      if(ACC_FLUXOR[cfg.acc]) extra += ACC_FLUXOR[cfg.acc](cfg.accColor);
+      if(BG_FLUXOR[cfg.bg]){
+        const neutralCfg = Object.assign({}, cfg, {bg:"plain"});
+        let base = prevRender(neutralCfg, size);
+        const bgSvg = BG_FLUXOR[cfg.bg](cfg.bgColor);
+        const gStart = base.indexOf('clip-path');
+        const gOpen = base.indexOf('>', gStart) + 1;
+        const afterDefs = base.indexOf('</defs>', gOpen);
+        const bgRectEnd = base.indexOf('/>', afterDefs>-1?afterDefs:gOpen) + 2;
+        const cut = afterDefs>-1 ? bgRectEnd : (base.indexOf('/>', gOpen)+2);
+        base = base.slice(0,gOpen) + bgSvg + base.slice(cut);
+        svg = base;
+      }
+      if(extra){
+        const marker = svg.lastIndexOf('</g>');
+        if(marker>-1) svg = svg.slice(0,marker) + extra + svg.slice(marker);
+      }
+      return svg;
+    };
+
+    console.log("[fluxor_brand.js] Added Fluxor-branded clothing (logo tee, hoodie, varsity jacket, cap) + more collectibles (medal, lab goggles, side-cut, top-knot, circuit-board & sunset backgrounds).");
+  })();
+
+</script>
 
 <script>
 /* ============================================================
@@ -18221,20 +18888,21 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   const ITEM_RARITY = {
     // backgrounds
     bg:{ rings:"standard", grid:"standard", sky:"standard",
-         stars:"premium", aurora:"premium", confetti:"premium", beach:"premium", city:"premium", forest:"premium", desert:"premium",
-         neon:"legendary", gold:"legendary", underwater:"legendary", volcano:"legendary" },
+         stars:"premium", aurora:"premium", confetti:"premium", beach:"premium", city:"premium", forest:"premium", desert:"premium", sunset:"premium",
+         neon:"legendary", gold:"legendary", underwater:"legendary", volcano:"legendary", circuit:"legendary" },
     // hair
     hair:{ short:"standard", quiff:"standard", spiky:"standard", cap:"standard", beanie:"standard",
-           long:"premium", bun:"premium", ponytail:"premium", curly:"premium", afro:"premium", mohawk:"premium", fringe:"premium",
-           braids:"legendary", pigtails:"legendary", dreadlocks:"legendary", undercut:"legendary" },
+           long:"premium", bun:"premium", ponytail:"premium", curly:"premium", afro:"premium", mohawk:"premium", fringe:"premium", sidecut:"premium",
+           braids:"legendary", pigtails:"legendary", dreadlocks:"legendary", undercut:"legendary", topknot:"legendary" },
     // clothes
     clothes:{ hoodie:"standard", shirt:"standard", jumper:"standard",
               blazer:"premium", labcoat:"premium", varsity:"premium", dungarees:"premium", puffer:"premium", knit:"premium", tracksuit:"premium",
-              hero:"legendary", overalls:"legendary", kimono:"legendary", armor:"legendary" },
+              hero:"legendary", overalls:"legendary", kimono:"legendary", armor:"legendary",
+              fluxortee:"legendary", fluxorhoodie:"legendary", fluxorvarsity:"legendary" },
     // accessories
     acc:{ glasses:"standard", shades:"standard", headphones:"standard", earrings:"standard",
-          goggles:"premium", monocle:"premium", bowtie:"premium", scarf:"premium", headband:"premium", visor:"premium", necklace:"premium",
-          crown:"legendary", star:"legendary", facemask:"legendary", flowercrown:"legendary", eyepatch:"legendary" },
+          goggles:"premium", monocle:"premium", bowtie:"premium", scarf:"premium", headband:"premium", visor:"premium", necklace:"premium", labgoggles:"premium",
+          crown:"legendary", star:"legendary", facemask:"legendary", flowercrown:"legendary", eyepatch:"legendary", medal:"legendary", fluxorcap:"legendary" },
     // house
     house:{ tent:"standard", flat:"standard",
             cottage:"premium", house:"premium",
@@ -19041,6 +19709,217 @@ Object.defineProperty(window, "state", { get(){ return state; }, set(v){ state=v
   );
 
   console.log("[graphs_topup] Added extra Quadratic & other graphs questions and diagrams:", t.quiz.length, "quiz questions total");
+})();
+</script>
+<script>
+// ============================================================
+//  GCSE MATHS — SOLVING EQUATIONS WITH A BALANCE
+//  Registry: window.ANIMATIONS[courseKey]["alg_linear_eq"]
+//  Attached to BOTH edexcel_foundation and edexcel_higher.
+// ============================================================
+(function(){
+  window.ANIMATIONS = window.ANIMATIONS || {};
+  const NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent){
+    const e=document.createElementNS(NS, tag);
+    if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+  function svg(w,h){
+    return el("svg",{viewBox:"0 0 "+w+" "+h,width:w,height:h,"font-family":"system-ui,sans-serif"});
+  }
+  function controls(host){ const d=document.createElement("div"); d.className="anim-controls"; host.appendChild(d); return d; }
+  function slider(parent,label,min,max,val,step,oninput){
+    const wrap=document.createElement("label");
+    const span=document.createElement("span"); span.textContent=label;
+    const valSpan=document.createElement("span"); valSpan.className="val";
+    const input=document.createElement("input");
+    input.type="range"; input.min=min; input.max=max; input.value=val; input.step=step||1;
+    wrap.appendChild(span); wrap.appendChild(input); wrap.appendChild(valSpan); parent.appendChild(wrap);
+    function fmt(v){ valSpan.textContent=oninput(parseFloat(v)); }
+    input.addEventListener("input",()=>fmt(input.value));
+    fmt(input.value);
+    return input;
+  }
+  function btn(parent,label,onclick){
+    const b=document.createElement("button"); b.className="anim-btn"; b.textContent=label;
+    b.addEventListener("click",()=>onclick(b)); parent.appendChild(b); return b;
+  }
+  function readout(host){ const d=document.createElement("div"); d.className="anim-readout"; host.appendChild(d); return d; }
+  function col(name,fallback){
+    try{ const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fallback; }
+    catch(e){ return fallback; }
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  GCSE MATHS — Solving equations with a balance
+  //  Registered to BOTH edexcel_foundation and edexcel_higher under the
+  //  shared topic key "alg_linear_eq" (Algebra · Linear equations).
+  // ═══════════════════════════════════════════════════════════════════════
+  add_maths_balance();
+  function add_maths_balance(){
+    function addTo(course, topic, anims){
+      window.ANIMATIONS = window.ANIMATIONS || {};
+      window.ANIMATIONS[course]=window.ANIMATIONS[course]||{};
+      window.ANIMATIONS[course][topic]=(window.ANIMATIONS[course][topic]||[]).concat(anims);
+    }
+
+    const balanceAnims = [
+      {
+        title:"Solving equations with a balance",
+        subtitle:"An equation is a balance: whatever you do to one side, you must do to the other to keep it level. Step through solving three equations.",
+        build:function(host){
+          const PH=col('--phosphor','#39e0c4'), AM=col('--amber','#f4b740'), INK=col('--ink','#dde7f0'),
+                DIM=col('--ink-dim','#7d93a8'), LINE=col('--line','#26384b'), RED="#e2554e";
+          const W=320, H=250;
+          const s=svg(W,H); host.appendChild(s);
+
+          // ---- equation presets: each step is an operation applied to both sides ----
+          // Representation: left side = a*x + b ; right side = c (a constant).
+          // Steps describe how (a,b,c) change and the label shown on the button.
+          const PRESETS = [
+            { eqLabel:"3x + 2 = 11", a:3, b:2, c:11,
+              steps:[
+                { label:"−2 both sides", apply:(st)=>({a:st.a,b:0,c:st.c-2}), note:"Subtract 2 from both sides to remove the constant on the left." },
+                { label:"÷3 both sides", apply:(st)=>({a:1,b:0,c:st.c/st.a}), note:"Divide both sides by 3 to leave x on its own." },
+              ]
+            },
+            { eqLabel:"2x − 4 = 6", a:2, b:-4, c:6,
+              steps:[
+                { label:"+4 both sides", apply:(st)=>({a:st.a,b:0,c:st.c+4}), note:"Add 4 to both sides to remove the constant on the left." },
+                { label:"÷2 both sides", apply:(st)=>({a:1,b:0,c:st.c/st.a}), note:"Divide both sides by 2 to leave x on its own." },
+              ]
+            },
+            { eqLabel:"5x + 1 = 21", a:5, b:1, c:21,
+              steps:[
+                { label:"−1 both sides", apply:(st)=>({a:st.a,b:0,c:st.c-1}), note:"Subtract 1 from both sides to remove the constant on the left." },
+                { label:"÷5 both sides", apply:(st)=>({a:1,b:0,c:st.c/st.a}), note:"Divide both sides by 5 to leave x on its own." },
+              ]
+            }
+          ];
+
+          // ---- static rig: stand + beam + pans ----
+          const standX=W/2, standTopY=60, standBotY=210;
+          el("line",{x1:standX,y1:standTopY,x2:standX,y2:standBotY,stroke:DIM,"stroke-width":4},s);
+          el("path",{d:`M${standX-30} ${standBotY} L${standX+30} ${standBotY} L${standX+18} ${standBotY-14} L${standX-18} ${standBotY-14} Z`,fill:DIM},s);
+          const fulcrum=el("circle",{cx:standX,cy:standTopY,r:6,fill:AM},s);
+          const beam=el("line",{x1:standX-110,y1:standTopY,x2:standX+110,y2:standTopY,stroke:PH,"stroke-width":5,"stroke-linecap":"round"},s);
+          const leftHang=el("line",{x1:standX-110,y1:standTopY,x2:standX-110,y2:standTopY+18,stroke:DIM,"stroke-width":2},s);
+          const rightHang=el("line",{x1:standX+110,y1:standTopY,x2:standX+110,y2:standTopY+18,stroke:DIM,"stroke-width":2},s);
+          const leftPan=el("path",{d:"",fill:"none",stroke:PH,"stroke-width":2.5},s);
+          const rightPan=el("path",{d:"",fill:"none",stroke:AM,"stroke-width":2.5},s);
+          const leftGroup=el("g",{},s);
+          const rightGroup=el("g",{},s);
+          const eqText=el("text",{x:W/2,y:H-30,"text-anchor":"middle","font-size":16,"font-weight":700,fill:INK},s);
+          const stepNote=el("text",{x:W/2,y:H-12,"text-anchor":"middle","font-size":10,fill:DIM},s);
+
+          function panPath(cx,cy){
+            return `M${cx-32} ${cy} Q${cx-32} ${cy+16} ${cx-16} ${cy+16} L${cx+16} ${cy+16} Q${cx+32} ${cy+16} ${cx+32} ${cy}`;
+          }
+
+          const out=readout(host); const c=controls(host);
+
+          let presetIdx=0, stepIdx=0, state={};
+
+          function tileBox(x,y,w,h,fill,label,textCol){
+            const g=el("g",{},null);
+            el("rect",{x,y,width:w,height:h,rx:4,fill,stroke:LINE,"stroke-width":1},g);
+            el("text",{x:x+w/2,y:y+h/2+4,"text-anchor":"middle","font-size":11,"font-weight":700,fill:textCol||"#06231d"},g).textContent=label;
+            return g;
+          }
+
+          function renderPans(){
+            const tilt = tiltFor(state);
+            beam.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+            leftHang.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+            rightHang.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+            const leftPanY = standTopY+18+Math.max(0,-tilt*0.6);
+            const rightPanY = standTopY+18+Math.max(0,tilt*0.6);
+            leftPan.setAttribute("d", panPath(standX-110, leftPanY));
+            rightPan.setAttribute("d", panPath(standX+110, rightPanY));
+            leftPan.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+            rightPan.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+
+            // clear + redraw tiles sitting on each pan
+            while(leftGroup.firstChild) leftGroup.removeChild(leftGroup.firstChild);
+            while(rightGroup.firstChild) rightGroup.removeChild(rightGroup.firstChild);
+            leftGroup.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+            rightGroup.setAttribute("transform",`rotate(${tilt} ${standX} ${standTopY})`);
+
+            // LEFT pan: |a| x-boxes then |b| unit tiles (colour shows sign).
+            // Tile size shrinks a little when there are many, so a pan never overflows the canvas.
+            const lBaseY=leftPanY-14;
+            const leftCount = Math.abs(state.a)+Math.abs(state.b);
+            const lSize = leftCount>4 ? 13 : 20, lGap = lSize+2;
+            let lx = Math.max(6, standX-110 - (leftCount*lGap)/2);
+            for(let i=0;i<Math.abs(state.a);i++){
+              const g=tileBox(lx,lBaseY-lSize,lSize,lSize,PH,"x"); leftGroup.appendChild(g); lx+=lGap;
+            }
+            for(let i=0;i<Math.abs(state.b);i++){
+              const g=tileBox(lx,lBaseY-lSize,lSize,lSize, state.b>=0? AM : RED, "1", state.b>=0?"#3a2a06":"#fff"); leftGroup.appendChild(g); lx+=lGap;
+            }
+            // RIGHT pan: |c| unit tiles — same shrink-to-fit rule.
+            const rightCount = Math.max(1,Math.round(Math.abs(state.c)));
+            const rSize = rightCount>6 ? 15 : 20, rGap = rSize+2;
+            let rx = Math.min(W-rightCount*rGap-6, standX+110 - (rightCount*rGap)/2);
+            for(let i=0;i<rightCount;i++){
+              const g=tileBox(rx,rightPanY-rSize,rSize,rSize, state.c>=0? AM : RED, "1", state.c>=0?"#3a2a06":"#fff"); rightGroup.appendChild(g); rx+=rGap;
+            }
+
+            eqText.textContent = eqLabelFor(state);
+            const step = PRESETS[presetIdx].steps[stepIdx];
+            stepNote.textContent = step ? "Next: "+step.label : "Solved! x = "+state.c.toFixed(state.c%1===0?0:2);
+            out.innerHTML = "<b>"+eqLabelFor(state)+"</b>"+(step? "<br>"+step.note : "<br><b>x = "+state.c.toFixed(state.c%1===0?0:2)+"</b> — the balance stays level because we did the same thing to both sides at every step.");
+          }
+          function tiltFor(st){
+            // Kept level throughout: this is the whole point of the balance model —
+            // a correctly-solved equation keeps both sides equal at every step.
+            return 0;
+          }
+          function eqLabelFor(st){
+            const bStr = st.b===0 ? "" : (st.b>0? " + "+st.b : " − "+Math.abs(st.b));
+            const aStr = st.a===1? "x" : st.a+"x";
+            return (st.a===0? "" : aStr) + bStr + " = " + (st.c%1===0? st.c : st.c.toFixed(2));
+          }
+
+          function loadPreset(i){
+            presetIdx=i; stepIdx=0;
+            const p=PRESETS[i];
+            state={a:p.a,b:p.b,c:p.c};
+            nextBtn.disabled=false; nextBtn.textContent = PRESETS[presetIdx].steps[0].label;
+            renderPans();
+          }
+          const nextBtn = btn(c,"−2 both sides",()=>{
+            const steps = PRESETS[presetIdx].steps;
+            if(stepIdx>=steps.length) return;
+            const step = steps[stepIdx];
+            state = step.apply(state);
+            stepIdx++;
+            if(stepIdx<steps.length){ nextBtn.textContent = steps[stepIdx].label; }
+            else { nextBtn.textContent="Solved"; nextBtn.disabled=true; }
+            renderPans();
+          });
+          const presetBtns=[];
+          [0,1,2].forEach(i=>{
+            const b=btn(c, PRESETS[i].eqLabel, ()=>{ presetBtns.forEach(x=>x.classList.remove("active")); b.classList.add("active"); loadPreset(i); });
+            presetBtns.push(b);
+          });
+          presetBtns[0].classList.add("active");
+          loadPreset(0);
+
+          return ()=>{};
+        },
+        explain:"<h4>What's happening</h4><p>An equation is like a <span class='keyword'>balance</span>: the two sides are equal, so the scale is level. To solve for <span class='keyword'>x</span>, you can do anything you like to one side — <em>as long as you do exactly the same thing to the other side</em> — and the balance stays level.</p><h4>The method</h4><ol><li>Remove any constant from the side with x, by adding or subtracting the same amount from <span class='keyword'>both sides</span>.</li><li>Divide both sides by the number of x's (the coefficient), to leave a single x.</li></ol><h4>Why it works</h4><p>Adding, subtracting, multiplying or dividing <em>both sides</em> by the same amount never changes whether the two sides are equal — so the equation (and the balance) stays true at every step. This is the golden rule of solving equations: <span class='keyword'>whatever you do to one side, do to the other</span>.</p><h4>Watch out for</h4><p>Negative constants (shown in red) work the same way — subtracting a negative is the same as adding, so always do the <em>opposite</em> operation to move a term to the other side.</p>"
+      }
+    ];
+
+    addTo("edexcel_foundation","alg_linear_eq",balanceAnims);
+    addTo("edexcel_higher","alg_linear_eq",balanceAnims);
+  }
+
+  console.log("[maths_balance_animation.js] Balance-scale equation solver added to edexcel_foundation + edexcel_higher.");
 })();
 </script>
 </body>
